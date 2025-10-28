@@ -15,9 +15,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ----------- ENUMS -----------
+enum Role {
+  ADMIN       // Full privileges
+  STANDARD    // Regular user with limited management rights
+  BASIC       // Read-only or minimal access
+}
+
+// ----------- MODELS -----------
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id            Int       @id @default(autoincrement())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(BASIC)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Future relationships (e.g., posts, audits, logs)
+  // posts         Post[]
 }
