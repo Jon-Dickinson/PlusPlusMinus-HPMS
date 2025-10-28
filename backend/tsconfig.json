@@ -1,18 +1,38 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
+    /* ---------- Core ---------- */
+    "target": "ES2022",                   // modern syntax for Node 20+
+    "module": "NodeNext",                 // proper ESM behavior
+    "moduleResolution": "NodeNext",
+
+    /* ---------- Project structure ---------- */
     "rootDir": "./src",
     "outDir": "./dist",
+
+    /* ---------- Interop & Type Safety ---------- */
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    /* ---------- Helpful for Node ESM ---------- */
+    "allowImportingTsExtensions": true,   // let imports end with .ts or .js
+    "resolveJsonModule": true,            // allows importing JSON files
+    "noEmit": true                        // since ts-node handles transpile
   },
+
+  /* ---------- ts-node configuration ---------- */
+  "ts-node": {
+    "esm": true,                          // ensure ts-node runs in ESM mode
+    "transpileOnly": true                 // faster dev reloads, no type-check
+  },
+
+  /* ---------- Exclude folders ---------- */
   "exclude": [
     "node_modules",
     "dist",
+    "generated",
     "**/*.spec.ts",
     "**/*.test.ts",
     "prisma.config.ts"
