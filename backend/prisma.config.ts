@@ -1,14 +1,10 @@
-//prisma.config.ts
-
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from '@prisma/config';
+import { execSync } from 'child_process';
 
 export default defineConfig({
-    schema: "prisma/schema.prisma",
-    migrations: {
-        path: "prisma/migrations",
-    },
-    engine: "classic",
-    datasource: {
-        url: env("DATABASE_URL"),
-    },
+  // @ts-ignore: 'seed' is not defined on PrismaConfig but used for running a seed script
+  seed: () => {
+    console.log('🌱 Running HPMS seed...');
+    execSync('node --loader ts-node/esm prisma/seed.ts', { stdio: 'inherit' });
+  },
 });

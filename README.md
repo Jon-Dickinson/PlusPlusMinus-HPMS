@@ -1,7 +1,19 @@
 # PlusPlusMinus-HPMS
 plusplusminus PPM-FS-Challenge
 
+## Trello
+
+```
+https://trello.com/b/dy9uG8Vx/plusplusminus
+```
+
 ## backend
+
+### Neon
+
+```
+https://console.neon.tech/app/projects/calm-dream-36516261/auth?tab=configuration
+```
 
 ```
 npx dotenv -e .env -- npx prisma generate

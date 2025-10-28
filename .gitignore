@@ -70,6 +70,9 @@ web_modules/
 .env.*
 !.env.example
 
+# Explicitly ignore backend env (already covered by the above, but explicit for clarity)
+backend/.env
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
