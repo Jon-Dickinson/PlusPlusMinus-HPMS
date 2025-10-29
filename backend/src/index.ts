@@ -3,8 +3,9 @@
 import express from 'express';
 import 'dotenv/config';
 import { prisma } from './db.js'; // FIX: Added .js extension
-import authRouter from './routes/auth.route.js'; // FIX: Added .js extension
-import userRouter from './routes/user.route.js'; // FIX: Added .js extension
+import authRoutes from './routes/auth.route.js'; // FIX: Added .js extension
+import userRoutes from './routes/user.route.js'; // FIX: Added .js extension
+import { verifyToken } from './middleware/auth.middleware.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -44,10 +45,13 @@ app.get('/db-status', async (req, res) => {
 });
 
 // 3. Mount Authentication Routes
-app.use('/auth', authRouter);
+app.use('/auth', authRoutes);
 
-// 4. Mount User Management Routes
-app.use('/users', userRouter);
+// 4. Mount User Management Routes (protected)
+app.use('/users', verifyToken, userRoutes);
+
+// 5. Protect assets
+app.use('/assets', verifyToken, express.static('assets'));
 
 
 // --- START SERVER ---

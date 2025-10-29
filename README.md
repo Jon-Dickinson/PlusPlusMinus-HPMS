@@ -42,3 +42,43 @@ npx dotenv -e .env -- node --loader ts-node/esm seed.ts
 Or via Prisma hook:
 npx prisma db seed
 ```
+
+```mermaid
+flowchart TD
+    subgraph 1["1 – DB & Foundation"]
+        DB["Prisma Schema + Neon DB"]
+        Seed["Seed Roles / Structures / Users"]
+    end
+
+    subgraph 2["2 – Auth & Role Logic"]
+        Auth["JWT Authentication"]
+        RoleUtils["Role Utilities + Inheritance Logic"]
+    end
+
+    subgraph 3["3 – API & Validation"]
+        REST["REST Endpoints + Swagger Docs"]
+        Zod["Zod Validation + Error Middleware"]
+    end
+
+    subgraph 4_5["4–5 – Frontend"]
+        NextJS["Next.js App + Auth UI"]
+        CityMap["Hierarchy Visualization: Structure → City → Suburb"]
+    end
+
+    subgraph 6["6 – Testing & Docs"]
+        Tests["Jest + Integration Tests"]
+        Docs["README + Architecture + Performance Notes"]
+    end
+
+    subgraph 7["7 – Polish & Deployment"]
+        Deploy["Deploy to Render / Vercel"]
+        Email["Submit Repo + Live Links to Melissa"]
+    end
+
+    %% Connections
+    DB --> Auth
+    Auth --> REST
+    REST --> NextJS
+    NextJS --> Tests
+    Tests --> Deploy
+```
