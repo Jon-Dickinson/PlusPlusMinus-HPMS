@@ -32,4 +32,13 @@ Datasource "db": PostgreSQL database "neondb", schema "public" at "ep-floral-bas
 ```
 npx dotenv -e .env -- npx prisma studio
 http://localhost:5555/
+
+Regenerate prisma client:
+npx dotenv -e .env -- npx prisma generate
+
+Run the seed:
+npx dotenv -e .env -- node --loader ts-node/esm seed.ts
+
+Or via Prisma hook:
+npx prisma db seed
 ```

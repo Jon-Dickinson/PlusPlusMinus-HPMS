@@ -1,10 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 // Generate Prisma client in default location
+
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -78,4 +73,98 @@ model Asset {
 
   @@index([structureId])
   @@index([type])
+}
+
+// ======================================================
+// City Builder Schema
+// Structured database for building types,
+// categories, and city-level instances.
+// ======================================================
+
+
+// ======================================================
+// ENUMS
+// ======================================================
+
+enum ResourceType {
+  POWER
+  WATER
+  FOOD
+  SERVICES
+  HOUSING
+  EMPLOYMENT
+}
+
+// ======================================================
+// MAIN MODELS
+// ======================================================
+
+model BuildingCategory {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String?
+  buildings   Building[]
+}
+
+// Core definition for each unique building type (e.g., "Power Station 4x4", "Farm 4x4", etc.)
+model Building {
+  id              Int       @id @default(autoincrement())
+  name            String
+  sizeX           Int
+  sizeY           Int
+  blocks          Int
+  employs         Int?
+  houses          Int?
+  services        Int?
+  feeds           Int?
+  waterUsage      Int?
+  powerUsage      Int?
+  waterOutput     Int?
+  powerOutput     Int?
+  categoryId      Int
+  category        BuildingCategory @relation(fields: [categoryId], references: [id])
+
+  // For simulation / analytics
+  cityBuildings   CityBuilding[]
+  // Resource statistics for this building (e.g. power, water)
+  resourceStats   BuildingResourceStat[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Represents a simulated or real city or map instance.
+model City {
+  id          Int            @id @default(autoincrement())
+  name        String
+  population  Int?            // optional for aggregate stats
+  cityBuildings CityBuilding[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Many-to-many mapping between City and Building
+// Allows for tracking quantity of each building type.
+model CityBuilding {
+  id          Int       @id @default(autoincrement())
+  cityId      Int
+  buildingId  Int
+  quantity    Int       @default(1)
+  city        City      @relation(fields: [cityId], references: [id])
+  building    Building  @relation(fields: [buildingId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ======================================================
+// OPTIONAL SUPPORT TABLES (for later extensions)
+// ======================================================
+
+// To allow flexible key-value storage for resources (e.g. “water”, “power”)
+model BuildingResourceStat {
+  id          Int           @id @default(autoincrement())
+  buildingId  Int
+  type        ResourceType
+  input       Int?           // amount consumed
+  output      Int?           // amount produced
+  building    Building       @relation(fields: [buildingId], references: [id])
 }

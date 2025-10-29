@@ -35,6 +35,9 @@
     "generated",
     "**/*.spec.ts",
     "**/*.test.ts",
-    "prisma.config.ts.bak]"
+    "prisma.config.ts",
+    "prisma",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ]
 }
