@@ -95,6 +95,13 @@ enum ResourceType {
   EMPLOYMENT
 }
 
+// Minimum role level required to view/place a building
+enum RoleLevel {
+  SUBURB
+  CITY
+  NATIONAL
+}
+
 // ======================================================
 // MAIN MODELS
 // ======================================================
@@ -110,6 +117,8 @@ model BuildingCategory {
 model Building {
   id              Int       @id @default(autoincrement())
   name            String
+  // Path to visual asset (relative to public /assets folder)
+  file            String?
   sizeX           Int
   sizeY           Int
   blocks          Int
@@ -123,6 +132,7 @@ model Building {
   powerOutput     Int?
   categoryId      Int
   category        BuildingCategory @relation(fields: [categoryId], references: [id])
+  minRoleLevel    RoleLevel @default(CITY)
 
   // For simulation / analytics
   cityBuildings   CityBuilding[]
@@ -148,6 +158,9 @@ model CityBuilding {
   id          Int       @id @default(autoincrement())
   cityId      Int
   buildingId  Int
+  // Grid coordinates for placed building (optional for aggregate entries)
+  gx          Int?
+  gy          Int?
   quantity    Int       @default(1)
   city        City      @relation(fields: [cityId], references: [id])
   building    Building  @relation(fields: [buildingId], references: [id])

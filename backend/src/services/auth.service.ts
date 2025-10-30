@@ -5,18 +5,30 @@ import { prisma } from '../db.js';
 const JWT_SECRET = process.env.JWT_SECRET || 'please_change_me';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-type RegisterInput = { name: string; email: string; password: string };
+type RegisterInput = { name: string; email: string; password: string; roleName?: string; structureId?: number | null };
 
 export async function registerUser(input: RegisterInput) {
-  const { name, email, password } = input;
+  const { name, email, password, roleName, structureId } = input;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new Error('Email already in use');
 
   const passwordHash = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash },
+    data: { name, email, passwordHash, structureId: structureId ?? null },
   });
+
+  // If a roleName was provided, link the role to the user
+  if (roleName) {
+    const role = await prisma.role.findUnique({ where: { name: roleName } });
+    if (!role) {
+      // cleanup created user to avoid orphaned account
+      await prisma.user.delete({ where: { id: user.id } });
+      throw new Error(`Role not found: ${roleName}`);
+    }
+
+    await prisma.userRole.create({ data: { userId: user.id, roleId: role.id } });
+  }
 
   const token = await generateTokenForUser(user.id);
   return { user, token };

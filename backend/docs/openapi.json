@@ -1,0 +1,120 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "PlusPlusMinus HPMS API",
+    "version": "1.0.0",
+    "description": "API for City Builder: Buildings and City placements"
+  },
+  "servers": [
+    { "url": "http://localhost:3000", "description": "Local" }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register new user (public)",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterRequest" } } } },
+        "responses": { "201": { "description": "Created" }, "400": { "description": "Validation failed" } }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login (public)",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } } },
+        "responses": { "200": { "description": "OK" }, "401": { "description": "Invalid credentials" } }
+      }
+    },
+  "/buildings": {
+      "get": {
+        "summary": "List building types",
+        "responses": {
+          "200": { "description": "List of buildings" }
+        }
+      },
+      "post": {
+        "summary": "Create building (admin)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BuildingCreate" } } } },
+        "responses": { "201": { "description": "Created" }, "400": { "description": "Validation failed" } }
+      }
+    },
+    "/buildings/{id}": {
+  "get": { "summary": "Get building", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "Building" }, "404": { "description": "Not found" } } },
+  "patch": { "summary": "Update building (admin)", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BuildingUpdate" } } } }, "responses": { "200": { "description": "Updated" } } },
+  "delete": { "summary": "Delete building (admin)", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "204": { "description": "Deleted" } } }
+    },
+    "/buildings/cities/{cityId}": {
+      "get": { "summary": "List placed buildings in a city", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "List" } } },
+      "post": { "summary": "Place building in city", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } }], "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CityPlacementCreate" } } } }, "responses": { "201": { "description": "Created" } } }
+    },
+    "/buildings/cities/{cityId}/{id}": {
+      "patch": { "summary": "Update city placement", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } }, { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CityPlacementCreate" } } } }, "responses": { "200": { "description": "Updated" } } },
+      "delete": { "summary": "Delete city placement", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } }, { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "204": { "description": "Deleted" } } }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Building": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "file": { "type": "string" },
+          "category": { "type": "string" },
+          "footprint": { "type": "object", "properties": { "width": { "type": "integer" }, "height": { "type": "integer" } } },
+          "stats": { "type": "object" }
+        }
+      },
+      "BuildingCreate": {
+        "type": "object",
+        "required": ["name","sizeX","sizeY","blocks"],
+        "properties": {
+          "name": { "type": "string" },
+          "file": { "type": "string" },
+          "categoryId": { "type": "integer" },
+          "categoryName": { "type": "string" },
+          "sizeX": { "type": "integer" },
+          "sizeY": { "type": "integer" },
+          "blocks": { "type": "integer" },
+          "employs": { "type": "integer" },
+          "houses": { "type": "integer" }
+        }
+      },
+      "BuildingUpdate": { "allOf": [{ "$ref": "#/components/schemas/BuildingCreate" }], "additionalProperties": true },
+      "CityPlacementCreate": { "type": "object", "required": ["buildingId"], "properties": { "buildingId": { "type": "integer" }, "gx": { "type": "integer" }, "gy": { "type": "integer" }, "quantity": { "type": "integer" } } }
+    }
+    ,
+    "RegisterRequest": {
+      "type": "object",
+      "required": ["name","email","password"],
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "password": { "type": "string" }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "required": ["email","password"],
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "password": { "type": "string" }
+      }
+    },
+    "AuthResponse": {
+      "type": "object",
+      "properties": { "token": { "type": "string" }, "user": { "$ref": "#/components/schemas/Building" } }
+    }
+  ,
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your JWT Bearer token in the format: Bearer <token>"
+      }
+    }
+  }
+}
