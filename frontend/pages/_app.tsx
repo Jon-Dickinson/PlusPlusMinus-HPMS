@@ -5,7 +5,11 @@ const GlobalStyle = createGlobalStyle`
   *::before, 
   *::after { box-sizing: border-box; }
 
-  html, body, #__next { height: 100%; }
+  html, body, #__next {
+   height: 100%;
+   width: 100%;
+   overflow-x: hidden;
+   }
 
   body {
     margin: 0;

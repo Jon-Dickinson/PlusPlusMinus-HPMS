@@ -1,11 +1,95 @@
 import React, { useEffect, useState } from 'react'
 import MainTemplate from '../templates/MainTemplate'
+import CityMap from '../components/organisms/CityMap'
+import styled from 'styled-components'
 import { useAuth } from '../context/AuthContext'
 import axios from '../lib/axios'
+
+const MapWrap = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+   width: 100%;
+  height: 100%;
+`
+
+const Panel = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  z-index: 2;
+  height: 100%;
+  max-height: 180px;
+  width: 100%;
+  padding: 20px;
+  border-top: 1px solid #111;
+  background-color: #f8f8f8;
+`
+
+const MapPanel = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+`
+
+const SliderContainer = styled.div`
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: 1200;
+  overflow: visible;
+`
+
+const SliderLabel = styled.div`
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 12px;
+  margin-bottom: 8px;
+`
+
+const VerticalRange = styled.input.attrs({ type: 'range' })`
+  transform: rotate(-90deg);
+  transform-origin: center;
+  width: 160px;
+  height: 28px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  overflow: visible;
+
+  &::-webkit-slider-runnable-track { height: 6px; background: #e1e1e1; border-radius: 3px }
+  &::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #004AEE; border-radius: 50%; margin-top: -5px; border: none }
+
+  &::-moz-range-track { height: 6px; background: #e1e1e1; border-radius: 3px }
+  &::-moz-range-thumb { width: 16px; height: 16px; background: #004AEE; border-radius: 50%; border: none }
+
+  &:focus { outline: none }
+`
 
 export default function Dashboard() {
   const { user } = useAuth()
   const [serverTime, setServerTime] = useState<string | null>(null)
+  const [scale, setScale] = useState<number>(1)
 
   useEffect(() => {
     // example call to backend
@@ -14,12 +98,29 @@ export default function Dashboard() {
 
   return (
     <MainTemplate>
-      <div style={{ padding: 20 }}>
-        <h1>Dashboard</h1>
-        <p>Welcome, {user?.name ?? 'Guest'}</p>
-        <p>Your roles: {user?.roles?.map((r) => r.role.name).join(', ')}</p>
-        <p>Last check: {serverTime ?? '—'}</p>
-      </div>
+      <MapWrap>
+       
+       
+        <MapPanel>
+          {user && <CityMap scale={scale} />}
+        </MapPanel>
+        {/* Slider placed in the dashboard (parent) so it can be fixed to viewport */}
+        <SliderContainer>
+          
+          <VerticalRange
+            min={50}
+            max={150}
+            step={1}
+            value={Math.round(scale * 100)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScale(Number(e.currentTarget.value) / 100)}
+            aria-label="Map scale"
+          />
+        </SliderContainer>
+         <Panel>
+          
+        </Panel>
+      </MapWrap>
     </MainTemplate>
   )
 }
+
