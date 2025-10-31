@@ -6,12 +6,24 @@ import { useAuth } from '../../context/AuthContext'
 import { useRouter } from 'next/router'
 // import Spinner from '../atoms/Spinner'
 
+const Page = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/bg.png'), linear-gradient(180deg, #e6f0ff 0%, #f8fafc 100%);
+  background-size: cover, auto;
+  background-position: center center, center;
+`
+
 const Wrap = styled.div`
+  width: 100%;
   max-width: 420px;
-  margin: 80px auto;
-  background: white;
+  margin: 32px;
+  background: rgba(255,255,255,0.95);
   padding: 24px;
   border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(15,23,42,0.08);
 `
 
 export default function LoginForm() {
@@ -39,7 +51,8 @@ export default function LoginForm() {
   }
 
   return (
-    <Wrap>
+    <Page>
+      <Wrap>
       <h2>Sign in</h2>
       <form onSubmit={onSubmit}>
         <div style={{ marginBottom: 12 }}>
@@ -60,7 +73,8 @@ export default function LoginForm() {
           )}
         </Button>
       </form>
-    </Wrap>
+      </Wrap>
+    </Page>
   )
 }
 

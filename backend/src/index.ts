@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.route.js'; // FIX: Added .js extension
 import userRoutes from './routes/user.route.js'; // FIX: Added .js extension
 import buildingRoutes from './routes/building.route.js'
 import docsRoutes from './routes/docs.route.js'
+import cityRoutes from './routes/city.route.js'
 import { verifyToken } from './middleware/auth.middleware.js';
 import errorHandler from './middleware/error.middleware.js'
 import requestIdMiddleware from './middleware/requestId.middleware.js'
@@ -61,6 +62,9 @@ app.use('/users', verifyToken, userRoutes);
 
 // 5. Building routes (public master data + protected city placement endpoints)
 app.use('/buildings', buildingRoutes);
+
+// 6. City placement API (alternative path used by frontend)
+app.use('/api/cities', cityRoutes)
 
 // Swagger UI docs
 app.use('/docs', docsRoutes)

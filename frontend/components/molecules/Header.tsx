@@ -2,13 +2,20 @@ import React from 'react'
 import styled from 'styled-components'
 import { useAuth } from '../../context/AuthContext'
 
-const Wrap = styled.header`
+const Root = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 1000;
   background: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  box-shadow: 0 1px 4px rgba(15,23,42,0.06);
+  background-color: #ffffff;
+  border-bottom: 1px solid #111111;
 `
 
 const Info = styled.div`
@@ -20,8 +27,8 @@ const Info = styled.div`
 export default function Header() {
   const { user, logout } = useAuth()
   return (
-    <Wrap>
-      <div>PlusPlusMinus</div>
+    <Root>
+      <Logo src="/logo.svg" alt="PlusPlusMinus" />
       <Info>
         {user ? (
           <>
@@ -33,6 +40,12 @@ export default function Header() {
           <div>Guest</div>
         )}
       </Info>
-    </Wrap>
+    </Root>
   )
 }
+
+const Logo = styled.img`
+  height: 40px;
+  width: auto;
+  display: block;
+` 

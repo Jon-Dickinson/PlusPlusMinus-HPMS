@@ -1,0 +1,203 @@
+[
+  {
+    "name": "Government Building",
+    "file": "/assets/buildings/government-building.png",
+    "category": "Government",
+    "size": "7 × 5 – 30 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 200,
+      "powerUsage": 200
+    }
+  },
+  {
+    "name": "Power Station 1",
+    "file": "/assets/buildings/power-station-1.png",
+    "category": "Utility",
+    "size": "3 × 3 – 9 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 200,
+      "powerOutput": 1000
+    }
+  },
+  {
+    "name": "Power Station 2",
+    "file": "/assets/buildings/power-station-2.png",
+    "category": "Utility",
+    "size": "4 × 4 – 16 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 200,
+      "powerOutput": 1500
+    }
+  },
+  {
+    "name": "Marketplace",
+    "file": "/assets/buildings/marketplace.png",
+    "category": "Commercial",
+    "size": "5 × 6 – 30 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 200,
+      "powerUsage": 200
+    }
+  },
+  {
+    "name": "Factory 1",
+    "file": "/assets/buildings/factory-type-1.png",
+    "category": "Industrial",
+    "size": "4 × 4 – 16 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 200,
+      "powerUsage": 300
+    }
+  },
+  {
+    "name": "Factory 2",
+    "file": "/assets/buildings/factory-type-2.png",
+    "category": "Industrial",
+    "size": "3 × 3 – 9 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 100,
+      "powerUsage": 200
+    }
+  },
+  {
+    "name": "Factory 3",
+    "file": "/assets/buildings/factory-type-3.png",
+    "category": "Industrial",
+    "size": "4 × 4 – 16 blocks",
+    "stats": {
+      "employs": 250,
+      "waterUsage": 200,
+      "powerUsage": 400
+    }
+  },
+  {
+    "name": "Emergency Services 1",
+    "file": "/assets/buildings/emergency-services-building-1.png",
+    "category": "Infrastructure",
+    "size": "4 × 4 – 16 blocks",
+    "stats": {
+      "employs": 100,
+      "services": 500,
+      "waterUsage": 100,
+      "powerUsage": 200
+    }
+  },
+  {
+    "name": "Emergency Services 2",
+    "file": "/assets/buildings/emergency-services-building-2.png",
+    "category": "Infrastructure",
+    "size": "3 × 3 – 9 blocks",
+    "stats": {
+      "employs": 50,
+      "services": 300,
+      "waterUsage": 100,
+      "powerUsage": 200
+    }
+  },
+  {
+    "name": "Emergency Services 3",
+    "file": "/assets/buildings/emergency-services-building-3.png",
+    "category": "Infrastructure",
+    "size": "2 × 2 – 4 blocks",
+    "stats": {
+      "employs": 50,
+      "services": 200,
+      "waterUsage": 100,
+      "powerUsage": 100
+    }
+  },
+  {
+    "name": "Office",
+    "file": "/assets/buildings/office.png",
+    "category": "Commercial",
+    "size": "3 × 3 – 9 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 100,
+      "powerUsage": 100
+    }
+  },
+  {
+    "name": "Dense Residential",
+    "file": "/assets/buildings/dense-residential.png",
+    "category": "Residential",
+    "size": "5 × 5 – 25 blocks",
+    "stats": {
+      "houses": 500,
+      "waterUsage": 500,
+      "powerUsage": 1000
+    }
+  },
+  {
+    "name": "Residential 2",
+    "file": "/assets/buildings/residential-building-2.png",
+    "category": "Residential",
+    "size": "2 × 4 – 8 blocks",
+    "stats": {
+      "houses": 100,
+      "waterUsage": 100,
+      "powerUsage": 100
+    }
+  },
+  {
+    "name": "Residential 3",
+    "file": "/assets/buildings/residential-building-3.png",
+    "category": "Residential",
+    "size": "4 × 3 – 12 blocks",
+    "stats": {
+      "houses": 20,
+      "waterUsage": 20,
+      "powerUsage": 50
+    }
+  },
+  {
+    "name": "Residential 4",
+    "file": "/assets/buildings/residential-building-4.png",
+    "category": "Residential",
+    "size": "3 × 3 – 9 blocks",
+    "stats": {
+      "houses": 50,
+      "waterUsage": 100,
+      "powerUsage": 100
+    }
+  },
+  {
+    "name": "Farm 1",
+    "file": "/assets/buildings/farm-type-1.png",
+    "category": "Agricultural",
+    "size": "4 × 4 – 16 blocks",
+    "stats": {
+      "employs": 200,
+      "waterUsage": 300,
+      "feeds": 1000
+    }
+  },
+  {
+    "name": "Farm 2",
+    "file": "/assets/buildings/farm-type-2.png",
+    "category": "Agricultural",
+    "size": "4 × 4 – 16 blocks",
+    "stats": {
+      "employs": 100,
+      "waterUsage": 200,
+      "feeds": 500
+    }
+  },
+  {
+    "name": "Water Pump",
+    "file": "/assets/buildings/water-pump.png",
+    "category": "Utility",
+    "size": "2 × 4 – 8 blocks",
+    "stats": {
+      "employs": 50,
+      "waterOutput": 1000,
+      "powerUsage": 100
+    }
+  }
+]
