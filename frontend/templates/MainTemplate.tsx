@@ -1,6 +1,9 @@
+'use client'
+
 import React from 'react'
 import Header from '../components/molecules/Header'
 import styled from 'styled-components'
+import DndShell from '../components/molecules/DndShell'
 
 const Root = styled.div`
   position: relative;
@@ -23,7 +26,9 @@ export default function MainTemplate({ children }: { children: React.ReactNode }
   return (
     <Root>
       <Header />
-      <Dashboard>{children}</Dashboard>
+      <DndShell>
+        <Dashboard>{children}</Dashboard>
+      </DndShell>
     </Root>
   )
 }

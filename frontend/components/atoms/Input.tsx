@@ -1,11 +1,59 @@
 import styled from 'styled-components'
 
 const Input = styled.input`
-  padding: 8px 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  position: relative;
   width: 100%;
-  box-sizing: border-box;
+  display: inline-flex;
+  padding: 0 12px;
+  min-height: 38px;
+  height: 38px;
+  margin-bottom: 10px;
+  background: #ffffff !important;
+  border-radius: 3px;
+  border: 1px solid #a8a8a8ff;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  &[type="text"],
+  &[type="email"],
+  &[type="password"],
+  &[type="search"],
+  &[type="url"] {
+    background: #ffffff !important;
+  }
+
+
+  /* Hide Edge/IE clear and reveal buttons */
+  &::-ms-clear,
+  &::-ms-reveal {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* Placeholder compatibility */
+  &::-ms-input-placeholder {
+    color: #6b7280;
+    opacity: 1;
+  }
+  &::-webkit-input-placeholder {
+    color: #6b7280;
+    opacity: 1;
+  }
+  &::-moz-placeholder {
+    color: #6b7280;
+    opacity: 1;
+  }
+  
+  /* Remove focus styles entirely (no outline/box-shadow) */
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+    
 `
 
 export default Input

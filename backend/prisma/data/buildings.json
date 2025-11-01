@@ -103,7 +103,7 @@
   },
   {
     "name": "Dense Residential",
-    "file": "/assets/buildings/dense-residential.png",
+    "file": "/blocks/commercial.png",
     "category": "Residential",
     "size": "5 × 5 – 25 blocks",
     "houses": 500,
