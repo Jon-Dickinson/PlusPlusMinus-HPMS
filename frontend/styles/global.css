@@ -1,0 +1,51 @@
+*, *::before, *::after {
+  box-sizing: border-box !important;
+}
+
+html, body, #__next {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 14px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px white inset;
+    background-color: transparent !important;
+    -webkit-text-fill-color: #000 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .hide--under-768 {
+    display: none !important;
+  }
+}
+
+/* small bounce animation for grid cells when a building is dropped */
+@keyframes cell-bounce {
+  0% { transform: translateY(0); }
+  30% { transform: translateY(-6px) scale(1.02); }
+  100% { transform: translateY(0); }
+}
+.cell-bounce {
+  animation: cell-bounce 360ms ease;
+}
+
+.cursor-move {
+  cursor: move;
+}

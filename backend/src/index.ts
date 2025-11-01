@@ -23,6 +23,13 @@ app.use(cors({ origin: ['http://localhost:3001'], credentials: true }));
 // attach request id early
 app.use(requestIdMiddleware)
 
+// Simple request logger to help debug 404s and routing during development
+app.use((req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.log('[req]', req.method, req.originalUrl)
+  next()
+})
+
 // --- ROUTES ---
 
 // 1. Root Status

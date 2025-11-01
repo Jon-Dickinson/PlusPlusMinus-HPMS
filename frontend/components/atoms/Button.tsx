@@ -4,8 +4,10 @@ const Button = styled.button`
   background: ${(p: any) => p.theme.colors.primary};
   color: white;
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 0 15px;
+  min-height: 32px;
+  height: 32px;
+  border-radius: 3px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;

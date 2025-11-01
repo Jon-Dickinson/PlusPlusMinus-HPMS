@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import GridMap from '../organisms/GridMap'
+// Grid overlay inlined from previous GridMap component (removed redundancy)
 import BuildingMarker from './BuildingMarker'
 
 type Building = { name?: string; file?: string }
@@ -30,7 +30,7 @@ export default function MapView({
 
   return (
     <Scale $scale={scale}>
-      <GridMap />
+      <GridOverlay />
       <PlacementBounds $w={areaW} $h={areaH} />
       <GridCells $cols={gridCols} $rows={gridRows} $w={areaW} $h={areaH}>
         {cells.map((_, i) => <Cell key={i} />)}
@@ -53,6 +53,22 @@ const Scale = styled.div<{ $scale: number }>`
   height: 420px;
   overflow: visible;
 `
+
+const GridOverlay = styled.div`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  width: 100%;
+  height:  540px;
+  background-size: contain;
+  background-image: url('/grid.svg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  pointer-events: none;
+  user-select: none;
+`;
 
 /* Slider UI has been moved to the parent container (e.g. CityMap or Dashboard).
    MapView only accepts a `scale` prop to control the visual scale. */

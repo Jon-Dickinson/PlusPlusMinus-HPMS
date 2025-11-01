@@ -1,30 +1,91 @@
 import React, { useState } from 'react'
+import Row from '../atoms/Blocks'
 import Input from '../atoms/Input'
 import Button from '../atoms/Button'
 import styled from 'styled-components'
 import { useAuth } from '../../context/AuthContext'
 import { useRouter } from 'next/router'
-// import Spinner from '../atoms/Spinner'
+import Spinner from '../atoms/Spinner'
 
-const Page = styled.div`
-  min-height: 100vh;
+const Root = styled.div`
+  position: relative;
+  height: 100%;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url('/bg.png'), linear-gradient(180deg, #e6f0ff 0%, #f8fafc 100%);
-  background-size: cover, auto;
-  background-position: center center, center;
+  background-color: #ffffff;
+
+   @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `
 
-const Wrap = styled.div`
+const Form = styled.div`
+  position: relative;
+  display: inline-flex;
   width: 100%;
-  max-width: 420px;
-  margin: 32px;
-  background: rgba(255,255,255,0.95);
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 6px 24px rgba(15,23,42,0.08);
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+  
+  input:focus,
+  textarea:focus,
+  select:focus,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 `
+
+
+const Panel = styled.div`
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+
+  img {
+    width: 100%;
+    max-width: 500px;  /* maximum size on large screens */
+    height: auto;
+    object-fit: contain;
+    transition: width 0.3s ease, max-width 0.3s ease;
+  }
+
+  @media (max-width: 900px) {
+    img {
+      max-width: 400px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    img {
+      display: none;
+    }
+  }
+
+`;
+
+
+const ErrorMsg = styled.div`
+  color: #b91c1c;
+  margin: 8px 0 12px 0;
+`
+
+const ButtonContent = styled.div`
+  display: inline-flex;
+  align-items: center;
+`
+
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -51,39 +112,43 @@ export default function LoginForm() {
   }
 
   return (
-    <Page>
-      <Wrap>
+    <Root>
+       <Panel className="hide--under-768">
+              <img className="flex-1" src="/login-asset.svg" alt="Building Blocks"/>
+      </Panel>
+     <Form>
+
+    
       <h2>Sign in</h2>
       <form onSubmit={onSubmit}>
-        <div style={{ marginBottom: 12 }}>
-          <Input disabled={loading} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <Input disabled={loading} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-        </div>
-        {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
+         
+        <Input disabled={loading} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+      
+        <Input disabled={loading} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+        
+        <Row justify="end"> 
+          {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
         <Button type="submit" disabled={loading} aria-busy={loading}>
           {loading ? (
             <ButtonContent>
-              {/* <Spinner size={16} /> */}
+              <Spinner size={16} />
               <span style={{ marginLeft: 8 }}>Signing in…</span>
             </ButtonContent>
-          ) : (
-            'Sign in'
-          )}
-        </Button>
+              ) : (
+                'Sign in'
+              )}
+            </Button>
+        </Row>
+
+         
+
+        
+       
       </form>
-      </Wrap>
-    </Page>
+      </Form>
+
+     
+
+    </Root>
   )
 }
-
-const ErrorMsg = styled.div`
-  color: #b91c1c;
-  margin: 8px 0 12px 0;
-`
-
-const ButtonContent = styled.div`
-  display: inline-flex;
-  align-items: center;
-`

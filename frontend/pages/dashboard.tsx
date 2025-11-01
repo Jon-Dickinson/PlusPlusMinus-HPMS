@@ -4,30 +4,31 @@ import CityMap from '../components/organisms/CityMap'
 import styled from 'styled-components'
 import { useAuth } from '../context/AuthContext'
 import axios from '../lib/axios'
+import BuildingSidebar from '../components/organisms/BuildingSidebar'
+import { CityProvider } from '../components/organisms/CityContext'
+import Link from 'next/link'
+import StatsPanel from '../components/organisms/StatsPanel'
 
 const MapWrap = styled.div`
   position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-   width: 100%;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: stretch;
+  width: 100%;
   height: 100%;
 `
 
-const Panel = styled.div`
+const RightColumn = styled.div`
   position: relative;
+  padding-top: 100px;
+  right: 0;
+  width: 500px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  z-index: 2;
-  height: 100%;
-  max-height: 180px;
-  width: 100%;
-  padding: 20px;
-  border-top: 1px solid #111;
-  background-color: #f8f8f8;
+  border-left: 1px solid #e5e7eb;
+  box-sizing: border-box;
 `
 
 const MapPanel = styled.div`
@@ -55,13 +56,6 @@ const SliderContainer = styled.div`
   pointer-events: auto;
   z-index: 1200;
   overflow: visible;
-`
-
-const SliderLabel = styled.div`
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 12px;
-  margin-bottom: 8px;
 `
 
 const VerticalRange = styled.input.attrs({ type: 'range' })`
@@ -99,26 +93,34 @@ export default function Dashboard() {
   return (
     <MainTemplate>
       <MapWrap>
-       
-       
-        <MapPanel>
-          {user && <CityMap scale={scale} />}
-        </MapPanel>
-        {/* Slider placed in the dashboard (parent) so it can be fixed to viewport */}
-        <SliderContainer>
-          
-          <VerticalRange
-            min={50}
-            max={150}
-            step={1}
-            value={Math.round(scale * 100)}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScale(Number(e.currentTarget.value) / 100)}
-            aria-label="Map scale"
-          />
-        </SliderContainer>
-         <Panel>
-          
-        </Panel>
+        <CityProvider>
+         
+          <RightColumn>
+            <StatsPanel />
+          </RightColumn>
+           <BuildingSidebar />
+          <MapPanel>
+            {user && <CityMap scale={scale} />}
+          </MapPanel>
+         
+
+          <SliderContainer>
+            
+            <VerticalRange
+              min={50}
+              max={150}
+              step={1}
+              value={Math.round(scale * 100)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScale(Number(e.currentTarget.value) / 100)}
+              aria-label="Map scale"
+            />
+
+          </SliderContainer>
+
+        
+
+        
+        </CityProvider>
       </MapWrap>
     </MainTemplate>
   )
