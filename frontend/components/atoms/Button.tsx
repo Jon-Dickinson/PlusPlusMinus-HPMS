@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const Button = styled.button`
   background: ${(p: any) => p.theme.colors.primary};
@@ -16,6 +16,6 @@ const Button = styled.button`
     opacity: 0.6;
     cursor: not-allowed;
   }
-`
+`;
 
-export default Button
+export default Button;

@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Header from '../components/molecules/Header'
-import styled from 'styled-components'
-import DndShell from '../components/molecules/DndShell'
+import React from 'react';
+import Header from '../components/molecules/Header';
+import styled from 'styled-components';
+import DndShell from '../components/molecules/DndShell';
 
 const Root = styled.div`
   position: relative;
@@ -11,7 +11,7 @@ const Root = styled.div`
   flex-direction: column;
   width: 100%;
   height: 100%;
-`
+`;
 
 const Dashboard = styled.div`
   position: relative;
@@ -20,7 +20,7 @@ const Dashboard = styled.div`
   width: 100%;
   height: 100%;
   background-color: #ffffff;
-`
+`;
 
 export default function MainTemplate({ children }: { children: React.ReactNode }) {
   return (
@@ -30,5 +30,5 @@ export default function MainTemplate({ children }: { children: React.ReactNode }
         <Dashboard>{children}</Dashboard>
       </DndShell>
     </Root>
-  )
+  );
 }

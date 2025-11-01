@@ -6,6 +6,6 @@ const theme = {
     muted: '#6B7280',
   },
   spacing: (n: number) => `${n * 8}px`,
-}
+};
 
-export default theme
+export default theme;

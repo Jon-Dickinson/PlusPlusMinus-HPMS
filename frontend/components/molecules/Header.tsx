@@ -1,6 +1,6 @@
-import React from 'react'
-import styled from 'styled-components'
-import { useAuth } from '../../context/AuthContext'
+import React from 'react';
+import styled from 'styled-components';
+import { useAuth } from '../../context/AuthContext';
 
 const Root = styled.header`
   position: fixed;
@@ -16,16 +16,16 @@ const Root = styled.header`
   padding: 12px 20px;
   background-color: #ffffff;
   border-bottom: 1px solid #111111;
-`
+`;
 
 const Info = styled.div`
   display: flex;
   gap: 12px;
   align-items: center;
-`
+`;
 
 export default function Header() {
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth();
   return (
     <Root>
       <Logo src="/logo.svg" alt="PlusPlusMinus" />
@@ -41,11 +41,11 @@ export default function Header() {
         )}
       </Info>
     </Root>
-  )
+  );
 }
 
 const Logo = styled.img`
   height: 40px;
   width: auto;
   display: block;
-` 
+`;
