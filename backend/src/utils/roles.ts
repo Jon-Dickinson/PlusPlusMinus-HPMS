@@ -10,7 +10,10 @@ export async function getDescendantStructures(rootId: number) {
   const results: number[] = [];
   async function recurse(id: number) {
     results.push(id);
-    const children = await prisma.structure.findMany({ where: { parentId: id }, select: { id: true } });
+    const children = await prisma.structure.findMany({
+      where: { parentId: id },
+      select: { id: true },
+    });
     for (const c of children) await recurse(c.id);
   }
   await recurse(rootId);

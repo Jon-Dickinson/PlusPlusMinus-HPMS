@@ -13,11 +13,13 @@ async function seed() {
   const roleNames = ['ADMIN', 'CITY', 'GUEST'];
   for (const name of roleNames) {
     const scopeLevel = name === 'ADMIN' ? 'NATIONAL' : name === 'CITY' ? 'CITY' : 'SUBURB';
-    await prisma.role.upsert({
-      where: { name },
-      update: {},
-      create: { name, scopeLevel },
-    }).catch(() => {});
+    await prisma.role
+      .upsert({
+        where: { name },
+        update: {},
+        create: { name, scopeLevel },
+      })
+      .catch(() => {});
   }
 
   // Structures and assets might exist already in the monolithic seed; keep minimal compatibility
@@ -27,7 +29,11 @@ async function seed() {
   const categoryMap = await seedCategories(prisma, buildingJson as any[]);
 
   // Buildings
-  const buildings = await seedBuildings(prisma, buildingJson as any[], categoryMap as Record<string, any>);
+  const buildings = await seedBuildings(
+    prisma,
+    buildingJson as any[],
+    categoryMap as Record<string, any>,
+  );
 
   // Create a seed city if not exists
   let city = await prisma.city.findFirst({ where: { name: 'Seed City' } });

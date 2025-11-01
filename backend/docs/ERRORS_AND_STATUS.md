@@ -17,7 +17,7 @@ Example:
 {
   "error": "Validation failed",
   "code": "VALIDATION_FAILED",
-  "details": [ { "path": ["name"], "message": "Required" } ]
+  "details": [{ "path": ["name"], "message": "Required" }]
 }
 ```
 
@@ -56,9 +56,7 @@ Example response for Zod error:
 {
   "error": "Validation failed",
   "code": "VALIDATION_FAILED",
-  "details": [
-    { "path": ["sizeX"], "message": "Expected number", "code": "invalid_type" }
-  ]
+  "details": [{ "path": ["sizeX"], "message": "Expected number", "code": "invalid_type" }]
 }
 ```
 
@@ -68,19 +66,19 @@ Recommendation: implement and use a small ApiError helper in server code to thro
 
 ```ts
 class ApiError extends Error {
-  status: number
-  code?: string
-  details?: any
+  status: number;
+  code?: string;
+  details?: any;
   constructor(status: number, message: string, code?: string, details?: any) {
-    super(message)
-    this.status = status
-    this.code = code
-    this.details = details
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.details = details;
   }
 }
 
 // Usage in a controller:
-if (!resource) throw new ApiError(404, 'Building not found', 'NOT_FOUND')
+if (!resource) throw new ApiError(404, 'Building not found', 'NOT_FOUND');
 ```
 
 The global error middleware should detect `instanceof ApiError` and use its `status`, `code`, and `details` to construct the response.
@@ -119,7 +117,9 @@ HTTP 401
 - Consider adding `requestId` to responses for correlating logs.
 
 ---
+
 Document created to standardize error handling across backend and frontend. If you want, I can:
+
 - Add the `ApiError` class and wire controllers to use it.
 - Add requestId middleware and attach it to logs and error responses.
 - Add unit tests to assert middleware behavior.

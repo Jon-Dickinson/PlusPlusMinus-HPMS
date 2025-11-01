@@ -5,7 +5,13 @@ import { prisma } from '../db.js';
 const JWT_SECRET = process.env.JWT_SECRET || 'please_change_me';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-type RegisterInput = { name: string; email: string; password: string; roleName?: string; structureId?: number | null };
+type RegisterInput = {
+  name: string;
+  email: string;
+  password: string;
+  roleName?: string;
+  structureId?: number | null;
+};
 
 export async function registerUser(input: RegisterInput) {
   const { name, email, password, roleName, structureId } = input;
@@ -51,7 +57,9 @@ async function generateTokenForUser(userId: number) {
   const roleNames = roles.map((r: { role: { name: string } }) => r.role.name);
 
   const payload = { sub: userId, roles: roleNames };
-  const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as unknown as SignOptions['expiresIn'] };
+  const signOptions: SignOptions = {
+    expiresIn: JWT_EXPIRES_IN as unknown as SignOptions['expiresIn'],
+  };
   const token = jwt.sign(payload as Record<string, unknown>, JWT_SECRET as Secret, signOptions);
   return token;
 }

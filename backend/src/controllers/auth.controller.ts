@@ -8,10 +8,20 @@ export const register: RequestHandler = async (req, res) => {
 
     const parsedStructureId = structureId != null ? Number(structureId) : undefined;
 
-    const { user, token } = await authService.registerUser({ name, email, password, roleName, structureId: parsedStructureId });
-    return res.status(201).json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    const { user, token } = await authService.registerUser({
+      name,
+      email,
+      password,
+      roleName,
+      structureId: parsedStructureId,
+    });
+    return res
+      .status(201)
+      .json({ user: { id: user.id, name: user.name, email: user.email }, token });
   } catch (err) {
-    return res.status(400).json({ error: err instanceof Error ? err.message : 'Registration failed' });
+    return res
+      .status(400)
+      .json({ error: err instanceof Error ? err.message : 'Registration failed' });
   }
 };
 
@@ -23,6 +33,8 @@ export const login: RequestHandler = async (req, res) => {
     const { user, token } = await authService.authenticateUser(email, password);
     return res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
   } catch (err) {
-    return res.status(401).json({ error: err instanceof Error ? err.message : 'Authentication failed' });
+    return res
+      .status(401)
+      .json({ error: err instanceof Error ? err.message : 'Authentication failed' });
   }
 };
