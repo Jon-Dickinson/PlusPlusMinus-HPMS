@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const Input = styled.input`
   position: relative;
@@ -16,14 +16,13 @@ const Input = styled.input`
   -moz-appearance: none;
   appearance: none;
 
-  &[type="text"],
-  &[type="email"],
-  &[type="password"],
-  &[type="search"],
-  &[type="url"] {
+  &[type='text'],
+  &[type='email'],
+  &[type='password'],
+  &[type='search'],
+  &[type='url'] {
     background: #ffffff !important;
   }
-
 
   /* Hide Edge/IE clear and reveal buttons */
   &::-ms-clear,
@@ -46,14 +45,13 @@ const Input = styled.input`
     color: #6b7280;
     opacity: 1;
   }
-  
+
   /* Remove focus styles entirely (no outline/box-shadow) */
   &:focus,
   &:focus-visible {
     outline: none !important;
     box-shadow: none !important;
   }
-    
-`
+`;
 
-export default Input
+export default Input;

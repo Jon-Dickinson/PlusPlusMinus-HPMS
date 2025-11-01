@@ -39,15 +39,13 @@
  * This visually links each draggable building with its contribution to city stats in real time.
  */
 
+'use client';
 
-
-'use client'
-
-import buildings from '../../data/buildings.json'
-import { useDrag } from 'react-dnd'
-import { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { useCity } from './CityContext'
+import buildings from '../../data/buildings.json';
+import { useDrag } from 'react-dnd';
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { useCity } from './CityContext';
 
 const LeftColumn = styled.div`
   position: relative;
@@ -59,8 +57,7 @@ const LeftColumn = styled.div`
   align-items: center;
   flex-direction: column;
   border-right: 1px solid #e5e7eb;
-`
-
+`;
 
 const IconContainer = styled.div`
   position: relative;
@@ -71,18 +68,21 @@ const IconContainer = styled.div`
   height: 56px;
   padding: 6px 10px;
   border-radius: 8px;
-`
+`;
 
 function imageForBuilding(building: any) {
-  if (!building) return ''
-  if (building.icon) return building.icon
+  if (!building) return '';
+  if (building.icon) return building.icon;
   if ((building as any).file) {
-    const parts = (building as any).file.split('/')
-    const basename = parts[parts.length - 1]
-    return basename ? `/buildings/${basename}` : (building as any).file
+    const parts = (building as any).file.split('/');
+    const basename = parts[parts.length - 1];
+    return basename ? `/buildings/${basename}` : (building as any).file;
   }
-  const slug = (building.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-  return `/buildings/${slug}.svg`
+  const slug = (building.name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return `/buildings/${slug}.svg`;
 }
 
 export default function BuildingSidebar() {
@@ -92,20 +92,25 @@ export default function BuildingSidebar() {
         <DraggableBuilding key={b.id} building={b} />
       ))}
     </LeftColumn>
-  )
+  );
 }
 
 function DraggableBuilding({ building }: { building: any }) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   if (!mounted) {
     return (
       <div>
-        <img src={imageForBuilding(building)} alt={building.name} title={building.name} style={{ width: 40, height: 40 }} />
+        <img
+          src={imageForBuilding(building)}
+          alt={building.name}
+          title={building.name}
+          style={{ width: 40, height: 40 }}
+        />
       </div>
-    )
+    );
   }
-  return <DraggableBuildingClient building={building} />
+  return <DraggableBuildingClient building={building} />;
 }
 
 function DraggableBuildingClient({ building }: { building: any }) {
@@ -113,14 +118,14 @@ function DraggableBuildingClient({ building }: { building: any }) {
     type: 'BUILDING',
     item: { id: building.id },
     collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
-  }))
+  }));
   // read totals from context (re-renders when totals update)
-  const { totals } = useCity()
+  const { totals } = useCity();
 
   // pick the first resource key from the building definition (if any)
-  const resources = building.resources || {}
-  const resourceKey = Object.keys(resources)[0] || null
-  const displayValue = resourceKey ? (totals[resourceKey] || 0) : 0
+  const resources = building.resources || {};
+  const resourceKey = Object.keys(resources)[0] || null;
+  const displayValue = resourceKey ? totals[resourceKey] || 0 : 0;
 
   return (
     <IconContainer
@@ -134,14 +139,37 @@ function DraggableBuildingClient({ building }: { building: any }) {
       }}
     >
       {/* drag handle: only this element is draggable */}
-      <div ref={drag} style={{ width: 52, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'grab' }}>
-        <img src={imageForBuilding(building)} alt={building.name} style={{ width: 48, height: 48, objectFit: 'contain', display: 'block' }} />
+      <div
+        ref={drag}
+        style={{
+          width: 52,
+          height: 52,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'grab',
+        }}
+      >
+        <img
+          src={imageForBuilding(building)}
+          alt={building.name}
+          style={{ width: 48, height: 48, objectFit: 'contain', display: 'block' }}
+        />
       </div>
 
       {/* numeric total stays visible but is not part of the draggable handle */}
-      <div style={{ color: '#6b7280', fontSize: 12, minWidth: 36, textAlign: 'right', transition: 'all 160ms ease' }} aria-live="polite">
+      <div
+        style={{
+          color: '#6b7280',
+          fontSize: 12,
+          minWidth: 36,
+          textAlign: 'right',
+          transition: 'all 160ms ease',
+        }}
+        aria-live="polite"
+      >
         {displayValue}
       </div>
     </IconContainer>
-  )
+  );
 }

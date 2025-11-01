@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react'
-import MainTemplate from '../templates/MainTemplate'
-import CityMap from '../components/organisms/CityMap'
-import styled from 'styled-components'
-import { useAuth } from '../context/AuthContext'
-import axios from '../lib/axios'
-import BuildingSidebar from '../components/organisms/BuildingSidebar'
-import { CityProvider } from '../components/organisms/CityContext'
-import Link from 'next/link'
-import StatsPanel from '../components/organisms/StatsPanel'
+import React, { useEffect, useState } from 'react';
+import MainTemplate from '../templates/MainTemplate';
+import CityMap from '../components/organisms/CityMap';
+import styled from 'styled-components';
+import { useAuth } from '../context/AuthContext';
+import axios from '../lib/axios';
+import BuildingSidebar from '../components/organisms/BuildingSidebar';
+import { CityProvider } from '../components/organisms/CityContext';
+import Link from 'next/link';
+import StatsPanel from '../components/organisms/StatsPanel';
 
 const MapWrap = styled.div`
   position: relative;
@@ -17,7 +17,7 @@ const MapWrap = styled.div`
   justify-content: stretch;
   width: 100%;
   height: 100%;
-`
+`;
 
 const RightColumn = styled.div`
   position: relative;
@@ -29,7 +29,7 @@ const RightColumn = styled.div`
   flex-direction: column;
   border-left: 1px solid #e5e7eb;
   box-sizing: border-box;
-`
+`;
 
 const MapPanel = styled.div`
   position: relative;
@@ -40,7 +40,7 @@ const MapPanel = styled.div`
   height: 100%;
   width: 100%;
   padding: 20px;
-`
+`;
 
 const SliderContainer = styled.div`
   position: fixed;
@@ -56,7 +56,7 @@ const SliderContainer = styled.div`
   pointer-events: auto;
   z-index: 1200;
   overflow: visible;
-`
+`;
 
 const VerticalRange = styled.input.attrs({ type: 'range' })`
   transform: rotate(-90deg);
@@ -71,58 +71,76 @@ const VerticalRange = styled.input.attrs({ type: 'range' })`
   background: transparent;
   overflow: visible;
 
-  &::-webkit-slider-runnable-track { height: 6px; background: #e1e1e1; border-radius: 3px }
-  &::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #004AEE; border-radius: 50%; margin-top: -5px; border: none }
+  &::-webkit-slider-runnable-track {
+    height: 6px;
+    background: #e1e1e1;
+    border-radius: 3px;
+  }
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #004aee;
+    border-radius: 50%;
+    margin-top: -5px;
+    border: none;
+  }
 
-  &::-moz-range-track { height: 6px; background: #e1e1e1; border-radius: 3px }
-  &::-moz-range-thumb { width: 16px; height: 16px; background: #004AEE; border-radius: 50%; border: none }
+  &::-moz-range-track {
+    height: 6px;
+    background: #e1e1e1;
+    border-radius: 3px;
+  }
+  &::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #004aee;
+    border-radius: 50%;
+    border: none;
+  }
 
-  &:focus { outline: none }
-`
+  &:focus {
+    outline: none;
+  }
+`;
 
 export default function Dashboard() {
-  const { user } = useAuth()
-  const [serverTime, setServerTime] = useState<string | null>(null)
-  const [scale, setScale] = useState<number>(1)
+  const { user } = useAuth();
+  const [serverTime, setServerTime] = useState<string | null>(null);
+  const [scale, setScale] = useState<number>(1);
 
   useEffect(() => {
     // example call to backend
-    axios.instance.get('/buildings').then(() => setServerTime(new Date().toISOString())).catch(() => {})
-  }, [])
+    axios.instance
+      .get('/buildings')
+      .then(() => setServerTime(new Date().toISOString()))
+      .catch(() => {});
+  }, []);
 
   return (
     <MainTemplate>
       <MapWrap>
         <CityProvider>
-         
           <RightColumn>
             <StatsPanel />
           </RightColumn>
-           <BuildingSidebar />
-          <MapPanel>
-            {user && <CityMap scale={scale} />}
-          </MapPanel>
-         
+          <BuildingSidebar />
+          <MapPanel>{user && <CityMap scale={scale} />}</MapPanel>
 
           <SliderContainer>
-            
             <VerticalRange
               min={50}
               max={150}
               step={1}
               value={Math.round(scale * 100)}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScale(Number(e.currentTarget.value) / 100)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setScale(Number(e.currentTarget.value) / 100)
+              }
               aria-label="Map scale"
             />
-
           </SliderContainer>
-
-        
-
-        
         </CityProvider>
       </MapWrap>
     </MainTemplate>
-  )
+  );
 }
-

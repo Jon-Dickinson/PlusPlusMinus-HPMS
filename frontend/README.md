@@ -7,5 +7,6 @@ Usage:
 3. NEXT_PUBLIC_API_URL=http://localhost:3000 npm run dev
 
 Notes:
+
 - Basic auth flow: POST /auth/login returns { token, user }
 - Token is stored in localStorage and used by axios for subsequent requests

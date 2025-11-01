@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import React, { useState } from 'react';
+import styled from 'styled-components';
 // Grid overlay inlined from previous GridMap component (removed redundancy)
-import BuildingMarker from './BuildingMarker'
+import BuildingMarker from './BuildingMarker';
 
-type Building = { name?: string; file?: string }
-type Placement = { id?: number; buildingId: number; gx: number; gy: number }
-type RenderedItem = { p: Placement; b?: Building; isoX: number; isoY: number; imgSrc?: string }
+type Building = { name?: string; file?: string };
+type Placement = { id?: number; buildingId: number; gx: number; gy: number };
+type RenderedItem = { p: Placement; b?: Building; isoX: number; isoY: number; imgSrc?: string };
 
 export default function MapView({
   buildingsCount,
@@ -17,42 +17,52 @@ export default function MapView({
   onSelect,
   scale = 1,
 }: {
-  buildingsCount: number
-  gridCols: number
-  gridRows: number
-  areaW: number
-  areaH: number
-  rendered: RenderedItem[]
-  onSelect: (p: Placement) => void
-  scale?: number
+  buildingsCount: number;
+  gridCols: number;
+  gridRows: number;
+  areaW: number;
+  areaH: number;
+  rendered: RenderedItem[];
+  onSelect: (p: Placement) => void;
+  scale?: number;
 }) {
-  const cells = Array.from({ length: gridCols * gridRows })
+  const cells = Array.from({ length: gridCols * gridRows });
 
   return (
     <Scale $scale={scale}>
       <GridOverlay />
       <PlacementBounds $w={areaW} $h={areaH} />
       <GridCells $cols={gridCols} $rows={gridRows} $w={areaW} $h={areaH}>
-        {cells.map((_, i) => <Cell key={i} />)}
+        {cells.map((_, i) => (
+          <Cell key={i} />
+        ))}
       </GridCells>
       <MapArea>
         {rendered.map(({ p, b, isoX, isoY, imgSrc }) => (
-          <BuildingMarker key={p.id ?? `${p.buildingId}-${p.gx}-${p.gy}`} p={p} b={b} isoX={isoX} isoY={isoY} imgSrc={imgSrc} onClick={onSelect} />
+          <BuildingMarker
+            key={p.id ?? `${p.buildingId}-${p.gx}-${p.gy}`}
+            p={p}
+            b={b}
+            isoX={isoX}
+            isoY={isoY}
+            imgSrc={imgSrc}
+            onClick={onSelect}
+          />
         ))}
       </MapArea>
     </Scale>
-  )
+  );
 }
 
 const Scale = styled.div<{ $scale: number }>`
   position: relative;
   left: 50%;
   top: 50%;
-  transform: ${(p) => `translate(-50%, -50%) scale(${p.$scale})`} ;
+  transform: ${(p) => `translate(-50%, -50%) scale(${p.$scale})`};
   width: 100%;
   height: 420px;
   overflow: visible;
-`
+`;
 
 const GridOverlay = styled.div`
   position: absolute;
@@ -61,7 +71,7 @@ const GridOverlay = styled.div`
   transform: translate(-50%, -50%);
   z-index: -1;
   width: 100%;
-  height:  540px;
+  height: 540px;
   background-size: contain;
   background-image: url('/grid.svg');
   background-repeat: no-repeat;
@@ -82,7 +92,7 @@ const MapArea = styled.div`
   height: 420px;
   overflow: visible;
   border: 1px solid red;
-`
+`;
 
 const GridCells = styled.div<{ $cols: number; $rows: number; $w: number; $h: number }>`
   position: absolute;
@@ -96,11 +106,11 @@ const GridCells = styled.div<{ $cols: number; $rows: number; $w: number; $h: num
   grid-template-rows: ${(p) => `repeat(${p.$rows}, 1fr)`};
   z-index: 2;
   pointer-events: none;
-`
+`;
 
 const Cell = styled.div`
   box-sizing: border-box;
-`
+`;
 
 const PlacementBounds = styled.div<{ $w: number; $h: number }>`
   position: absolute;
@@ -112,4 +122,4 @@ const PlacementBounds = styled.div<{ $w: number; $h: number }>`
   border: 1px solid red;
   z-index: 2;
   pointer-events: none;
-`
+`;

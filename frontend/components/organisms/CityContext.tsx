@@ -6,12 +6,12 @@ type Totals = Record<string, number>;
 
 export type Cell = number[];
 
- type CityContextType = {
+type CityContextType = {
   grid: number[][];
   // Returns true when a building was added, false when rejected (different type present)
   addBuildingToCell: (index: number, buildingId: number) => boolean;
-    // Move a single building instance from one cell to another. Returns true when moved.
-    moveBuilding: (sourceIndex: number, destIndex: number, buildingId: number) => boolean;
+  // Move a single building instance from one cell to another. Returns true when moved.
+  moveBuilding: (sourceIndex: number, destIndex: number, buildingId: number) => boolean;
   getTotals: () => Totals;
   totals: Totals;
 };

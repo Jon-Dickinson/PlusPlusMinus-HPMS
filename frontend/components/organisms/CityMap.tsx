@@ -3,11 +3,11 @@
 // This file now exports a simple wrapper so consumers (e.g. `pages/dashboard.tsx`) can
 // continue importing `CityMap` while the implementation uses the new grid components.
 
-"use client"
+'use client';
 
-import React from 'react'
-import CityGrid from './CityGrid'
-import styled from 'styled-components'
+import React from 'react';
+import CityGrid from './CityGrid';
+import styled from 'styled-components';
 
 export default function CityMap({ scale = 1 }: { scale?: number }) {
   return (
@@ -18,7 +18,7 @@ export default function CityMap({ scale = 1 }: { scale?: number }) {
         </GridContainer>
       </ScaleWrap>
     </Wrap>
-  )
+  );
 }
 
 const Wrap = styled.div`
@@ -28,12 +28,11 @@ const Wrap = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const ScaleWrap = styled.div`
   width: 100%;
-
-`
+`;
 
 const GridContainer = styled.div`
   display: flex;
@@ -42,6 +41,4 @@ const GridContainer = styled.div`
   width: 100%;
   padding: 12px;
   box-sizing: border-box;
-`
-
-
+`;
