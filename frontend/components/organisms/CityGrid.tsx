@@ -7,15 +7,13 @@ import { useState } from 'react';
 export default function CityGrid() {
   const { grid, addBuildingToCell, moveBuilding } = useCity();
 
-  return (
+    return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(10, 1fr)',
+        gridTemplateColumns: 'repeat(6, 1fr)',
         gap: 8,
         padding: 8,
-        background: '#f3f4f6',
-        border: '1px solid #e5e7eb',
         maxWidth: 1100,
       }}
     >
@@ -88,14 +86,14 @@ function GridCell({
 
   // cell container is relative so stacked items can be absolutely positioned
   return (
-    <div
+      <div
       ref={drop}
       style={{
-        width: 100,
-        height: 100,
+          width: 100,
+          height: 100,
         border: '1px solid #9CA3AF',
         borderRadius: 6,
-        backgroundColor: isOver ? '#e0f7fa' : 'white',
+        backgroundColor: isOver ? '#ffffff' : '#ffffff20',
         position: 'relative',
         overflow: 'visible',
         display: 'flex',
@@ -107,9 +105,9 @@ function GridCell({
       {buildings && buildings.length > 0
         ? buildings.map((id: number, idx: number) => {
             const b = buildingsLookup(id);
-            const size = 64;
-            // spacing between stacked building images (kept slightly larger)
-            const offset = idx * 18;
+              const size = 64; // render icon size for 100x100 cell
+              // spacing between stacked building images
+              const offset = idx * 18;
             return (
               <BuildingItem
                 key={idx}
@@ -177,10 +175,15 @@ function BuildingItem({
         <img
           src={(b as any).icon ? (b as any).icon : (b as any).file || ''}
           alt={(b as any).name || ''}
-          style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
+          style={{
+            width: size,
+            height: size,
+            objectFit: 'contain',
+            display: 'block',
+          }}
         />
       ) : (
-        <div style={{ width: size, height: size, backgroundColor: b?.color || '#999' }} />
+        <div style={{ width: size, height: size, backgroundColor: '#e5e7eb' }} />
       )}
     </div>
   );
