@@ -12,33 +12,23 @@ import styled from 'styled-components';
 export default function CityMap({ scale = 1 }: { scale?: number }) {
   return (
     <Wrap>
-      <ScaleWrap style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+     
         <GridContainer>
           <CityGrid />
         </GridContainer>
-      </ScaleWrap>
+      
     </Wrap>
   );
 }
 
 const Wrap = styled.div`
   position: relative;
-  width: 100%;
-
   display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ScaleWrap = styled.div`
-  width: 100%;
+  max-width: 660px;
+  z-index: 1000;
 `;
 
 const GridContainer = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 12px;
-  box-sizing: border-box;
+  padding: 0;
 `;

@@ -3,7 +3,7 @@
     "id": 1,
     "name": "Commercial Complex",
     "category": "commercial",
-    "color": "#4466FF",
+    "color": "#004AEE",
     "resources": {
       "power": 30,
       "water": 15,
@@ -15,7 +15,7 @@
     "id": 2,
     "name": "Emergency Services",
     "category": "emergency",
-    "color": "#FF3333",
+    "color": "#EE3E36",
     "resources": {
       "power": 20,
       "water": 10,
@@ -28,7 +28,7 @@
     "id": 3,
     "name": "Factory",
     "category": "industrial",
-    "color": "#FF9933",
+    "color": "#F79E1B",
     "resources": {
       "power": 50,
       "water": 20,
@@ -40,7 +40,7 @@
     "id": 4,
     "name": "Farm",
     "category": "agriculture",
-    "color": "#8B5A2B",
+    "color": "#704214",
     "resources": {
       "power": 10,
       "water": 25,
@@ -53,7 +53,7 @@
     "id": 5,
     "name": "Government Office",
     "category": "government",
-    "color": "#333333",
+    "color": "#1C1C1C",
     "resources": {
       "power": 25,
       "water": 10,
@@ -66,7 +66,7 @@
     "id": 6,
     "name": "Power Station",
     "category": "energy",
-    "color": "#FFD633",
+    "color": "#FFD52B",
     "resources": {
       "powerOutput": 250,
       "water": 40,
@@ -78,7 +78,7 @@
     "id": 7,
     "name": "Residential Housing",
     "category": "residential",
-    "color": "#33CC66",
+    "color": "#2FBF4A",
     "resources": {
       "power": 80,
       "water": 40,
@@ -90,7 +90,7 @@
     "id": 8,
     "name": "Water Pump Station",
     "category": "utilities",
-    "color": "#0066FF",
+    "color": "#0068FF",
     "resources": {
       "power": 25,
       "waterOutput": 250,

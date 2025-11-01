@@ -49,14 +49,15 @@ import { useCity } from './CityContext';
 
 const LeftColumn = styled.div`
   position: relative;
-  padding-top: 100px;
+  padding-top: 80px;
   right: 0;
-  width: 500px;
+  flex: 0 0 15%;
   height: 100%;
   display: flex;
   align-items: center;
   flex-direction: column;
   border-right: 1px solid #e5e7eb;
+  box-sizing: border-box;
 `;
 
 const IconContainer = styled.div`
@@ -64,10 +65,9 @@ const IconContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 180px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   padding: 6px 10px;
-  border-radius: 8px;
 `;
 
 function imageForBuilding(building: any) {
@@ -157,19 +157,7 @@ function DraggableBuildingClient({ building }: { building: any }) {
         />
       </div>
 
-      {/* numeric total stays visible but is not part of the draggable handle */}
-      <div
-        style={{
-          color: '#6b7280',
-          fontSize: 12,
-          minWidth: 36,
-          textAlign: 'right',
-          transition: 'all 160ms ease',
-        }}
-        aria-live="polite"
-      >
-        {displayValue}
-      </div>
+      {/* property values removed per UX request */}
     </IconContainer>
   );
 }

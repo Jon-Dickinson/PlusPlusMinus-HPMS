@@ -1,5 +1,6 @@
 // CityContext.tsx
 import React, { createContext, useContext, useState } from 'react';
+import { CityTotals } from '../../types/city';
 import buildings from '../../data/buildings.json';
 
 type Totals = Record<string, number>;
@@ -12,7 +13,9 @@ type CityContextType = {
   addBuildingToCell: (index: number, buildingId: number) => boolean;
   // Move a single building instance from one cell to another. Returns true when moved.
   moveBuilding: (sourceIndex: number, destIndex: number, buildingId: number) => boolean;
-  getTotals: () => Totals;
+  // returns a normalized CityTotals shape for UI consumers
+  getTotals: () => CityTotals;
+  // raw resource totals map (kept for other consumers that index by resource keys)
   totals: Totals;
 };
 
@@ -20,7 +23,7 @@ const CityContext = createContext<CityContextType | null>(null);
 
 export function CityProvider({ children }: { children: React.ReactNode }) {
   // create distinct arrays for each cell
-  const [grid, setGrid] = useState<number[][]>(() => Array.from({ length: 100 }, () => []));
+  const [grid, setGrid] = useState<number[][]>(() => Array.from({ length: 36 }, () => []));
   const [totals, setTotals] = useState<Totals>({});
 
   function computeTotalsFromGrid(g: number[][]) {
@@ -32,6 +35,63 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
       }
       return acc;
     }, {} as Totals);
+  }
+
+  // normalize resource keys from building definitions to the CityTotals shape
+  function normalizeTotals(resourceTotals: Totals, g: number[][]): CityTotals {
+    const buildingCount = g.flat().length;
+    const serviceCoverage = resourceTotals['serviceCoverage'] || 0;
+    const foodProduction = resourceTotals['foodProduction'] || 0;
+    const houses = resourceTotals['population'] || 0;
+
+    const normalized: CityTotals = {
+      powerUsage: resourceTotals['power'] || 0,
+      powerOutput: resourceTotals['powerOutput'] || 0,
+      waterUsage: resourceTotals['water'] || 0,
+      waterOutput: resourceTotals['waterOutput'] || 0,
+      houses: houses,
+      employed: resourceTotals['employment'] || 0,
+      capacity: serviceCoverage,
+      // food production
+      foodProduction: foodProduction,
+      // derive a more intuitive quality index (0-100) by averaging key adequacy scores:
+      // - power: output vs usage
+      // - water: output vs usage
+      // - services: capacity vs houses
+      // - food: production vs houses
+      // Each sub-score is 0..100, where 100 means supply meets or exceeds demand.
+      qualityIndex: (() => {
+        // compute adequacy as decimals (0..1) to avoid early rounding artifacts
+        const powerUsage = resourceTotals['power'] || 0;
+        const powerOutput = resourceTotals['powerOutput'] || 0;
+        const waterUsage = resourceTotals['water'] || 0;
+        const waterOutput = resourceTotals['waterOutput'] || 0;
+
+        let powerRatio = powerUsage <= 0 ? 1 : Math.min(1, powerOutput / powerUsage);
+        let waterRatio = waterUsage <= 0 ? 1 : Math.min(1, waterOutput / waterUsage);
+
+        let serviceRatio = houses <= 0 ? 1 : Math.min(1, serviceCoverage / houses);
+        let foodRatio = houses <= 0 ? 1 : Math.min(1, foodProduction / houses);
+
+        // If employment exceeds housing, apply a proportional penalty
+        // so that over-employment reduces available adequacy across systems.
+        const employed = resourceTotals['employment'] || 0;
+        if (employed > houses && employed > 0) {
+          const penalty = houses / employed; // value < 1
+          powerRatio = powerRatio * penalty;
+          waterRatio = waterRatio * penalty;
+          serviceRatio = serviceRatio * penalty;
+          foodRatio = foodRatio * penalty;
+        }
+
+        // average the ratios and convert to 0..100, use floor so a 99.5% average becomes 99%
+        const avgRatio = (powerRatio + waterRatio + serviceRatio + foodRatio) / 4;
+        const percent = Math.floor(avgRatio * 100);
+        return Math.max(0, Math.min(100, percent));
+      })(),
+    };
+
+    return normalized;
   }
 
   function addBuildingToCell(index: number, buildingId: number) {
@@ -99,8 +159,8 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
   }
 
   function getTotals() {
-    // return computed totals (keeps a stable, up-to-date value)
-    return totals;
+    // return computed totals in the CityTotals shape (derived from raw resource totals)
+    return normalizeTotals(totals, grid);
   }
 
   return (

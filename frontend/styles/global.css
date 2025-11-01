@@ -4,6 +4,8 @@
   box-sizing: border-box !important;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 html,
 body,
 #__next {
@@ -14,7 +16,7 @@ body,
 
 body {
   margin: 0;
-  font-family: Roboto, sans-serif;
+  font-family: 'Poppins', Roboto, sans-serif;
   background-color: #ffffff;
   color: #000000;
   font-size: 14px;
