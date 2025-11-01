@@ -2,8 +2,8 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     /* ---------- Core ---------- */
-    "target": "ES2022",                   // modern syntax for Node 20+
-    "module": "NodeNext",                 // proper ESM behavior
+    "target": "ES2022", // modern syntax for Node 20+
+    "module": "NodeNext", // proper ESM behavior
     "moduleResolution": "NodeNext",
 
     /* ---------- Project structure ---------- */
@@ -17,15 +17,15 @@
     "skipLibCheck": true,
 
     /* ---------- Helpful for Node ESM ---------- */
-    "allowImportingTsExtensions": true,   // let imports end with .ts or .js
-    "resolveJsonModule": true,            // allows importing JSON files
-    "noEmit": true                        // since ts-node handles transpile
+    "allowImportingTsExtensions": true, // let imports end with .ts or .js
+    "resolveJsonModule": true, // allows importing JSON files
+    "noEmit": true // since ts-node handles transpile
   },
 
   /* ---------- ts-node configuration ---------- */
   "ts-node": {
-    "esm": true,                          // ensure ts-node runs in ESM mode
-    "transpileOnly": true                 // faster dev reloads, no type-check
+    "esm": true, // ensure ts-node runs in ESM mode
+    "transpileOnly": true // faster dev reloads, no type-check
   },
 
   /* ---------- Exclude folders ---------- */

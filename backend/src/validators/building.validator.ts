@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const buildingCreateSchema = z.object({
   name: z.string().min(1),
@@ -18,19 +18,30 @@ export const buildingCreateSchema = z.object({
   powerOutput: z.number().int().nonnegative().optional(),
   waterOutput: z.number().int().nonnegative().optional(),
   minRoleLevel: z.enum(['SUBURB', 'CITY', 'NATIONAL']).optional(),
-})
+});
 
 export const buildingUpdateSchema = buildingCreateSchema.partial().extend({
   // id should be in params, not body; allow empty body but at least one key would be better
-})
+});
 
 export const cityPlacementCreateSchema = z.object({
   buildingId: z.number().int().positive(),
   gx: z.number().int().optional(),
   gy: z.number().int().optional(),
   quantity: z.number().int().positive().optional(),
-})
+});
 
-export const idParamSchema = z.object({ id: z.string().regex(/^[0-9]+$/).transform((s) => s), cityId: z.string().optional() })
+export const idParamSchema = z.object({
+  id: z
+    .string()
+    .regex(/^[0-9]+$/)
+    .transform((s) => s),
+  cityId: z.string().optional(),
+});
 
-export default { buildingCreateSchema, buildingUpdateSchema, cityPlacementCreateSchema, idParamSchema }
+export default {
+  buildingCreateSchema,
+  buildingUpdateSchema,
+  cityPlacementCreateSchema,
+  idParamSchema,
+};

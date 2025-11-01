@@ -2,7 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import { parseSize } from './parseSize.js';
 import { asNumber } from './utils.js';
 
-export async function seedBuildings(prisma: PrismaClient, buildingJson: any[], categoryMap: Record<string, any>) {
+export async function seedBuildings(
+  prisma: PrismaClient,
+  buildingJson: any[],
+  categoryMap: Record<string, any>,
+) {
   const created: any[] = [];
 
   for (const b of buildingJson) {
