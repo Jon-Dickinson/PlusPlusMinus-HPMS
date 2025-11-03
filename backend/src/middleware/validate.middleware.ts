@@ -1,35 +1,19 @@
-import { RequestHandler } from 'express';
-import { ZodSchema } from 'zod';
+import { Request, Response, NextFunction } from 'express';
+import { ZodTypeAny } from 'zod';
 
-// Generic validation middleware using Zod
-export function validateBody(schema: ZodSchema<any>): RequestHandler {
-  return async (req, res, next) => {
+export const validate =
+  (schema: ZodTypeAny) => (req: Request, res: Response, next: NextFunction) => {
     try {
-      const parsed = await schema.parseAsync(req.body);
-      // replace body with parsed value
-      req.body = parsed;
-      next();
-    } catch (err: any) {
-      // Zod error
-      return res
-        .status(400)
-        .json({ error: 'Invalid request', details: err?.errors ?? err?.message });
+      // First try to validate the request body directly (common case: schema expects the body shape)
+      schema.parse(req.body);
+      return next();
+    } catch (errBody: any) {
+      try {
+        // Fallback: some schemas validate an object containing body/query/params
+        schema.parse({ body: req.body, query: req.query, params: req.params });
+        return next();
+      } catch (err: any) {
+        return res.status(400).json({ message: 'Validation error', errors: (err.errors || errBody.errors) });
+      }
     }
   };
-}
-
-export function validateParams(schema: ZodSchema<any>): RequestHandler {
-  return async (req, res, next) => {
-    try {
-      const parsed = await schema.parseAsync(req.params);
-      req.params = parsed;
-      next();
-    } catch (err: any) {
-      return res
-        .status(400)
-        .json({ error: 'Invalid parameters', details: err?.errors ?? err?.message });
-    }
-  };
-}
-
-export default { validateBody, validateParams };

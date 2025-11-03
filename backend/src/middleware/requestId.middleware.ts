@@ -1,18 +1,12 @@
-import { RequestHandler } from 'express';
-import { randomUUID } from 'crypto';
+import { Request, Response, NextFunction } from 'express';
 
-// Attaches a requestId to each request and sets X-Request-Id header on the response.
-export const requestIdMiddleware: RequestHandler = (req, res, next) => {
-  const existing =
-    (req.headers['x-request-id'] as string) || (req.headers['x_correlation_id'] as string);
-  const id = existing || randomUUID();
-  // attach to req for later use
+function makeReqId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function requestLogger(req: Request, res: Response, next: NextFunction) {
+  const id = makeReqId();
   (req as any).requestId = id;
-  // expose as response header for clients
-  res.setHeader('X-Request-Id', id);
-  // also make available in res.locals
-  res.locals.requestId = id;
+  console.log(`[${id}] ${req.method} ${req.path}`);
   next();
-};
-
-export default requestIdMiddleware;
+}

@@ -1,21 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
+import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 
 const Root = styled.header`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
+  position: relative;
+  width: 100%;
+  min-height: 80px;
   z-index: 1000;
-  background: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #111111;
+  padding: 0 25px;
 `;
 
 const Info = styled.div`
@@ -24,17 +20,31 @@ const Info = styled.div`
   align-items: center;
 `;
 
+const Heading = styled.div`
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 500;
+`;
+
+
 export default function Header() {
   const { user, logout } = useAuth();
   return (
     <Root>
-      <Logo src="/logo.svg" alt="PlusPlusMinus" />
+      <Left>
+        
+        
+        <Heading>City Builder</Heading>
+      </Left>
       <Info>
         {user ? (
           <>
             <div>{user.name}</div>
             <div style={{ color: '#6B7280' }}>{user.roles?.map((r) => r.role.name).join(', ')}</div>
-            <button onClick={logout}>Logout</button>
+            <Icon src="/user.svg" alt="User" />
+             
+            <Icon src="/logout.svg" alt="Logout" onClick={logout}/>  
+            
           </>
         ) : (
           <div>Guest</div>
@@ -44,8 +54,24 @@ export default function Header() {
   );
 }
 
-const Logo = styled.img`
-  height: 40px;
+const Icon = styled.img`
+  height: 36px;
   width: auto;
   display: block;
 `;
+
+const Left = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const NavLink = styled(Link)`
+  color: #0068FF;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  &:hover {
+    background: #f3f4f6;
+  }
+` as unknown as typeof Link;

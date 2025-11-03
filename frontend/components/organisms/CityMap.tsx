@@ -24,7 +24,7 @@ export default function CityMap({ scale = 1 }: { scale?: number }) {
 const Wrap = styled.div`
   position: relative;
   display: flex;
-  max-width: 660px;
+ 
   z-index: 1000;
 `;
 

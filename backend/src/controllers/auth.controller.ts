@@ -1,40 +1,20 @@
-import { RequestHandler } from 'express';
-import * as authService from '../services/auth.service.js';
+import { Request, Response, NextFunction } from 'express';
+import * as AuthService from '../services/auth.service.js';
 
-export const register: RequestHandler = async (req, res) => {
+export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, email, password, roleName, structureId } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' });
-
-    const parsedStructureId = structureId != null ? Number(structureId) : undefined;
-
-    const { user, token } = await authService.registerUser({
-      name,
-      email,
-      password,
-      roleName,
-      structureId: parsedStructureId,
-    });
-    return res
-      .status(201)
-      .json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    const user = await AuthService.register(req.body);
+    res.status(201).json(user);
   } catch (err) {
-    return res
-      .status(400)
-      .json({ error: err instanceof Error ? err.message : 'Registration failed' });
+    next(err);
   }
-};
+}
 
-export const login: RequestHandler = async (req, res) => {
+export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
-
-    const { user, token } = await authService.authenticateUser(email, password);
-    return res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    const token = await AuthService.login(req.body);
+    res.json({ token });
   } catch (err) {
-    return res
-      .status(401)
-      .json({ error: err instanceof Error ? err.message : 'Authentication failed' });
+    next(err);
   }
-};
+}

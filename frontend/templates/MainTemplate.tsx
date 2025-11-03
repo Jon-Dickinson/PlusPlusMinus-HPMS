@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Header from '../components/molecules/Header';
+
 import styled from 'styled-components';
 import DndShell from '../components/molecules/DndShell';
 
@@ -10,7 +10,8 @@ const Root = styled.div`
   display: inline-flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const Dashboard = styled.div`
@@ -19,13 +20,13 @@ const Dashboard = styled.div`
   flex-direction: row;
   width: 100%;
   height: 100%;
-  background-color: #ffffff;
+  background-color: #111D3A;
 `;
 
 export default function MainTemplate({ children }: { children: React.ReactNode }) {
   return (
     <Root>
-      <Header />
+      
       <DndShell>
         <Dashboard>{children}</Dashboard>
       </DndShell>
