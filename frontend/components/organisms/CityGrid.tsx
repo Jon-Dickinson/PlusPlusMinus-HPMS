@@ -32,7 +32,9 @@ export default function CityGrid() {
             found = list.find((x: any) => String(x.name || '').toLowerCase() === lname) || null;
           }
           if (!found && local) {
-            const basename = String(((local as any).icon || (local as any).file) || '').split('/').pop();
+            const basename = String((local as any).icon || (local as any).file || '')
+              .split('/')
+              .pop();
             if (basename) {
               found = list.find((x: any) => String(x.file || '').endsWith(basename)) || null;
             }
@@ -51,7 +53,11 @@ export default function CityGrid() {
         if (res.ok) {
           const payload = await res.json();
           const body = payload?.building ?? payload;
-          if (body && (!local || String(body.name || '').toLowerCase() === String(local.name || '').toLowerCase())) {
+          if (
+            body &&
+            (!local ||
+              String(body.name || '').toLowerCase() === String(local.name || '').toLowerCase())
+          ) {
             setSelectedBuildingData(body);
           }
         }
@@ -98,7 +104,10 @@ export default function CityGrid() {
 
   // Local ErrorBoundary to catch missing provider/hook errors and recover by
   // rendering the grid inside a CityProvider + DndShell so the UI always shows.
-  class LocalErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  class LocalErrorBoundary extends React.Component<
+    { children: React.ReactNode },
+    { hasError: boolean }
+  > {
     constructor(props: any) {
       super(props);
       this.state = { hasError: false };
@@ -114,9 +123,7 @@ export default function CityGrid() {
       if (this.state.hasError) {
         return (
           <CityProvider>
-            <DndShell>
-              {this.props.children}
-            </DndShell>
+            <DndShell>{this.props.children}</DndShell>
           </CityProvider>
         );
       }
@@ -208,7 +215,9 @@ function GridCell({
         : null}
 
       {!topBuilding && buildings.length > 0 && (
-        <div style={{ position: 'absolute', top: 4, left: 4, fontSize: 12, color: '#374151' }}>{`${buildings.length}x`}</div>
+        <div
+          style={{ position: 'absolute', top: 4, left: 4, fontSize: 12, color: '#374151' }}
+        >{`${buildings.length}x`}</div>
       )}
     </div>
   );

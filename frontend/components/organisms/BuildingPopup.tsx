@@ -13,7 +13,7 @@ const Popup = styled.div`
   padding: 20px;
   overflow-y: auto;
   z-index: 1200;
-  box-shadow: -8px 0 24px rgba(0,0,0,0.12);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
   transform: translateX(0);
   transition: transform 180ms ease-in-out;
 `;
@@ -82,8 +82,10 @@ export default function BuildingPopup({
         ) : error ? (
           <p style={{ color: 'red' }}>{error}</p>
         ) : (
-          <> 
-            <p><strong>Category:</strong> {payload?.category || '—'}</p>
+          <>
+            <p>
+              <strong>Category:</strong> {payload?.category || '—'}
+            </p>
             {/* support multiple backend/frontend shapes: server returns `stats`, older JSON uses `resources`,
                 or flat top-level fields */}
             <p>
@@ -92,7 +94,10 @@ export default function BuildingPopup({
             </p>
             <p>
               <strong>Power Output:</strong>{' '}
-              {payload?.stats?.powerOutput ?? payload?.resources?.powerOutput ?? payload?.powerOutput ?? '—'}
+              {payload?.stats?.powerOutput ??
+                payload?.resources?.powerOutput ??
+                payload?.powerOutput ??
+                '—'}
             </p>
             <p>
               <strong>Water (usage):</strong>{' '}
@@ -100,29 +105,48 @@ export default function BuildingPopup({
             </p>
             <p>
               <strong>Water Output:</strong>{' '}
-              {payload?.stats?.waterOutput ?? payload?.resources?.waterOutput ?? payload?.waterOutput ?? '—'}
+              {payload?.stats?.waterOutput ??
+                payload?.resources?.waterOutput ??
+                payload?.waterOutput ??
+                '—'}
             </p>
             <p>
               <strong>Employment:</strong>{' '}
-              {payload?.stats?.employs ?? payload?.stats?.employment ?? payload?.resources?.employment ?? payload?.employment ?? '—'}
+              {payload?.stats?.employs ??
+                payload?.stats?.employment ??
+                payload?.resources?.employment ??
+                payload?.employment ??
+                '—'}
             </p>
             <p>
               <strong>Population / Houses:</strong>{' '}
-              {payload?.stats?.houses ?? payload?.resources?.population ?? payload?.population ?? payload?.houses ?? '—'}
+              {payload?.stats?.houses ??
+                payload?.resources?.population ??
+                payload?.population ??
+                payload?.houses ??
+                '—'}
             </p>
             <p>
               <strong>Service Coverage:</strong>{' '}
-              {payload?.stats?.services ?? payload?.resources?.serviceCoverage ?? payload?.serviceCoverage ?? '—'}
+              {payload?.stats?.services ??
+                payload?.resources?.serviceCoverage ??
+                payload?.serviceCoverage ??
+                '—'}
             </p>
             <p>
               <strong>Food Production:</strong>{' '}
-              {payload?.stats?.feeds ?? payload?.resources?.foodProduction ?? payload?.foodProduction ?? '—'}
+              {payload?.stats?.feeds ??
+                payload?.resources?.foodProduction ??
+                payload?.foodProduction ??
+                '—'}
             </p>
 
             {/* raw JSON for debugging */}
             <details style={{ marginTop: 12 }}>
               <summary style={{ cursor: 'pointer' }}>Raw data</summary>
-              <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>{JSON.stringify(payload ?? {}, null, 2)}</pre>
+              <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>
+                {JSON.stringify(payload ?? {}, null, 2)}
+              </pre>
             </details>
           </>
         )}

@@ -20,13 +20,12 @@ const Dashboard = styled.div`
   flex-direction: row;
   width: 100%;
   height: 100%;
-  background-color: #111D3A;
+  background-color: #111d3a;
 `;
 
 export default function MainTemplate({ children }: { children: React.ReactNode }) {
   return (
     <Root>
-      
       <DndShell>
         <Dashboard>{children}</Dashboard>
       </DndShell>

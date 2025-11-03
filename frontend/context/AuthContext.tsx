@@ -26,9 +26,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // id and role. This keeps the UI responsive after a page refresh without
       // requiring an extra backend route.
       try {
-  const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-  const userFromToken: any = { id: payload.id, roles: [{ role: { name: payload.role } }] };
-  setUser(userFromToken);
+        const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const userFromToken: any = { id: payload.id, roles: [{ role: { name: payload.role } }] };
+        setUser(userFromToken);
       } catch (e) {
         // if decoding fails, silently ignore — UI will remain unauthenticated
       }
@@ -46,8 +46,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Backend currently returns only a JWT token. Decode the token to extract
       // basic user info (id and role) so the app can reflect admin status.
       try {
-  const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-  setUser({ id: payload.id, roles: [{ role: { name: payload.role } }] } as any);
+        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        setUser({ id: payload.id, roles: [{ role: { name: payload.role } }] } as any);
       } catch (e) {
         setUser(null);
       }

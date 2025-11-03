@@ -26,14 +26,11 @@ const Heading = styled.div`
   font-weight: 500;
 `;
 
-
 export default function Header() {
   const { user, logout } = useAuth();
   return (
     <Root>
       <Left>
-        
-        
         <Heading>City Builder</Heading>
       </Left>
       <Info>
@@ -42,9 +39,8 @@ export default function Header() {
             <div>{user.name}</div>
             <div style={{ color: '#6B7280' }}>{user.roles?.map((r) => r.role.name).join(', ')}</div>
             <Icon src="/user.svg" alt="User" />
-             
-            <Icon src="/logout.svg" alt="Logout" onClick={logout}/>  
-            
+
+            <Icon src="/logout.svg" alt="Logout" onClick={logout} />
           </>
         ) : (
           <div>Guest</div>
@@ -66,7 +62,7 @@ const Left = styled.div`
 `;
 
 const NavLink = styled(Link)`
-  color: #0068FF;
+  color: #0068ff;
   font-weight: 600;
   text-decoration: none;
   padding: 6px 8px;

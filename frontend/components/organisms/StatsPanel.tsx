@@ -23,12 +23,12 @@ const Card = styled.div<{ warn?: boolean }>`
   margin: 5px 0;
   width: 100%;
   border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1); 
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background-color: #192748;
 
   :hover {
-    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   }
 
   ${({ warn }) =>
@@ -95,7 +95,9 @@ const getSafeTotals = (maybe: Partial<CityTotals> | undefined): CityTotals => ({
 
 export default function StatsPanel(): JSX.Element {
   const { totals, getTotals } = useCity();
-  const raw = (typeof getTotals === 'function' ? getTotals() : totals) as Partial<CityTotals> | undefined;
+  const raw = (typeof getTotals === 'function' ? getTotals() : totals) as
+    | Partial<CityTotals>
+    | undefined;
   const t = getSafeTotals(raw);
 
   const powerOver = t.powerUsage > t.powerOutput;
@@ -105,7 +107,6 @@ export default function StatsPanel(): JSX.Element {
 
   return (
     <Panel>
-      
       <Card warn={powerOver}>
         <Header>
           <Title>Power</Title>
@@ -114,9 +115,8 @@ export default function StatsPanel(): JSX.Element {
           </IconWrapper>
         </Header>
         <StatsRow>
-       
           <Stat>Output: {t.powerOutput.toLocaleString()}</Stat>
-           <Stat color={powerOver ? '#ef4444' : '#16a34a'}>
+          <Stat color={powerOver ? '#ef4444' : '#16a34a'}>
             Usage: {t.powerUsage.toLocaleString()}
           </Stat>
         </StatsRow>
@@ -131,9 +131,8 @@ export default function StatsPanel(): JSX.Element {
           </IconWrapper>
         </Header>
         <StatsRow>
-          
           <Stat>Output: {t.waterOutput.toLocaleString()}</Stat>
-        <Stat color={waterOver ? '#ef4444' : '#0ea5e9'}>
+          <Stat color={waterOver ? '#ef4444' : '#0ea5e9'}>
             Usage: {t.waterUsage.toLocaleString()}
           </Stat>
         </StatsRow>
@@ -167,9 +166,7 @@ export default function StatsPanel(): JSX.Element {
           <Stat color={serviceShort ? '#ef4444' : '#0ea5e9'}>
             Capacity: {t.capacity.toLocaleString()}
           </Stat>
-          <Stat color="#ef4444">
-            Quality Index: {Math.round(t.qualityIndex)}%
-          </Stat>
+          <Stat color="#ef4444">Quality Index: {Math.round(t.qualityIndex)}%</Stat>
         </StatsRow>
       </Card>
 
