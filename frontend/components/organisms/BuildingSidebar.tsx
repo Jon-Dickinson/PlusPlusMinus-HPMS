@@ -114,7 +114,7 @@ function DraggableBuilding({ building }: { building: any }) {
 }
 
 function DraggableBuildingClient({ building }: { building: any }) {
-  const [{ isDragging }, drag] = useDrag(() => ({
+  const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: 'BUILDING',
     item: { id: building.id },
     collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
@@ -127,6 +127,27 @@ function DraggableBuildingClient({ building }: { building: any }) {
   const resources = building.resources || {};
   const resourceKey = Object.keys(resources)[0] || null;
   const displayValue = resourceKey ? totals[resourceKey] || 0 : 0;
+
+  // register a transparent drag preview using the building image bitmap
+  // this prevents the browser from rendering the element's surrounding
+  // background into the drag image and preserves PNG/SVG transparency.
+  useEffect(() => {
+    if (!preview) return;
+    const img = new Image();
+    // ensure same-origin so the canvas/image can be used as drag preview
+    img.crossOrigin = 'anonymous';
+    img.src = imageForBuilding(building);
+    const handleLoad = () => {
+      try {
+        // center the preview under the cursor
+        preview(img, { offsetX: img.width / 2, offsetY: img.height / 2 });
+      } catch (e) {
+        // some backends may throw; ignore silently
+      }
+    };
+    img.addEventListener('load', handleLoad);
+    return () => img.removeEventListener('load', handleLoad);
+  }, [preview, building]);
 
   return (
     <IconContainer

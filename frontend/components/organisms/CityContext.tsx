@@ -17,6 +17,10 @@ type CityContextType = {
   getTotals: () => CityTotals;
   // raw resource totals map (kept for other consumers that index by resource keys)
   totals: Totals;
+  // a running log of placed building types (strings)
+  buildingLog: string[];
+  // clear the building log
+  clearBuildingLog: () => void;
 };
 
 const CityContext = createContext<CityContextType | null>(null);
@@ -30,6 +34,7 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
     Array.from({ length: INITIAL_CELLS }, () => []),
   );
   const [totals, setTotals] = useState<Totals>({});
+  const [buildingLog, setBuildingLog] = useState<string[]>([]);
 
   function computeTotalsFromGrid(g: number[][]) {
     return g.flat().reduce((acc: Totals, id: number) => {
@@ -48,6 +53,22 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
     const serviceCoverage = resourceTotals['serviceCoverage'] || 0;
     const foodProduction = resourceTotals['foodProduction'] || 0;
     const houses = resourceTotals['population'] || 0;
+
+    // If there are no buildings yet, treat quality as 0% (default)
+    if (buildingCount === 0) {
+      const empty: CityTotals = {
+        powerUsage: 0,
+        powerOutput: 0,
+        waterUsage: 0,
+        waterOutput: 0,
+        houses: 0,
+        employed: 0,
+        capacity: 0,
+        foodProduction: 0,
+        qualityIndex: 0,
+      };
+      return empty;
+    }
 
     const normalized: CityTotals = {
       powerUsage: resourceTotals['power'] || 0,
@@ -121,6 +142,14 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
       if (added) {
         // update totals immediately based on new grid
         setTotals(computeTotalsFromGrid(next));
+        // record placed building in the building log (single-word label)
+        try {
+          const b: any = buildings.find((b: any) => b.id === buildingId) || null;
+          const label = b && b.name ? String(b.name).split(/\s+/)[0] : String(buildingId);
+          setBuildingLog((prevLog) => [label, ...prevLog]);
+        } catch (e) {
+          // ignore logging errors
+        }
       }
       return next;
     });
@@ -163,13 +192,27 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
     return moved;
   }
 
+  function clearBuildingLog() {
+    setBuildingLog([]);
+  }
+
   function getTotals() {
     // return computed totals in the CityTotals shape (derived from raw resource totals)
     return normalizeTotals(totals, grid);
   }
 
   return (
-    <CityContext.Provider value={{ grid, addBuildingToCell, moveBuilding, getTotals, totals }}>
+    <CityContext.Provider
+      value={{
+        grid,
+        addBuildingToCell,
+        moveBuilding,
+        getTotals,
+        totals,
+        buildingLog,
+        clearBuildingLog,
+      }}
+    >
       {children}
     </CityContext.Provider>
   );

@@ -5,9 +5,12 @@ import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
 import axios from '../lib/axios';
 import BuildingSidebar from '../components/organisms/BuildingSidebar';
+import GlobalNav from '../components/molecules/GlobalNav';
 import { CityProvider } from '../components/organisms/CityContext';
 import Header from '../components/molecules/Header';
 import StatsPanel from '../components/organisms/StatsPanel';
+import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
+import QualityIndex from '../components/organisms/QualityIndex';
 
 const MapWrap = styled.div`
   position: relative;
@@ -50,15 +53,7 @@ export default function Dashboard() {
 
   return (
     <MainTemplate>
-      <Sidebar>
-        <NavIcons>
-          <Icon className="m-b-40" src="/logo.svg" alt="City Builder" />
-          <Icon src="/builder.svg" alt="Builder" />
-          <Icon src="/list.svg" alt="User List" />
-          <Icon src="/note.svg" alt="Note" />
-          <Icon src="/component.svg" alt="Component" />
-        </NavIcons>
-      </Sidebar>
+      <GlobalNav />
       <ColWrapper>
         <Header />
         <RowWrapper>
@@ -79,23 +74,14 @@ export default function Dashboard() {
                 <MapPanel>{user && <CityMap />}</MapPanel>
               </GridContainer>
             </MainGridArea>
-          </CityProvider>
+          
           <InfoColumn>
-            <QualityBox>
-              <span>73%</span>
-              <h3>Quality Index</h3>
-            </QualityBox>
+            <QualityBoxFromContext />
 
-            <BuildingLog>
-              <h4>Building Log</h4>
-              <ul>
-                <li>Residential</li>
-                <li>Power</li>
-                <li>Water</li>
-                <li>Residential</li>
-              </ul>
-            </BuildingLog>
+            {/* Building log now driven from CityContext */}
+            <BuildingLogPanel />
           </InfoColumn>
+          </CityProvider>
         </RowWrapper>
       </ColWrapper>
     </MainTemplate>
@@ -132,7 +118,7 @@ const Sidebar = styled.div`
 const NavIcons = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 25px;
   padding-top: 5px;
 `;
 
@@ -194,7 +180,6 @@ const InfoColumn = styled.div`
   display: flex;
   flex-direction: column;
   padding: 80px 20px;
-  gap: 1.5rem;
 `;
 
 const QualityBox = styled.div`
@@ -238,3 +223,14 @@ const BuildingLog = styled.div`
     padding: 0.25rem 0;
   }
 `;
+
+function QualityBoxFromContext() {
+  // Render a QualityBox that uses the QualityIndex component.
+  // This component is placed inside CityProvider in the page layout.
+  return (
+    <QualityBox>
+      <QualityIndex />
+      <h3>Quality Index</h3>
+    </QualityBox>
+  );
+}
