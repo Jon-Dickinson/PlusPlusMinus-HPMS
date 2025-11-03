@@ -1,0 +1,264 @@
+import React, { useState } from 'react';
+import MainTemplate from '../templates/MainTemplate';
+import styled from 'styled-components';
+import { useRouter } from 'next/router';
+import { CityProvider } from '../components/organisms/CityContext';
+import Header from '../components/molecules/Header';
+import BuildingSidebar from '../components/organisms/BuildingSidebar';
+import GlobalNav from '../components/molecules/GlobalNav';
+import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
+import buildings from '../data/buildings.json';
+import api from '../lib/axios';
+
+// A simple vertical list of all building images; clicking one fetches its description
+const SidebarList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 84px;
+  max-width: 140px;
+`;
+
+const ImageButton = styled.button`
+  background: transparent;
+  border: none;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 6px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    display: block;
+  }
+`;
+
+const AnalysisPlaceholder = styled.div`
+  background: #0f1724;
+  border-radius: 6px;
+  min-height: 420px;
+  padding: 1rem;
+  color: #fff;
+`;
+
+
+export default function BuildingAnalysis() {
+  const router = useRouter();
+  const isActive = (path: string) => router.pathname === path;
+  const [selected, setSelected] = useState<any | null>(null);
+
+  // Listen for building:selected events dispatched by the sidebar clicks
+  React.useEffect(() => {
+    const handler = (e: any) => setSelected(e.detail || null);
+    window.addEventListener('building:selected', handler as EventListener);
+    return () => window.removeEventListener('building:selected', handler as EventListener);
+  }, []);
+
+  return (
+    <MainTemplate>
+      <GlobalNav />
+
+      <ColWrapper>
+        <Header />
+        <RowWrapper>
+          <CityProvider>
+            <ResourceColumn>
+              {/* New vertical buildings column for analysis view */}
+              <SidebarList>
+                {buildings.map((b: any) => (
+                  <ImageButton
+                    key={b.id}
+                    onClick={async () => {
+                      try {
+                        // call backend API to get building details
+                        const res = await api.instance.get(`/buildings/${b.id}`);
+                        const data = res?.data;
+                        // set selected description into local state via DOM event
+                        const ev = new CustomEvent('building:selected', { detail: data });
+                        window.dispatchEvent(ev as any);
+                      } catch (e) {
+                        const ev = new CustomEvent('building:selected', {
+                          detail: { error: true, message: 'Failed to load building details' },
+                        });
+                        window.dispatchEvent(ev as any);
+                      }
+                    }}
+                    title={b.name}
+                  >
+                    <img src={(b.icon as string) || `/buildings/${b.id}.png`} alt={b.name} />
+                  </ImageButton>
+                ))}
+              </SidebarList>
+            </ResourceColumn>
+
+            <MainGridArea>
+              <GridContainer>
+                <AnalysisPlaceholder>
+                  {selected ? (
+                    selected.error ? (
+                      <div>
+                        <h3>Error</h3>
+                        <p>{selected.message || 'Unable to load building details.'}</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3>{selected.name || selected.title || 'Building'}</h3>
+                        <div dangerouslySetInnerHTML={{ __html: selected.description || selected.longDescription || selected.notes || '<p>No description available.</p>' }} />
+                      </div>
+                    )
+                  ) : (
+                    <div>
+                      <h3>Building Analysis</h3>
+                      <p>This is a placeholder for the building analysis view. Click a building on the left to load details.</p>
+                    </div>
+                  )}
+                </AnalysisPlaceholder>
+              </GridContainer>
+            </MainGridArea>
+          
+         
+          </CityProvider>
+        </RowWrapper>
+      </ColWrapper>
+    </MainTemplate>
+  );
+}
+
+/* Reuse layout styled definitions from dashboard */
+const RowWrapper = styled.div`
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+`;
+
+const ColWrapper = styled.div`
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+`;
+
+const Sidebar = styled.div`
+  width: 80px;
+  min-width: 80px;
+  background: #111d3a;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+`;
+
+const NavIcons = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding-top: 5px;
+`;
+
+const ResourceColumn = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+/* ==== MAIN GRID AREA ==== */
+const MainGridArea = styled.div`
+  margin-top: 72px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const GridHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-left: 10px;
+
+  h2 {
+    font-size: 12px;
+    margin: 0;
+    color: #ffffff;
+    font-weight: 400;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #ffffff;
+    font-weight: 500;
+  }
+`;
+
+const GridContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+`;
+
+const InfoColumn = styled.div`
+  width: 100%;
+  max-width: 240px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  padding: 80px 20px;
+  gap: 1.5rem;
+`;
+
+const QualityBox = styled.div`
+  padding: 1rem;
+  text-align: center;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background-color: #192748;
+
+  h3 {
+    color: #ffffff;
+    font-weight: 400;
+  }
+  span {
+    font-size: 2rem;
+    font-weight: 500;
+    color: #ffcc00;
+  }
+`;
+
+const BuildingLog = styled.div`
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background-color: #192748;
+  padding: 1rem;
+  color: #ffffff;
+  h4 {
+    margin-bottom: 10px;
+    margin-top: 0;
+    font-weight: 400;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    font-size: 13px;
+    padding: 0.25rem 0;
+  }
+`;

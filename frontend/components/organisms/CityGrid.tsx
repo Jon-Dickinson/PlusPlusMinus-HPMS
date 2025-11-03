@@ -185,8 +185,8 @@ function GridCell({
         minWidth: 74,
         minHeight: 74,
         margin: '2px',
-        border: '1px solid #414E79',
-        backgroundColor: isOver ? '#ffffff' : 'transparent',
+        border: isOver ? '1px solid #b6b9c5ff' : '1px solid #414E79',
+        backgroundColor: 'transparent',
         position: 'relative',
         overflow: 'visible',
         display: 'flex',
@@ -262,7 +262,7 @@ function BuildingItem({
         left: '50%',
         transform: `translateX(-50%)`,
         zIndex: idx + 1,
-        opacity: isDragging ? 0.4 : 1,
+        opacity: isDragging ? 0.1 : 1,
       }}
     >
       {b ? (

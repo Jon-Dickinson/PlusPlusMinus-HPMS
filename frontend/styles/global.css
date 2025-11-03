@@ -32,8 +32,8 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-.m-b-40 {
-  margin-bottom: 40px;
+.m-b-15 {
+  margin-bottom: 15px;
 }
 
 .flex-1 {

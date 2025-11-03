@@ -166,7 +166,8 @@ export default function StatsPanel(): JSX.Element {
           <Stat color={serviceShort ? '#ef4444' : '#0ea5e9'}>
             Capacity: {t.capacity.toLocaleString()}
           </Stat>
-          <Stat color="#ef4444">Quality Index: {Math.round(t.qualityIndex)}%</Stat>
+          {/* Quality Index text hidden per request; card remains */}
+          <Stat aria-hidden="true">&nbsp;</Stat>
         </StatsRow>
       </Card>
 

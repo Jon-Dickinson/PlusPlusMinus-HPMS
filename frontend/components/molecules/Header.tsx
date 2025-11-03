@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
+import { useRouter } from 'next/router';
 
 const Root = styled.header`
   position: relative;
@@ -28,10 +29,21 @@ const Heading = styled.div`
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const titleForPath = (path: string) => {
+    if (path.startsWith('/user-list')) return 'User List';
+    if (path.startsWith('/user-notes')) return 'Notes';
+    if (path.startsWith('/building-analysis')) return 'Building Analysis';
+    if (path.startsWith('/builder')) return 'Builder';
+    // default to dashboard
+    return 'City Builder';
+  };
+  const heading = titleForPath(router.pathname || '');
   return (
     <Root>
       <Left>
-        <Heading>City Builder</Heading>
+        <Heading>{heading}</Heading>
       </Left>
       <Info>
         {user ? (
