@@ -1,20 +1,31 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../db.js';
 
-export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
+const SECRET = process.env.JWT_SECRET || 'dev-secret';
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const raw = req.headers.authorization || '';
+  const token = raw.startsWith('Bearer ') ? raw.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Missing token' });
+
   try {
-    const header = req.headers.authorization;
-    if (!header) return res.status(401).json({ message: 'No token provided' });
-    const token = header.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'No token provided' });
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    if (!decoded?.id) return res.status(401).json({ message: 'Invalid token' });
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-    if (!user) return res.status(401).json({ message: 'User not found' });
-    (req as any).user = { id: user.id, role: user.role };
+    const payload = jwt.verify(token, SECRET) as any;
+    // normalize payload to ensure controllers can use req.user.id
+    req.user = { id: payload.id ?? payload.userId, role: payload.role };
     next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
   }
+}
+
+// export a compat name used across routes
+export const authMiddleware = requireAuth;
+
+export function requireRole(...roles: Array<'ADMIN'|'MAYOR'|'VIEWER'>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  };
 }

@@ -1,68 +1,101 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from '../lib/axios';
 
-type User = { id: number; name: string; email: string; roles?: Array<{ role: { name: string } }> };
+type City = {
+  id: number;
+  name: string;
+  country: string;
+  mayorId: number;
+  gridState: any;
+  buildingLog: any;
+}
+
+type Note = {
+  id: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+type User = {
+  id: number;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: 'ADMIN' | 'MAYOR' | 'VIEWER';
+  city?: City | null;
+  notes?: Note[];
+};
 
 type AuthContextValue = {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | null>;
   logout: () => void;
+  setUser: (user: User | null) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const t = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const u = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+
     if (t) {
       setToken(t);
       axios.setAuthToken(t);
-      // Instead of relying on a `/users/me` endpoint (which may be removed),
-      // decode the JWT payload client-side to populate basic user info such as
-      // id and role. This keeps the UI responsive after a page refresh without
-      // requiring an extra backend route.
+    }
+    if (u) {
       try {
-        const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        const userFromToken: any = { id: payload.id, roles: [{ role: { name: payload.role } }] };
-        setUser(userFromToken);
+        setUserState(JSON.parse(u));
       } catch (e) {
-        // if decoding fails, silently ignore — UI will remain unauthenticated
+        // if decoding fails, silently ignore
+        setUserState(null);
       }
     }
   }, []);
 
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string): Promise<User | null> {
     const res = await axios.instance.post('/auth/login', { email, password });
     const data = res.data;
     const token = data.token;
-    if (token) {
+    const user = data.user;
+
+    if (token && user) {
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       setToken(token);
+      setUserState(user);
       axios.setAuthToken(token);
-      // Backend currently returns only a JWT token. Decode the token to extract
-      // basic user info (id and role) so the app can reflect admin status.
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        setUser({ id: payload.id, roles: [{ role: { name: payload.role } }] } as any);
-      } catch (e) {
-        setUser(null);
-      }
+      return user;
     }
+    return null;
   }
 
   function logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
-    setUser(null);
+    setUserState(null);
     axios.setAuthToken(null);
   }
 
+  function setUser(user: User | null) {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+    setUserState(user);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user: user, token, login, logout, setUser }}>{children}</AuthContext.Provider>
   );
 };
 

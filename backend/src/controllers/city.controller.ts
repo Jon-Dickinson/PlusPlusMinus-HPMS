@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as CityService from '../services/city.service.js';
-
+import { getCityByUserId as serviceGetCityByUserId, saveCity as serviceSaveCity } from '../services/city.service.js';
+import { saveCitySchema } from '../validators/city.validator.js';
 export async function listCities(req: Request, res: Response, next: NextFunction) {
   try {
     const data = await CityService.listCities();
@@ -9,13 +10,50 @@ export async function listCities(req: Request, res: Response, next: NextFunction
     next(err);
   }
 }
+export async function getCity(req: Request, res: Response) {
+  const userId = Number(req.params.userId);
+  const city = await serviceGetCityByUserId(userId);
+  if (!city) return res.status(404).json({ error: 'City not found' });
+  res.json(city);
+}
 
+export async function saveCitySnapshot(req: Request, res: Response) {
+  const userId = Number(req.params.userId);
+  const parsed = saveCitySchema.parse(req.body);
+  const updated = await serviceSaveCity(userId, parsed);
+  res.json(updated);
+}
 export async function getCityById(req: Request, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
     const city = await CityService.getById(id);
     if (!city) return res.status(404).json({ message: 'City not found' });
     res.json(city);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getCityByUserId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = Number(req.params.userId);
+    const city = await CityService.getByMayorId(userId);
+    if (!city) return res.status(404).json({ message: 'City not found' });
+    res.json(city);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function saveCityByUserId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = Number(req.params.userId);
+    // only mayor themselves or admin can save — check req.user
+    const authUser = (req as any).user;
+    if (!authUser) return res.status(401).json({ message: 'Unauthorized' });
+    if (authUser.role !== 'ADMIN' && authUser.id !== userId) return res.status(403).json({ message: 'Forbidden' });
+    const updated = await CityService.saveByMayorId(userId, req.body);
+    res.json(updated);
   } catch (err) {
     next(err);
   }
@@ -85,6 +123,17 @@ export async function addNote(req: Request, res: Response, next: NextFunction) {
     const cityId = Number(req.params.id);
     const note = await CityService.addNote(cityId, req.body);
     res.status(201).json(note);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function updateCityData(req: Request, res: Response, next: NextFunction) {
+  try {
+    const cityId = Number(req.params.id);
+    const userId = (req as any).user.id;
+    const updatedCity = await CityService.updateCityData(cityId, userId, req.body);
+    res.json(updatedCity);
   } catch (err) {
     next(err);
   }

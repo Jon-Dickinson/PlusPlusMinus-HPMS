@@ -135,7 +135,10 @@ const BuildingLog = styled.div`
   }
 `;
 
+import { useAuth } from '../context/AuthContext';
+
 export default function BuilderPage() {
+  const { user } = useAuth();
   return (
     <PageWrapper>
       <Sidebar>
@@ -158,8 +161,18 @@ export default function BuilderPage() {
       <ResourceColumn></ResourceColumn>
       <MainGridArea>
         <GridHeader>
-          <h2>City Name, Country</h2>
-          <h3>Mayor: Paul Sims</h3>
+            {user && user.role === 'MAYOR' && user.city && (
+                <>
+                    <h2>{user.city.name}, {user.city.country}</h2>
+                    <h3>Mayor: {user.firstName} {user.lastName}</h3>
+                </>
+            )}
+            {user && user.role !== 'MAYOR' && (
+                <>
+                    <h2>{user.role}</h2>
+                    <h3>{user.firstName} {user.lastName}</h3>
+                </>
+            )}
         </GridHeader>
         <GridContainer>
           {Array.from({ length: 9 * 11 }).map((_, i) => (

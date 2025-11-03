@@ -8,6 +8,7 @@ const router = express.Router();
 // CRUD for buildings and categories
 router.get('/', BuildingController.getAllBuildings);
 router.get('/categories', BuildingController.getAllCategories);
+router.get('/type/:type', BuildingController.getBuildingsByType);
 router.get('/:id', BuildingController.getBuildingById);
 router.post('/', validate(buildingCreateSchema), BuildingController.createBuilding);
 router.put('/:id', validate(buildingUpdateSchema), BuildingController.updateBuilding);

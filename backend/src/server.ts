@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import cityRoutes from "./routes/city.route.js";
+import noteRoutes from "./routes/note.route.js";
 import buildingRoutes from "./routes/building.route.js";
 import docsRoutes from "./routes/docs.route.js";
 
@@ -18,6 +19,7 @@ app.use(morgan('dev'));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cities', cityRoutes);
+app.use('/api/notes', noteRoutes);
 app.use('/api/buildings', buildingRoutes);
 app.use('/api/docs', docsRoutes);
 

@@ -12,7 +12,7 @@ datasource db {
 // ENUMS
 // ────────────────────────────────
 
-enum UserRole {
+enum Role {
   ADMIN
   MAYOR
   VIEWER
@@ -26,33 +26,29 @@ model User {
   id          Int       @id @default(autoincrement())
   firstName   String
   lastName    String
+  username    String    @unique
   email       String    @unique
   password    String
-  role        UserRole  @default(VIEWER)
-  nationality String?
-  homeCity    String?
+  role        Role
+  city        City?     @relation(name: "CityMayor")
+  notes       Note[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
-  cities      City[]
 }
 
 model City {
-  id            Int        @id @default(autoincrement())
-  name          String
-  country       String?
-  mayorId       Int
-  population    Int         @default(0)
-  powerUsage    Int         @default(0)
-  waterUsage    Int         @default(0)
-  resourceLimit Int         @default(1000)
-  isActive      Boolean     @default(true)
-  createdAt     DateTime    @default(now())
-
-  mayor         User        @relation(fields: [mayorId], references: [id])
-  buildLogs     BuildLog[]
-  notes         Note[]
-  buildings     Building[]
+  id           Int       @id @default(autoincrement())
+  name         String
+  country      String
+  qualityIndex Float     @default(0)
+  buildingLog  Json?
+  gridState    Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  mayor        User      @relation(fields: [mayorId], references: [id], name: "CityMayor")
+  mayorId      Int       @unique
+  buildLogs    BuildLog[]
+  buildings    Building[]
 }
 
 model BuildLog {
@@ -67,12 +63,11 @@ model BuildLog {
 
 model Note {
   id        Int      @id @default(autoincrement())
-  cityId    Int
+  userId    Int
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  city      City     @relation(fields: [cityId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model BuildingCategory {

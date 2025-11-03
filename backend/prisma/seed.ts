@@ -23,69 +23,30 @@ async function main() {
   const passwordHash = await bcrypt.hash('Password123!', 10);
 
   // ─────────────── USERS ───────────────
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: {
-      firstName: 'Alice',
-      lastName: 'Admin',
-      email: 'admin@example.com',
-      password: passwordHash,
-      role: 'ADMIN',
-      nationality: 'United Kingdom',
-      homeCity: 'London',
-    },
-  });
+  let admin = await prisma.user.findFirst({ where: ({ username: 'admin' } as any) });
+  if (!admin) {
+    admin = await prisma.user.create({ data: { firstName: 'Alice', lastName: 'Admin', username: 'admin', email: 'admin@example.com', password: passwordHash, role: 'ADMIN' } as any });
+  }
 
-  const mayor = await prisma.user.upsert({
-    where: { email: 'mayor@example.com' },
-    update: {},
-    create: {
-      firstName: 'Michael',
-      lastName: 'Mayor',
-      email: 'mayor@example.com',
-      password: passwordHash,
-      role: 'MAYOR',
-      nationality: 'South Africa',
-      homeCity: 'Cape Town',
-      cities: {
-        create: {
-          name: 'Sunrise Bay',
-          country: 'South Africa',
-          population: 300,
-          powerUsage: 150,
-          waterUsage: 120,
-          resourceLimit: 1000,
-          buildLogs: {
-            create: [
-              { action: 'Placed Residential Block', value: 100 },
-              { action: 'Built Water Plant', value: 50 },
-            ],
-          },
-          notes: {
-            create: [
-              { content: 'Started developing near the bay area.' },
-              { content: 'Next step: expand power generation.' },
-            ],
-          },
-        },
-      },
-    },
-  });
+  let mayor = await prisma.user.findFirst({ where: ({ username: 'mayor' } as any) });
+  if (!mayor) {
+    mayor = await prisma.user.create({ data: { firstName: 'Michael', lastName: 'Mayor', username: 'mayor', email: 'mayor@example.com', password: passwordHash, role: 'MAYOR' } as any });
+  }
 
-  const viewer = await prisma.user.upsert({
-    where: { email: 'viewer@example.com' },
-    update: {},
-    create: {
-      firstName: 'Victor',
-      lastName: 'Viewer',
-      email: 'viewer@example.com',
-      password: passwordHash,
-      role: 'VIEWER',
-      nationality: 'USA',
-      homeCity: 'Boston',
-    },
-  });
+  // Create a city and assign the mayor
+  let sunrise = await prisma.city.findFirst({ where: { name: 'Sunrise Bay' } as any });
+  if (!sunrise) {
+    sunrise = await prisma.city.create({ data: { name: 'Sunrise Bay', country: 'South Africa', qualityIndex: 42, mayorId: mayor.id, buildingLog: [ 'Placed Residential Block', 'Built Water Plant' ], gridState: null } as any });
+  }
+
+  // Create some user notes (Note now belongs to user)
+  await prisma.note.create({ data: { userId: mayor.id, content: 'Started developing near the bay area.' } as any });
+  await prisma.note.create({ data: { userId: mayor.id, content: 'Next step: expand power generation.' } as any });
+
+  let viewer = await prisma.user.findFirst({ where: ({ username: 'viewer' } as any) });
+  if (!viewer) {
+    viewer = await prisma.user.create({ data: { firstName: 'Victor', lastName: 'Viewer', username: 'viewer', email: 'viewer@example.com', password: passwordHash, role: 'VIEWER' } as any });
+  }
 
   // ─────────────── CATEGORIES ───────────────
   for (const category of categories) {
@@ -145,9 +106,9 @@ async function main() {
 
   console.log('✅ Seed completed successfully.');
   console.table([
-    { role: 'Admin', email: admin.email, password: 'Password123!' },
-    { role: 'Mayor', email: mayor.email, password: 'Password123!' },
-    { role: 'Viewer', email: viewer.email, password: 'Password123!' },
+    { role: 'Admin', username: (admin as any).username || 'admin', password: 'Password123!' },
+    { role: 'Mayor', username: (mayor as any).username || 'mayor', password: 'Password123!' },
+    { role: 'Viewer', username: (viewer as any).username || 'viewer', password: 'Password123!' },
   ]);
 }
 

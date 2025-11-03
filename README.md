@@ -88,3 +88,17 @@ https://trello.com/b/dy9uG8Vx/plusplusminus
 https://console.neon.tech/app/projects/calm-dream-36516261/auth?tab=configuration
 ```
 
+### Swagger
+
+Start the server:
+
+```
+npm run build
+npm run dev
+```
+
+Open the Swagger UI in your browser:
+http://localhost:4000/api/docs
+
+Raw OpenAPI JSON:
+http://localhost:4000/api/docs/json

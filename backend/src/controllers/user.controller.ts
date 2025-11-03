@@ -9,7 +9,15 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
     next(err);
   }
 }
-
+export async function listMayors(_req: Request, res: Response) {
+  const data = await UserService.listMayors();
+  // augment hasNotes for UI
+  const result = data.map((m: any) => ({
+    ...m,
+    hasNotes: (m.notes?.length ?? 0) > 0,
+  }));
+  res.json(result);
+}
 
 export async function getUserById(req: Request, res: Response, next: NextFunction) {
   try {

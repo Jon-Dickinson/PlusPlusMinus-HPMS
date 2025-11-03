@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/router';
 import Spinner from '../atoms/Spinner';
+import Link from 'next/link';
 
 const Root = styled.div`
   position: relative;
@@ -96,8 +97,14 @@ export default function LoginForm() {
     setLoading(true);
     setError(null);
     try {
-      await login(email, password);
-      router.push('/dashboard');
+      const user = await login(email, password);
+      if (user) {
+        if (user.role === 'ADMIN') {
+          router.push('/user-list');
+        } else {
+          router.push('/dashboard');
+        }
+      }
     } catch (err) {
       // Try to extract a helpful message
       const msg =
@@ -149,6 +156,12 @@ export default function LoginForm() {
             </Button>
           </Row>
         </form>
+        <div style={{ marginTop: '24px', textAlign: 'center' }}>
+          Don't have an account?{' '}
+          <Link href="/register" legacyBehavior>
+            <a style={{ color: '#007bff', textDecoration: 'none' }}>Register here</a>
+          </Link>
+        </div>
       </Form>
     </Root>
   );

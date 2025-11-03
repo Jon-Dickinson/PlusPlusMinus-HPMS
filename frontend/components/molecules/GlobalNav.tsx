@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = styled.nav`
   width: 80px;
@@ -36,9 +37,25 @@ const Icon = styled.img`
   transition: opacity 0.15s ease, filter 0.15s ease;
 `;
 
+const ExitButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-top: auto;
+  margin-bottom: 1rem;
+`;
+
 export default function GlobalNav() {
   const router = useRouter();
   const isActive = (path: string) => router.pathname === path;
+  const { user, logout } = useAuth();
+  const role = user?.role;
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   return (
     <Sidebar>
@@ -46,23 +63,30 @@ export default function GlobalNav() {
     
         <Logo src="/logo.svg" alt="City Builder" />
         
+        {role !== 'ADMIN' && (
+          <Link href="/dashboard" aria-label="Dashboard">
+            <Icon src="/builder.svg" alt="Builder" active={isActive('/dashboard')} />
+          </Link>
+        )}
 
-        <Link href="/dashboard" aria-label="Dashboard">
-          <Icon src="/builder.svg" alt="Builder" active={isActive('/dashboard')} />
-        </Link>
-
-        <Link href="/user-list" aria-label="User List">
-          <Icon src="/list.svg" alt="User List" active={isActive('/user-list')} />
-        </Link>
-
-        <Link href="/user-notes" aria-label="Notes">
-          <Icon src="/note.svg" alt="Note" active={isActive('/user-notes')} />
-        </Link>
-
+        {role !== 'MAYOR' && (
+          <Link href="/user-list" aria-label="User List">
+            <Icon src="/list.svg" alt="User List" active={isActive('/user-list')} />
+          </Link>
+        )}
+ 
         <Link href="/building-analysis" aria-label="Components">
           <Icon src="/component.svg" alt="Component" active={isActive('/building-analysis')} />
         </Link>
+        {/* {role === 'ADMIN' && (
+          <Link href="/api-test" aria-label="API Test">
+            <Icon src="/api.svg" alt="API Test" active={isActive('/api-test')} />
+          </Link>
+        )} */}
       </NavIcons>
+      <ExitButton onClick={handleLogout}>
+        <Icon src="/logout.svg" alt="Logout" />
+      </ExitButton>
     </Sidebar>
   );
 }

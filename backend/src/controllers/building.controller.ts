@@ -58,3 +58,13 @@ export async function deleteBuilding(req: Request, res: Response, next: NextFunc
     next(err);
   }
 }
+
+export async function getBuildingsByType(req: Request, res: Response, next: NextFunction) {
+  try {
+    const type = req.params.type;
+    const data = await BuildingService.getByCategoryName(type);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
