@@ -12,11 +12,9 @@ import styled from 'styled-components';
 export default function CityMap({ scale = 1 }: { scale?: number }) {
   return (
     <Wrap>
-     
-        <GridContainer>
-          <CityGrid />
-        </GridContainer>
-      
+      <GridContainer>
+        <CityGrid />
+      </GridContainer>
     </Wrap>
   );
 }
@@ -24,7 +22,7 @@ export default function CityMap({ scale = 1 }: { scale?: number }) {
 const Wrap = styled.div`
   position: relative;
   display: flex;
- 
+
   z-index: 1000;
 `;
 

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../lib/axios';
 import BuildingSidebar from '../components/organisms/BuildingSidebar';
 import { CityProvider } from '../components/organisms/CityContext';
-import Header from '../components/molecules/Header'; 
+import Header from '../components/molecules/Header';
 import StatsPanel from '../components/organisms/StatsPanel';
 
 const MapWrap = styled.div`
@@ -17,7 +17,7 @@ const MapWrap = styled.div`
   justify-content: stretch;
   width: 100%;
   height: 100%;
-  background-color: #111D3A;
+  background-color: #111d3a;
 `;
 
 const MapPanel = styled.div`
@@ -49,76 +49,58 @@ export default function Dashboard() {
   }, []);
 
   return (
-    
-
-  <MainTemplate>
-     
+    <MainTemplate>
       <Sidebar>
-      
         <NavIcons>
-        <Icon className="m-b-40" src="/logo.svg" alt="City Builder" />
-         <Icon src="/builder.svg" alt="Builder" />
-         <Icon src="/list.svg" alt="User List" />
-         <Icon src="/note.svg" alt="Note" />
-         <Icon src="/component.svg" alt="Component" />
+          <Icon className="m-b-40" src="/logo.svg" alt="City Builder" />
+          <Icon src="/builder.svg" alt="Builder" />
+          <Icon src="/list.svg" alt="User List" />
+          <Icon src="/note.svg" alt="Note" />
+          <Icon src="/component.svg" alt="Component" />
         </NavIcons>
       </Sidebar>
       <ColWrapper>
         <Header />
         <RowWrapper>
+          <CityProvider>
+            <ResourceColumn>
+              <GridHeader>
+                <h3>Mayor: Paul Sims</h3>
+                <h2>City Name, Country</h2>
+              </GridHeader>
 
-        <CityProvider>
+              <StatsPanel />
+            </ResourceColumn>
 
-        <ResourceColumn>
-            <GridHeader>
-            
-            <h3>Mayor: Paul Sims</h3>
-            <h2>City Name, Country</h2>
-          </GridHeader>
+            <BuildingSidebar />
 
-          <StatsPanel />
-        </ResourceColumn>
+            <MainGridArea>
+              <GridContainer>
+                <MapPanel>{user && <CityMap />}</MapPanel>
+              </GridContainer>
+            </MainGridArea>
+          </CityProvider>
+          <InfoColumn>
+            <QualityBox>
+              <span>73%</span>
+              <h3>Quality Index</h3>
+            </QualityBox>
 
-       
-          <BuildingSidebar />
-      
-
-        <MainGridArea>
-         
-          <GridContainer>
-            <MapPanel>{user && <CityMap />}</MapPanel>
-          </GridContainer>
-        </MainGridArea>
-      </CityProvider>
-      <InfoColumn>
-        <QualityBox>
-          
-          <span>73%</span>
-          <h3>Quality Index</h3>
-        </QualityBox>
-
-        <BuildingLog>
-          <h4>Building Log</h4>
-          <ul>
-            <li>Residential</li>
-            <li>Power</li>
-            <li>Water</li>
-            <li>Residential</li>
-          </ul>
-        </BuildingLog>
-      </InfoColumn>
-
-        
+            <BuildingLog>
+              <h4>Building Log</h4>
+              <ul>
+                <li>Residential</li>
+                <li>Power</li>
+                <li>Water</li>
+                <li>Residential</li>
+              </ul>
+            </BuildingLog>
+          </InfoColumn>
         </RowWrapper>
       </ColWrapper>
-    
-
-     
     </MainTemplate>
-
   );
 }
-
 
 const RowWrapper = styled.div`
   position: relative;
@@ -139,7 +121,7 @@ const ColWrapper = styled.div`
 const Sidebar = styled.div`
   width: 80px;
   min-width: 80px;
-  background: #111D3A;
+  background: #111d3a;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -147,14 +129,12 @@ const Sidebar = styled.div`
   padding: 1rem 0;
 `;
 
-
 const NavIcons = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding-top: 5px;
 `;
-
 
 const ResourceColumn = styled.div`
   position: relative;
@@ -166,10 +146,9 @@ const ResourceColumn = styled.div`
   gap: 1rem;
 `;
 
-
 /* ==== MAIN GRID AREA ==== */
 const MainGridArea = styled.div`
-margin-top: 72px;
+  margin-top: 72px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -177,25 +156,23 @@ margin-top: 72px;
 
 const GridHeader = styled.div`
   display: flex;
- flex-direction: column;
+  flex-direction: column;
   align-items: flex-start;
   padding-left: 10px;
 
   h2 {
-  font-size: 12px;
+    font-size: 12px;
     margin: 0;
     color: #ffffff;
     font-weight: 400;
   }
 
   h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #ffffff;
+    margin: 0;
+    font-size: 18px;
+    color: #ffffff;
     font-weight: 500;
   }
-  
-  
 `;
 
 const GridContainer = styled.div`
@@ -205,11 +182,10 @@ const GridContainer = styled.div`
 `;
 
 const GridCell = styled.div`
-  border: 1px solid #414E79;
+  border: 1px solid #414e79;
   background: #1a1d23;
   border-radius: 4px;
 `;
-
 
 const InfoColumn = styled.div`
   width: 100%;
@@ -224,14 +200,14 @@ const InfoColumn = styled.div`
 const QualityBox = styled.div`
   padding: 1rem;
   text-align: center;
-   border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1); 
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background-color: #192748;
- 
+
   h3 {
-   color: #ffffff;
-  font-weight: 400;
+    color: #ffffff;
+    font-weight: 400;
   }
   span {
     font-size: 2rem;
@@ -241,9 +217,9 @@ const QualityBox = styled.div`
 `;
 
 const BuildingLog = styled.div`
-   border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1); 
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background-color: #192748;
   padding: 1rem;
   color: #ffffff;

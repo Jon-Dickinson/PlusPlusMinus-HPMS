@@ -1,6 +1,6 @@
 import React from 'react';
 import MainTemplate from '../templates/MainTemplate';
-import styled from "styled-components";
+import styled from 'styled-components';
 
 const PageWrapper = styled.div`
   display: flex;
@@ -9,7 +9,7 @@ const PageWrapper = styled.div`
   height: 100vh;
   background: linear-gradient(180deg, #0f0f12 0%, #1c1f25 100%);
   color: #fff;
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
 `;
 
 /* ==== LEFT SIDEBAR ==== */
@@ -135,10 +135,9 @@ const BuildingLog = styled.div`
   }
 `;
 
-
 export default function BuilderPage() {
   return (
-     <PageWrapper>
+    <PageWrapper>
       <Sidebar>
         <Logo>Logo</Logo>
         <NavIcons>
@@ -156,9 +155,7 @@ export default function BuilderPage() {
         <ResourceCard>Services</ResourceCard>
         <ResourceCard>Food</ResourceCard>
       </ResourceColumn>
-      <ResourceColumn>
-       
-      </ResourceColumn>
+      <ResourceColumn></ResourceColumn>
       <MainGridArea>
         <GridHeader>
           <h2>City Name, Country</h2>
