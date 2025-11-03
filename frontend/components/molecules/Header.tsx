@@ -28,7 +28,7 @@ const Heading = styled.div`
 `;
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   const titleForPath = (path: string) => {
@@ -52,7 +52,7 @@ export default function Header() {
             <div style={{ color: '#6B7280' }}>{user.roles?.map((r) => r.role.name).join(', ')}</div>
             <Icon src="/user.svg" alt="User" />
 
-            <Icon src="/logout.svg" alt="Logout" onClick={logout} />
+           
           </>
         ) : (
           <div>Guest</div>

@@ -1,0 +1,236 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "City Builder API",
+    "version": "1.0.0",
+    "description": "Backend API for the hierarchical City Builder application.\nSupports multi-role access (Admin, Mayor, Viewer), dynamic city grid saving, user notes, and building analysis."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "summary": "Register a new user (Mayor or Viewer)",
+        "description": "Creates a user and, if role=MAYOR, automatically creates a City record.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "username": { "type": "string" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "role": { "type": "string", "enum": ["MAYOR", "VIEWER"] },
+                  "cityName": { "type": "string" },
+                  "country": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User registered successfully" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "description": "Authenticates a user and returns a JWT token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "JWT token + user info" }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "summary": "Get all mayors",
+        "description": "Returns list of users with role=MAYOR, their city summary, and note status.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Array of mayors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "firstName": { "type": "string" },
+                      "lastName": { "type": "string" },
+                      "city": {
+                        "type": "object",
+                        "properties": {
+                          "name": { "type": "string" },
+                          "country": { "type": "string" },
+                          "qualityIndex": { "type": "number" }
+                        }
+                      },
+                      "hasNotes": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/city/{userId}": {
+      "get": {
+        "summary": "Get a city's data",
+        "description": "Returns full city info, including gridState and buildingLog.",
+        "parameters": [
+          { "in": "path", "name": "userId", "required": true, "schema": { "type": "integer" } }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "City object" } }
+      }
+    },
+    "/api/city/{userId}/save": {
+      "put": {
+        "summary": "Save a city snapshot",
+        "description": "Updates city grid layout, building log, and quality index.",
+        "parameters": [
+          { "in": "path", "name": "userId", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "buildingLog": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "gridState": {
+                    "type": "object",
+                    "properties": {
+                      "width": { "type": "number" },
+                      "height": { "type": "number" },
+                      "cells": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "stack": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "type": { "type": "string" },
+                                  "level": { "type": "number" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "qualityIndex": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Updated city record" } }
+      }
+    },
+    "/api/notes/{userId}": {
+      "get": {
+        "summary": "Get notes for a user",
+        "parameters": [
+          { "in": "path", "name": "userId", "required": true, "schema": { "type": "integer" } }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Array of notes" } }
+      },
+      "put": {
+        "summary": "Save or update a user note",
+        "parameters": [
+          { "in": "path", "name": "userId", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "content": { "type": "string" } } }
+            }
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Updated or created note" } }
+      }
+    },
+    "/api/buildings": {
+      "get": {
+        "summary": "Get all buildings",
+        "description": "Returns all building data from prisma/data/buildings.json",
+        "responses": { "200": { "description": "List of buildings" } }
+      }
+    },
+    "/api/buildings/{category}": {
+      "get": {
+        "summary": "Get buildings by category",
+        "parameters": [
+          { "in": "path", "name": "category", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Filtered building list" } }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "summary": "Get all categories",
+        "description": "Returns all building categories and descriptions",
+        "responses": { "200": { "description": "List of categories" } }
+      }
+    },
+    "/api/categories/{name}": {
+      "get": {
+        "summary": "Get a specific category",
+        "parameters": [
+          { "in": "path", "name": "name", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Category info" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

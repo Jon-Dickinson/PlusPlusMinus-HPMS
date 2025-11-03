@@ -1,7 +1,8 @@
 import express from 'express';
 import * as CityController from '../controllers/city.controller.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { cityCreateSchema, cityUpdateSchema } from '../validators/city.validator.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
+import { cityCreateSchema, cityUpdateSchema, updateCityDataSchema } from '../validators/city.validator.js';
 import { z } from 'zod';
 
 const router = express.Router();
@@ -14,12 +15,17 @@ router.get('/', CityController.listCities);
 router.get('/:id', CityController.getCityById);
 router.post('/', validate(cityCreateSchema), CityController.createCity);
 router.put('/:id', validate(cityUpdateSchema), CityController.updateCity);
+router.put('/:id/data', authMiddleware, validate(updateCityDataSchema), CityController.updateCityData);
 router.delete('/:id', CityController.deleteCity);
 
 // City subroutes (notes & logs)
 router.get('/:id/logs', CityController.getBuildLogs);
 router.post('/:id/logs', validate(logSchema), CityController.addBuildLog);
 router.get('/:id/notes', CityController.getNotes);
-router.post('/:id/notes', validate(noteSchema), CityController.addNote);
+router.post('/:id/notes', authMiddleware, validate(noteSchema), CityController.addNote);
+
+// User-based city endpoints (frontend expects /api/city/:userId)
+router.get('/user/:userId', CityController.getCityByUserId);
+router.put('/user/:userId/save', authMiddleware, CityController.saveCityByUserId);
 
 export default router;

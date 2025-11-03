@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import MainTemplate from '../templates/MainTemplate';
 import CityMap from '../components/organisms/CityMap';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
 import { CityProvider } from '../components/organisms/CityContext';
 import Header from '../components/molecules/Header';
-import StatsPanel from '../components/organisms/StatsPanel';
+import MayorCard from '../components/molecules/MayorCard';
 import GlobalNav from '../components/molecules/GlobalNav';
 import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
+import axios from '../lib/axios';
 
 const MapPanel = styled.div`
   position: relative;
@@ -19,12 +20,37 @@ const MapPanel = styled.div`
   width: 100%;
 `;
 
-// icon handled by GlobalNav
+import { useAuth } from '../context/AuthContext';
+
 
 export default function UserList() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const isActive = (path: string) => router.pathname === path;
+
+  const [mayors, setMayors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchMayors() {
+      try {
+        const res = await axios.instance.get('/users');
+        if (mounted) setMayors(res.data || []);
+      } catch (e) {
+        // for now, swallow — could show toast
+        console.error('Failed to load mayors', e);
+        if (mounted) setMayors([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchMayors();
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <MainTemplate>
@@ -36,29 +62,49 @@ export default function UserList() {
           <CityProvider>
             <ResourceColumn>
               <GridHeader>
-                <h3>Mayor: Paul Sims</h3>
-                <h2>City Name, Country</h2>
+                {user && user.role === 'MAYOR' && user.city && (
+                  <>
+                    <h3>Mayor: {user.firstName} {user.lastName}</h3>
+                    <h2>{user.city.name}, {user.city.country}</h2>
+                  </>
+                )}
+                 {user && user.role !== 'MAYOR' && (
+                  <>
+                    <h3>{user.firstName} {user.lastName}</h3>
+                    <h2>{user.role}</h2>
+                  </>
+                )}
               </GridHeader>
 
-              <StatsPanel />
+              {loading ? (
+                <div style={{ color: '#fff', padding: '1rem' }}>Loading mayors...</div>
+              ) : mayors.length === 0 ? (
+                <div style={{ color: '#fff', padding: '1rem' }}>No mayors found.</div>
+              ) : (
+                <MayorGrid>
+                  {mayors.map((m: any) => (
+                    <MayorCard
+                      key={m.id}
+                      id={m.id}
+                      firstName={m.firstName}
+                      lastName={m.lastName}
+                      cityName={m.city?.name}
+                      country={m.city?.country}
+                      qualityIndex={m.city?.qualityIndex}
+                      hasNotes={Array.isArray(m.notes) && m.notes.length > 0}
+                      onClick={(id) => {
+                        if (user?.role === 'ADMIN') {
+                          router.push(`/mayor-view/${id}`);
+                        }
+                      }}
+                    />
+                  ))}
+                </MayorGrid>
+              )}
             </ResourceColumn>
 
-            <MainGridArea>
-              <GridContainer>
-                <MapPanel>
-                  <CityMap />
-                </MapPanel>
-              </GridContainer>
-            </MainGridArea>
           
-          <InfoColumn>
-            <QualityBox>
-              <span>73%</span>
-              <h3>Quality Index</h3>
-            </QualityBox>
-
-            <BuildingLogPanel />
-          </InfoColumn>
+      
           </CityProvider>
         </RowWrapper>
       </ColWrapper>
@@ -144,6 +190,20 @@ const GridContainer = styled.div`
   display: flex;
   align-items: flex-start;
   flex: 1;
+`;
+
+const MayorGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
 `;
 
 const InfoColumn = styled.div`

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainTemplate from '../templates/MainTemplate';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
@@ -14,6 +14,7 @@ import api from '../lib/axios';
 const SidebarList = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
   padding-top: 84px;
   max-width: 140px;
@@ -27,39 +28,62 @@ const ImageButton = styled.button`
   align-items: center;
   cursor: pointer;
   border-radius: 6px;
+  overflow: visible;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.03);
-  }
+  
 
   img {
     width: 56px;
     height: 56px;
     object-fit: contain;
     display: block;
+    transition: all 0.3s ease;
+    &:hover {
+      transform: scale(1.15);
+    }
   }
 `;
 
 const AnalysisPlaceholder = styled.div`
-  background: #0f1724;
   border-radius: 6px;
   min-height: 420px;
   padding: 1rem;
-  color: #fff;
+  color: #ffffff;
 `;
 
 
 export default function BuildingAnalysis() {
   const router = useRouter();
-  const isActive = (path: string) => router.pathname === path;
   const [selected, setSelected] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Listen for building:selected events dispatched by the sidebar clicks
-  React.useEffect(() => {
-    const handler = (e: any) => setSelected(e.detail || null);
-    window.addEventListener('building:selected', handler as EventListener);
-    return () => window.removeEventListener('building:selected', handler as EventListener);
-  }, []);
+  // Function to fetch building data
+  const fetchBuildingData = async (buildingId: string) => {
+    setLoading(true);
+    try {
+      const res = await api.instance.get(`/buildings/${buildingId}`);
+      setSelected(res.data);
+    } catch (e) {
+      setSelected({ error: true, message: 'Failed to load building details' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Effect to fetch data when buildingId query param changes
+  useEffect(() => {
+    const { buildingId } = router.query;
+    if (buildingId && typeof buildingId === 'string') {
+      fetchBuildingData(buildingId);
+    } else {
+      setSelected(null); // Clear selection if no ID
+    }
+  }, [router.query]);
+
+  // Function to handle building selection from the list
+  const handleSelectBuilding = (buildingId: number) => {
+    router.push(`/building-analysis?buildingId=${buildingId}`, undefined, { shallow: true });
+  };
 
   return (
     <MainTemplate>
@@ -75,21 +99,7 @@ export default function BuildingAnalysis() {
                 {buildings.map((b: any) => (
                   <ImageButton
                     key={b.id}
-                    onClick={async () => {
-                      try {
-                        // call backend API to get building details
-                        const res = await api.instance.get(`/buildings/${b.id}`);
-                        const data = res?.data;
-                        // set selected description into local state via DOM event
-                        const ev = new CustomEvent('building:selected', { detail: data });
-                        window.dispatchEvent(ev as any);
-                      } catch (e) {
-                        const ev = new CustomEvent('building:selected', {
-                          detail: { error: true, message: 'Failed to load building details' },
-                        });
-                        window.dispatchEvent(ev as any);
-                      }
-                    }}
+                    onClick={() => handleSelectBuilding(b.id)}
                     title={b.name}
                   >
                     <img src={(b.icon as string) || `/buildings/${b.id}.png`} alt={b.name} />
@@ -101,7 +111,9 @@ export default function BuildingAnalysis() {
             <MainGridArea>
               <GridContainer>
                 <AnalysisPlaceholder>
-                  {selected ? (
+                  {loading ? (
+                    <p>Loading...</p>
+                  ) : selected ? (
                     selected.error ? (
                       <div>
                         <h3>Error</h3>
@@ -109,21 +121,31 @@ export default function BuildingAnalysis() {
                       </div>
                     ) : (
                       <div>
-                        <h3>{selected.name || selected.title || 'Building'}</h3>
-                        <div dangerouslySetInnerHTML={{ __html: selected.description || selected.longDescription || selected.notes || '<p>No description available.</p>' }} />
+                        <h3>{selected.name || 'Building'}</h3>
+                        <div dangerouslySetInnerHTML={{ __html: selected.longDescription || '<p>No description available.</p>' }} />
+                        {selected.resources && (
+                          <div>
+                            <h4>Resources:</h4>
+                            <ul>
+                              {Object.entries(selected.resources).map(([key, value]) => (
+                                <li key={key}>
+                                  {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}: {String(value)}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     )
                   ) : (
                     <div>
                       <h3>Building Analysis</h3>
-                      <p>This is a placeholder for the building analysis view. Click a building on the left to load details.</p>
+                      <p>Select a building on the left to see its details.</p>
                     </div>
                   )}
                 </AnalysisPlaceholder>
               </GridContainer>
             </MainGridArea>
-          
-         
           </CityProvider>
         </RowWrapper>
       </ColWrapper>

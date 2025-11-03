@@ -25,16 +25,29 @@ type CityContextType = {
 
 const CityContext = createContext<CityContextType | null>(null);
 
-export function CityProvider({ children }: { children: React.ReactNode }) {
+export function CityProvider({ children, initialCityData }: { children: React.ReactNode, initialCityData?: any }) {
   // create distinct arrays for each cell
   // Start with 36 base cells (6x6). User requested 50 more blocks — add 50
   // extra empty cells so the grid grows without losing existing placements.
   const INITIAL_CELLS = 36 + 50; // 86 total
-  const [grid, setGrid] = useState<number[][]>(() =>
-    Array.from({ length: INITIAL_CELLS }, () => []),
-  );
-  const [totals, setTotals] = useState<Totals>({});
-  const [buildingLog, setBuildingLog] = useState<string[]>([]);
+  const [grid, setGrid] = useState<number[][]>(() => {
+    if (initialCityData?.gridState) {
+      return initialCityData.gridState;
+    }
+    return Array.from({ length: INITIAL_CELLS }, () => []);
+  });
+  const [totals, setTotals] = useState<Totals>(() => {
+    if (initialCityData?.gridState) {
+      return computeTotalsFromGrid(initialCityData.gridState);
+    }
+    return {};
+  });
+  const [buildingLog, setBuildingLog] = useState<string[]>(() => {
+    if (initialCityData?.buildingLog) {
+      return initialCityData.buildingLog;
+    }
+    return [];
+  });
 
   function computeTotalsFromGrid(g: number[][]) {
     return g.flat().reduce((acc: Totals, id: number) => {

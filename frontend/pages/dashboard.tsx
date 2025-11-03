@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../lib/axios';
 import BuildingSidebar from '../components/organisms/BuildingSidebar';
 import GlobalNav from '../components/molecules/GlobalNav';
-import { CityProvider } from '../components/organisms/CityContext';
+import { CityProvider, useCity } from '../components/organisms/CityContext';
 import Header from '../components/molecules/Header';
 import StatsPanel from '../components/organisms/StatsPanel';
 import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
@@ -39,6 +39,130 @@ const Icon = styled.img`
   display: block;
 `;
 
+const SaveButton = styled.button`
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 1rem;
+
+  &:hover {
+    background-color: #45a049;
+  }
+`;
+
+const NotesInput = styled.textarea`
+  width: 100%;
+  height: 100px;
+  background-color: #192748;
+  color: white;
+  border: 1px solid #414e79;
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 1rem;
+  resize: vertical;
+`;
+
+function DashboardContent() {
+  const { user, setUser } = useAuth();
+  const [note, setNote] = React.useState('');
+  const cityContext = useCity();
+
+  useEffect(() => {
+    if (user?.role === 'MAYOR' && user.id) {
+      axios.instance.get(`/users/${user.id}`)
+        .then(res => {
+          setUser(res.data);
+        })
+        .catch(err => {
+          console.error("Failed to fetch mayor data", err);
+        });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.notes && user.notes.length > 0) {
+      setNote(user.notes[0].content);
+    }
+  }, [user]);
+
+  const handleSave = () => {
+    if (!user || !user.city || !cityContext) {
+      return;
+    }
+
+    const { grid, buildingLog } = cityContext;
+
+    const payload = {
+      gridState: grid,
+      buildingLog: buildingLog,
+      note: note,
+    };
+
+    axios.instance.put(`/cities/${user.city.id}/data`, payload)
+      .then(response => {
+        console.log('City data saved successfully', response.data);
+        // Optionally, show a success message to the user
+      })
+      .catch(error => {
+        console.error('Failed to save city data', error);
+        // Optionally, show an error message to the user
+      });
+  };
+
+  return (
+    <>
+      <ResourceColumn>
+        <GridHeader>
+          {user && user.role === 'MAYOR' && user.city && (
+            <>
+              <h3>Mayor: {user.firstName} {user.lastName}</h3>
+              <h2>{user.city.name}, {user.city.country}</h2>
+            </>
+          )}
+          {user && user.role !== 'MAYOR' && (
+            <>
+              <h3>{user.firstName} {user.lastName}</h3>
+              <h2>{user.role}</h2>
+            </>
+          )}
+        </GridHeader>
+
+        <StatsPanel />
+      </ResourceColumn>
+
+      <BuildingSidebar />
+
+      <MainGridArea>
+        <GridContainer>
+          <MapPanel>{user && <CityMap />}</MapPanel>
+        </GridContainer>
+      </MainGridArea>
+    
+      <InfoColumn>
+        <QualityBoxFromContext />
+
+        {/* Building log now driven from CityContext */}
+        <BuildingLogPanel />
+
+        {user && user.role === 'MAYOR' && (
+          <>
+            <NotesInput 
+              placeholder="Enter your notes here..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+            <SaveButton onClick={handleSave}>Save City Data</SaveButton>
+          </>
+        )}
+      </InfoColumn>
+    </>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [serverTime, setServerTime] = React.useState<string | null>(null);
@@ -57,30 +181,8 @@ export default function Dashboard() {
       <ColWrapper>
         <Header />
         <RowWrapper>
-          <CityProvider>
-            <ResourceColumn>
-              <GridHeader>
-                <h3>Mayor: Paul Sims</h3>
-                <h2>City Name, Country</h2>
-              </GridHeader>
-
-              <StatsPanel />
-            </ResourceColumn>
-
-            <BuildingSidebar />
-
-            <MainGridArea>
-              <GridContainer>
-                <MapPanel>{user && <CityMap />}</MapPanel>
-              </GridContainer>
-            </MainGridArea>
-          
-          <InfoColumn>
-            <QualityBoxFromContext />
-
-            {/* Building log now driven from CityContext */}
-            <BuildingLogPanel />
-          </InfoColumn>
+          <CityProvider initialCityData={user?.city}>
+            <DashboardContent />
           </CityProvider>
         </RowWrapper>
       </ColWrapper>

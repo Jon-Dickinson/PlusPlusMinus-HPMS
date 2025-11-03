@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import * as AuthService from '../services/auth.service.js';
+import { registerRefined } from '../validators/auth.validator.js';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await AuthService.register(req.body);
-    res.status(201).json(user);
+    // validate mayor-specific requirements
+    registerRefined.parse(req.body);
+    const payload = await AuthService.register(req.body);
+    res.status(201).json(payload);
   } catch (err) {
     next(err);
   }
@@ -12,8 +15,9 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const token = await AuthService.login(req.body);
-    res.json({ token });
+    const { username, email, password } = req.body;
+    const payload = await AuthService.login({ username, email, password });
+    res.json(payload);
   } catch (err) {
     next(err);
   }
