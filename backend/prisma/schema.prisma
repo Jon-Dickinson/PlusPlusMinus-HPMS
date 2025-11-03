@@ -1,8 +1,6 @@
-// Generate Prisma client in default location
-
+// schema.prisma
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -10,174 +8,107 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//
-// ──────────────────────────────────────────────
-//   ─── CORE DOMAIN MODELS ─────────────────────
-// ──────────────────────────────────────────────
-//
+// ────────────────────────────────
+// ENUMS
+// ────────────────────────────────
 
-model Structure {
-  id        Int         @id @default(autoincrement())
-  name      String
-  level     String      // e.g. NATIONAL | CITY | SUBURB
-  parentId  Int?        
-  parent    Structure?  @relation("StructureToChildren", fields: [parentId], references: [id])
-  children  Structure[] @relation("StructureToChildren")
-
-  users     User[]
-  assets    Asset[]
-
-  @@index([parentId])
-  @@index([level])
+enum UserRole {
+  ADMIN
+  MAYOR
+  VIEWER
 }
 
-model Role {
-  id         Int     @id @default(autoincrement())
-  name       String  @unique     // ADMIN | NATIONAL | CITY | SUBURB
-  scopeLevel String               // describes permission depth
-  users      UserRole[]
-}
+// ────────────────────────────────
+// MODELS
+// ────────────────────────────────
 
 model User {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  passwordHash String
-  structureId  Int?
-  structure    Structure? @relation(fields: [structureId], references: [id])
-  roles        UserRole[]
+  id          Int       @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  email       String    @unique
+  password    String
+  role        UserRole  @default(VIEWER)
+  nationality String?
+  homeCity    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  @@index([structureId])
+  cities      City[]
 }
 
-model UserRole {
-  userId Int
-  roleId Int
-  user   User @relation(fields: [userId], references: [id])
-  role   Role @relation(fields: [roleId], references: [id])
+model City {
+  id            Int        @id @default(autoincrement())
+  name          String
+  country       String?
+  mayorId       Int
+  population    Int         @default(0)
+  powerUsage    Int         @default(0)
+  waterUsage    Int         @default(0)
+  resourceLimit Int         @default(1000)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
 
-  @@id([userId, roleId])
+  mayor         User        @relation(fields: [mayorId], references: [id])
+  buildLogs     BuildLog[]
+  notes         Note[]
+  buildings     Building[]
 }
 
-model Asset {
-  id          Int        @id @default(autoincrement())
-  name        String
-  type        String     // hospital | school | power | water etc.
-  structureId Int
-  structure   Structure  @relation(fields: [structureId], references: [id])
-  gx          Int        // grid x (for isometric placement)
-  gy          Int
-  w           Int
-  h           Int
-  status      String     // active | offline | maintenance
+model BuildLog {
+  id        Int      @id @default(autoincrement())
+  cityId    Int
+  action    String
+  value     Int?
+  createdAt DateTime @default(now())
 
-  @@index([structureId])
-  @@index([type])
+  city      City     @relation(fields: [cityId], references: [id])
 }
 
-// ======================================================
-// City Builder Schema
-// Structured database for building types,
-// categories, and city-level instances.
-// ======================================================
+model Note {
+  id        Int      @id @default(autoincrement())
+  cityId    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-
-// ======================================================
-// ENUMS
-// ======================================================
-
-enum ResourceType {
-  POWER
-  WATER
-  FOOD
-  SERVICES
-  HOUSING
-  EMPLOYMENT
+  city      City     @relation(fields: [cityId], references: [id])
 }
-
-// Minimum role level required to view/place a building
-enum RoleLevel {
-  SUBURB
-  CITY
-  NATIONAL
-}
-
-// ======================================================
-// MAIN MODELS
-// ======================================================
 
 model BuildingCategory {
-  id          Int        @id @default(autoincrement())
-  name        String
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
   description String?
+  createdAt   DateTime  @default(now())
+
   buildings   Building[]
 }
 
-// Core definition for each unique building type (e.g., "Power Station 4x4", "Farm 4x4", etc.)
 model Building {
-  id              Int       @id @default(autoincrement())
-  name            String
-  // Path to visual asset (relative to public /assets folder)
-  file            String?
-  sizeX           Int
-  sizeY           Int
-  blocks          Int
-  employs         Int?
-  houses          Int?
-  services        Int?
-  feeds           Int?
-  waterUsage      Int?
-  powerUsage      Int?
-  waterOutput     Int?
-  powerOutput     Int?
-  categoryId      Int
-  category        BuildingCategory @relation(fields: [categoryId], references: [id])
-  minRoleLevel    RoleLevel @default(CITY)
+  id             Int                 @id @default(autoincrement())
+  cityId         Int?                
+  name           String
+  categoryId     Int?
+  level          Int                 @default(1)
+  sizeX          Int                 @default(1)
+  sizeY          Int                 @default(1)
+  powerUsage     Int                 @default(0)
+  powerOutput    Int                 @default(0)
+  waterUsage     Int                 @default(0)
+  waterOutput    Int                 @default(0)
+  createdAt      DateTime            @default(now())
 
-  // For simulation / analytics
-  cityBuildings   CityBuilding[]
-  // Resource statistics for this building (e.g. power, water)
-  resourceStats   BuildingResourceStat[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  city           City?               @relation(fields: [cityId], references: [id])
+  category       BuildingCategory?   @relation(fields: [categoryId], references: [id])
+  resources      BuildingResource[]
 }
 
-// Represents a simulated or real city or map instance.
-model City {
-  id          Int            @id @default(autoincrement())
-  name        String
-  population  Int?            // optional for aggregate stats
-  cityBuildings CityBuilding[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
+model BuildingResource {
+  id         Int      @id @default(autoincrement())
+  buildingId Int
+  type       String
+  amount     Int      @default(0)
+  createdAt  DateTime @default(now())
 
-// Many-to-many mapping between City and Building
-// Allows for tracking quantity of each building type.
-model CityBuilding {
-  id          Int       @id @default(autoincrement())
-  cityId      Int
-  buildingId  Int
-  // Grid coordinates for placed building (optional for aggregate entries)
-  gx          Int?
-  gy          Int?
-  quantity    Int       @default(1)
-  city        City      @relation(fields: [cityId], references: [id])
-  building    Building  @relation(fields: [buildingId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-// ======================================================
-// OPTIONAL SUPPORT TABLES (for later extensions)
-// ======================================================
-
-// To allow flexible key-value storage for resources (e.g. “water”, “power”)
-model BuildingResourceStat {
-  id          Int           @id @default(autoincrement())
-  buildingId  Int
-  type        ResourceType
-  input       Int?           // amount consumed
-  output      Int?           // amount produced
-  building    Building       @relation(fields: [buildingId], references: [id])
+  building   Building @relation(fields: [buildingId], references: [id])
 }

@@ -1,69 +1,87 @@
-export type Building = any;
+// types/building.ts
+export interface Building {
+  id: number;
+  name: string;
+  category: string;
+  color: string;
+  icon: string;
+  resources: {
+    power?: number;
+    water?: number;
+    employment?: number;
+    serviceCoverage?: number;
+    powerOutput?: number;
+    waterOutput?: number;
+    foodProduction?: number;
+    population?: number;
+  };
+}
 
+// data/buildings.ts
 const buildings: Building[] = [
   {
     id: 1,
     name: 'Commercial Complex',
     category: 'commercial',
-    color: '#4466FF',
+    color: '#004AEE',
     resources: { power: 30, water: 15, employment: 50 },
-    icon: '/blocks/commercial.png',
+    icon: '/buildings/commercial.png',
   },
   {
     id: 2,
     name: 'Emergency Services',
     category: 'emergency',
-    color: '#FF3333',
+    color: '#EE3E36',
     resources: { power: 20, water: 10, employment: 15, serviceCoverage: 80 },
-    icon: '/blocks/emergency-services.png',
+    icon: '/buildings/emergency-services.png',
   },
   {
     id: 3,
     name: 'Factory',
     category: 'industrial',
-    color: '#FF9933',
+    color: '#F79E1B',
     resources: { power: 50, water: 20, employment: 60 },
-    icon: '/blocks/factory.png',
+    icon: '/buildings/factory.png',
   },
   {
     id: 4,
     name: 'Farm',
     category: 'agriculture',
-    color: '#8B5A2B',
+    color: '#704214',
     resources: { power: 10, water: 25, employment: 20, foodProduction: 70 },
-    icon: '/blocks/farm.png',
+    icon: '/buildings/farm.png',
   },
   {
     id: 5,
     name: 'Government Office',
     category: 'government',
-    color: '#333333',
+    color: '#1C1C1C',
     resources: { power: 25, water: 10, employment: 30, serviceCoverage: 80 },
-    icon: '/blocks/government.png',
+    icon: '/buildings/government.png',
   },
   {
     id: 6,
     name: 'Power Station',
     category: 'energy',
-    color: '#FFD633',
+    color: '#FFD52B',
     resources: { powerOutput: 250, water: 40, employment: 35 },
-    icon: '/blocks/power-station.png',
+    icon: '/buildings/power-station.png',
   },
   {
     id: 7,
     name: 'Residential Housing',
     category: 'residential',
-    color: '#33CC66',
+    color: '#2FBF4A',
     resources: { power: 80, water: 40, population: 100 },
-    icon: '/blocks/residential.png',
+    icon: '/buildings/residential.png',
   },
   {
     id: 8,
     name: 'Water Pump Station',
     category: 'utilities',
-    color: '#0066FF',
+    color: '#0068FF',
     resources: { power: 25, waterOutput: 250, employment: 10 },
-    icon: '/blocks/water-pump.png',
+    icon: '/buildings/water-pump.png',
   },
 ];
 

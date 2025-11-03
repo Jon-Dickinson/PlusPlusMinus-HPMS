@@ -21,12 +21,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (t) {
       setToken(t);
       axios.setAuthToken(t);
-      axios.instance
-        .get('/users/me')
-        .then((r) => setUser(r.data.user))
-        .catch(() => {
-          // ignore
-        });
+      // Instead of relying on a `/users/me` endpoint (which may be removed),
+      // decode the JWT payload client-side to populate basic user info such as
+      // id and role. This keeps the UI responsive after a page refresh without
+      // requiring an extra backend route.
+      try {
+  const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+  const userFromToken: any = { id: payload.id, roles: [{ role: { name: payload.role } }] };
+  setUser(userFromToken);
+      } catch (e) {
+        // if decoding fails, silently ignore — UI will remain unauthenticated
+      }
     }
   }, []);
 
@@ -38,7 +43,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', token);
       setToken(token);
       axios.setAuthToken(token);
-      setUser(data.user);
+      // Backend currently returns only a JWT token. Decode the token to extract
+      // basic user info (id and role) so the app can reflect admin status.
+      try {
+  const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+  setUser({ id: payload.id, roles: [{ role: { name: payload.role } }] } as any);
+      } catch (e) {
+        setUser(null);
+      }
     }
   }
 

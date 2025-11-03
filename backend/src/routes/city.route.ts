@@ -1,23 +1,25 @@
 import express from 'express';
-import { prisma } from '../db.js';
-import { verifyToken } from '../middleware/auth.middleware.js';
+import * as CityController from '../controllers/city.controller.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { cityCreateSchema, cityUpdateSchema } from '../validators/city.validator.js';
+import { z } from 'zod';
 
 const router = express.Router();
 
-// GET /api/cities/:id/buildings
-router.get('/:id/buildings', verifyToken, async (req, res) => {
-  try {
-    const cityId = Number(req.params.id);
-    const placements = await prisma.cityBuilding.findMany({
-      where: { cityId },
-      include: { building: true },
-    });
-    res.json(placements);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error fetching city buildings:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+const logSchema = z.object({ action: z.string(), value: z.number().optional() });
+const noteSchema = z.object({ content: z.string().min(1) });
+
+// City-level operations
+router.get('/', CityController.listCities);
+router.get('/:id', CityController.getCityById);
+router.post('/', validate(cityCreateSchema), CityController.createCity);
+router.put('/:id', validate(cityUpdateSchema), CityController.updateCity);
+router.delete('/:id', CityController.deleteCity);
+
+// City subroutes (notes & logs)
+router.get('/:id/logs', CityController.getBuildLogs);
+router.post('/:id/logs', validate(logSchema), CityController.addBuildLog);
+router.get('/:id/notes', CityController.getNotes);
+router.post('/:id/notes', validate(noteSchema), CityController.addNote);
 
 export default router;

@@ -10,21 +10,26 @@ const Panel = styled.section`
   align-items: flex-start;
   width: 100%;
   height: 100%;
-  padding-top: 10px;
+  padding: 0 0 10px 10px;
 `;
 
 const Card = styled.div<{ warn?: boolean }>`
-  height: calc((100vh - 60px) / 6);
+  height: calc((100vh - 160px) / 6);
+  min-height: 90px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 15px 18px;
-  margin: 12px 20px;
-  min-width: 360px;
+  margin: 5px 0;
+  width: 100%;
   border-radius: 5px;
-  transition: filter 0.2s ease-in-out, border-color 0.15s ease-in-out;
-  border: 2px solid #0068FF;
-  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1); 
+  background-color: #192748;
+
+  :hover {
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  }
 
   ${({ warn }) =>
     warn &&
@@ -50,9 +55,9 @@ const IconWrapper = styled.div<{ color?: string }>`
 `;
 
 const Title = styled.h3`
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
-  color: #111;
+  color: #ffffff;
   margin: 0;
 `;
 
@@ -61,12 +66,12 @@ const StatsRow = styled.div`
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  font-weight: 600;
-  color: #111;
+  font-weight: 500;
+  color: #ffffff;
 `;
 
 const Stat = styled.span<{ color?: string; outlined?: boolean; outlineColor?: string }>`
-  color: ${({ color }) => color || '#000'};
+  color: ${({ color }) => color || '#ffffff'};
   ${({ outlined, outlineColor }) =>
     outlined &&
     `
@@ -100,7 +105,7 @@ export default function StatsPanel(): JSX.Element {
 
   return (
     <Panel>
-      {/* ────────── POWER ────────── */}
+      
       <Card warn={powerOver}>
         <Header>
           <Title>Power</Title>

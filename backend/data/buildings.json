@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "name": "Commercial Complex",
+    "category": "commercial",
+    "color": "#004AEE",
+    "resources": {
+      "power": 30,
+      "water": 15,
+      "employment": 50
+    },
+    "icon": "/buildings/commercial.png"
+  },
+  {
+    "id": 2,
+    "name": "Emergency Services",
+    "category": "emergency",
+    "color": "#EE3E36",
+    "resources": {
+      "power": 20,
+      "water": 10,
+      "employment": 15,
+      "serviceCoverage": 80
+    },
+    "icon": "/buildings/emergency-services.png"
+  },
+  {
+    "id": 3,
+    "name": "Factory",
+    "category": "industrial",
+    "color": "#F79E1B",
+    "resources": {
+      "power": 50,
+      "water": 20,
+      "employment": 60
+    },
+    "icon": "/buildings/factory.png"
+  },
+  {
+    "id": 4,
+    "name": "Farm",
+    "category": "agriculture",
+    "color": "#704214",
+    "resources": {
+      "power": 10,
+      "water": 25,
+      "employment": 20,
+      "foodProduction": 70
+    },
+    "icon": "/buildings/farm.png"
+  },
+  {
+    "id": 5,
+    "name": "Government Office",
+    "category": "government",
+    "color": "#1C1C1C",
+    "resources": {
+      "power": 25,
+      "water": 10,
+      "employment": 30,
+      "serviceCoverage": 80
+    },
+    "icon": "/buildings/government.png"
+  },
+  {
+    "id": 6,
+    "name": "Power Station",
+    "category": "energy",
+    "color": "#FFD52B",
+    "resources": {
+      "powerOutput": 250,
+      "water": 40,
+      "employment": 35
+    },
+    "icon": "/buildings/power-station.png"
+  },
+  {
+    "id": 7,
+    "name": "Residential Housing",
+    "category": "residential",
+    "color": "#2FBF4A",
+    "resources": {
+      "power": 80,
+      "water": 40,
+      "population": 100
+    },
+    "icon": "/buildings/residential.png"
+  },
+  {
+    "id": 8,
+    "name": "Water Pump Station",
+    "category": "utilities",
+    "color": "#0068FF",
+    "resources": {
+      "power": 25,
+      "waterOutput": 250,
+      "employment": 10
+    },
+    "icon": "/buildings/water-pump.png"
+  }
+]

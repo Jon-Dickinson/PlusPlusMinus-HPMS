@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { defineConfig } from '@prisma/config';
 import { execSync } from 'child_process';
 

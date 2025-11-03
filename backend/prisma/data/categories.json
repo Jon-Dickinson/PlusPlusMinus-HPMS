@@ -1,0 +1,10 @@
+[
+  { "name": "commercial", "description": "Commercial buildings (shops, offices, malls)" },
+  { "name": "emergency", "description": "Emergency services (police, fire, ambulance)" },
+  { "name": "industrial", "description": "Industrial facilities and factories" },
+  { "name": "agriculture", "description": "Agricultural buildings and farms" },
+  { "name": "government", "description": "Government and administrative buildings" },
+  { "name": "energy", "description": "Energy production and distribution" },
+  { "name": "residential", "description": "Residential housing and apartments" },
+  { "name": "utilities", "description": "Utility infrastructure (water, sewage, etc.)" }
+]

@@ -1,0 +1,12 @@
+node_modules
+.next
+dist
+build
+coverage
+public/buildings/*.svg
+*.min.js
+*.bundle.js
+*.map
+.vercel
+frontend/yarn.lock
+frontend/package-lock.json

@@ -23,7 +23,10 @@ const CityContext = createContext<CityContextType | null>(null);
 
 export function CityProvider({ children }: { children: React.ReactNode }) {
   // create distinct arrays for each cell
-  const [grid, setGrid] = useState<number[][]>(() => Array.from({ length: 36 }, () => []));
+  // Start with 36 base cells (6x6). User requested 50 more blocks — add 50
+  // extra empty cells so the grid grows without losing existing placements.
+  const INITIAL_CELLS = 36 + 50; // 86 total
+  const [grid, setGrid] = useState<number[][]>(() => Array.from({ length: INITIAL_CELLS }, () => []));
   const [totals, setTotals] = useState<Totals>({});
 
   function computeTotalsFromGrid(g: number[][]) {

@@ -49,25 +49,23 @@ import { useCity } from './CityContext';
 
 const LeftColumn = styled.div`
   position: relative;
-  padding-top: 80px;
-  right: 0;
-  flex: 0 0 15%;
-  height: 100%;
+  padding-top: 84px;
+  height: calc(100vh - 120px);
   display: flex;
+  width: 100%;
+  max-width: 110px;
+  padding-right: 10px;
+  gap: 10px;
   align-items: center;
   flex-direction: column;
-  border-right: 1px solid #e5e7eb;
-  box-sizing: border-box;
 `;
 
 const IconContainer = styled.div`
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  width: 72px;
-  height: 72px;
-  padding: 6px 10px;
+  height: 70px;
 `;
 
 function imageForBuilding(building: any) {
@@ -98,6 +96,7 @@ export default function BuildingSidebar() {
 function DraggableBuilding({ building }: { building: any }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
   if (!mounted) {
     return (
       <div>
@@ -110,6 +109,7 @@ function DraggableBuilding({ building }: { building: any }) {
       </div>
     );
   }
+
   return <DraggableBuildingClient building={building} />;
 }
 
@@ -119,6 +119,7 @@ function DraggableBuildingClient({ building }: { building: any }) {
     item: { id: building.id },
     collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
   }));
+
   // read totals from context (re-renders when totals update)
   const { totals } = useCity();
 
@@ -142,19 +143,28 @@ function DraggableBuildingClient({ building }: { building: any }) {
       <div
         ref={drag}
         style={{
-          width: 52,
-          height: 52,
+          width: 64,
+          height: 64,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'grab',
         }}
       >
-        <img
-          src={imageForBuilding(building)}
-          alt={building.name}
-          style={{ width: 48, height: 48, objectFit: 'contain', display: 'block' }}
-        />
+        <div style={{ position: 'relative', width: 48, height: 48, display: 'block' }}>
+          <img
+            src={imageForBuilding(building)}
+            alt={building.name}
+            style={{
+              width: 56,
+              height: 56,
+              objectFit: 'contain',
+              display: 'block',
+              border: 'none',
+              background: 'transparent',
+            }}
+          />
+        </div>
       </div>
 
       {/* property values removed per UX request */}
