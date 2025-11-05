@@ -103,6 +103,25 @@ http://localhost:4000/api/docs
 Raw OpenAPI JSON:
 http://localhost:4000/api/docs/json
 
+### Public API endpoints
+
+- GET /api/public/mayors
+    - Returns a list of users with role `MAYOR`. This endpoint is intentionally public (no authentication required) to allow the frontend registration page to fetch available mayors for new Viewer accounts.
+    - Response shape (example):
+        ```json
+        [
+            {
+                "id": 1,
+                "firstName": "Alice",
+                "lastName": "Anderson",
+                "role": "MAYOR",
+                "city": { "name": "ZedTown", "country": "X", "qualityIndex": 42 },
+                "notes": [{ "id": 1 }]
+            }
+        ]
+        ```
+    - Usage: the frontend registration form calls `/api/public/mayors` to populate a required mayor selector when creating a Viewer account. If you change the route prefix in the server, update `frontend/lib/axios.ts` or `frontend/components/organisms/RegisterForm.tsx` accordingly.
+
 ```mermaid
 erDiagram
     User {

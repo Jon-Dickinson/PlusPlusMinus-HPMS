@@ -12,7 +12,7 @@ vi.mock('../../components/organisms/LoginForm', () => ({
   default: () => <div data-testid="login-form">LoginForm</div>,
 }));
 
-import Home from '../index';
+import Home from '../../pages/index';
 
 describe('Index page', () => {
   it('renders LoginForm inside MainTemplate', () => {

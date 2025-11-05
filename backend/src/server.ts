@@ -4,6 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { errorHandler } from "./middleware/error.middleware.js";
 import authRoutes from "./routes/auth.route.js";
+import publicRoutes from "./routes/public.route.js";
 import userRoutes from "./routes/user.route.js";
 import cityRoutes from "./routes/city.route.js";
 import noteRoutes from "./routes/note.route.js";
@@ -17,6 +18,8 @@ app.use(morgan('dev'));
 
 // routes
 app.use('/api/auth', authRoutes);
+// public endpoints (no auth required)
+app.use('/api/public', publicRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cities', cityRoutes);
 app.use('/api/notes', noteRoutes);

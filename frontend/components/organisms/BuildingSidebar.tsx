@@ -49,7 +49,7 @@ import { useCity } from './CityContext';
 
 const LeftColumn = styled.div`
   position: relative;
-  padding-top: 55px;
+  padding-top: 80px;
   height: 100%;
   display: flex;
   width: 100%;

@@ -24,6 +24,7 @@ type User = {
   firstName: string;
   lastName: string;
   role: 'ADMIN' | 'MAYOR' | 'VIEWER';
+  mayorId?: number | null;
   city?: City | null;
   notes?: Note[];
 };

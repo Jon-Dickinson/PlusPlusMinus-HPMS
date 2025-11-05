@@ -109,7 +109,12 @@ function DashboardContent() {
     <>
       <ResourceColumn>
         <GridHeader>
-         
+          {user?.role === 'MAYOR' && user.city && (
+            <>
+              <h3>{user.city.name}</h3>
+              <h2>{user.city.country}</h2>
+            </>
+          )}
         </GridHeader>
 
         <StatsPanel />
@@ -262,8 +267,8 @@ const GridCell = styled.div`
 
 const InfoColumn = styled.div`
   width: 100%;
-  max-width: 240px;
-  min-width: 240px;
+  max-width: 340px;
+  min-width: 340px;
   display: flex;
   flex-direction: column;
   padding: 80px 20px;

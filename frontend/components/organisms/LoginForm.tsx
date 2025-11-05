@@ -168,6 +168,10 @@ export default function LoginForm() {
       if (user) {
         if (isAdmin(user.role)) {
           router.push('/user-list');
+        } else if (user.role === 'VIEWER' && (user as any).mayorId) {
+          // If a viewer is linked to a mayor, send them straight to the mayor view
+          const mid = (user as any).mayorId;
+          router.push(`/mayor-view/${mid}`);
         } else {
           router.push('/dashboard');
         }

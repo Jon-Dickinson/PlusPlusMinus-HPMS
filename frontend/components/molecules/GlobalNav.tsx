@@ -28,6 +28,7 @@ const Logo = styled.img`
   height: 40px;
   width: auto;
   display: block;
+  margin-bottom: 15px;
 `;
 
 const Icon = styled.img`
@@ -46,6 +47,10 @@ const ExitButton = styled.button`
   cursor: pointer;
   margin-top: auto;
   margin-bottom: 1rem;
+
+  img:hover {
+    opacity: 1;
+  }
 `;
 
 export default function GlobalNav() {
@@ -65,13 +70,30 @@ export default function GlobalNav() {
     
         <Logo src="/logo.svg" alt="City Builder" />
         
-        <Authorized predicate={(u) => !isAdmin(u.role)}>
+        <Authorized predicate={(u) => !isAdmin(u.role) && u.role !== 'VIEWER'}>
           <Link href="/dashboard" aria-label="Dashboard">
             <Icon src="/builder.svg" alt="Builder" active={isActive('/dashboard')} />
           </Link>
         </Authorized>
 
-        <Authorized predicate={(u) => !isMayor(u.role)}>
+        
+        <Authorized predicate={(u) => u.role === 'VIEWER' || isAdmin(u.role)}>
+        
+          {((role === 'VIEWER' && user?.mayorId) || role !== 'VIEWER') ? (
+            (() => {
+              const mayorHref = user?.mayorId
+                ? `/mayor-view/${user.mayorId}`
+                : (router.asPath && router.asPath.startsWith('/mayor-view') ? router.asPath : '/user-list');
+              return (
+                <Link href={mayorHref} aria-label="Mayor View">
+                  <Icon src="/city.svg" alt="Mayor View" active={router.asPath.startsWith('/mayor-view')} />
+                </Link>
+              );
+            })()
+          ) : null}
+        </Authorized>
+
+        <Authorized predicate={(u) => !isMayor(u.role) && u.role !== 'VIEWER'}>
           <Link href="/user-list" aria-label="User List">
             <Icon src="/list.svg" alt="User List" active={isActive('/user-list')} />
           </Link>
@@ -80,11 +102,7 @@ export default function GlobalNav() {
         <Link href="/building-analysis" aria-label="Components">
           <Icon src="/component.svg" alt="Component" active={isActive('/building-analysis')} />
         </Link>
-        {/* {role === 'ADMIN' && (
-          <Link href="/api-test" aria-label="API Test">
-            <Icon src="/api.svg" alt="API Test" active={isActive('/api-test')} />
-          </Link>
-        )} */}
+      
       </NavIcons>
       <ExitButton onClick={handleLogout}>
         <Icon src="/logout.svg" alt="Logout" />

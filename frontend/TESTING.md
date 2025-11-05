@@ -35,5 +35,12 @@ VS Code / TypeScript tips
 
 - Alternatively, you can keep using per-test triple-slash references at the top of test files:
 
-    /// <reference types="vitest" />
+        /// <reference types="vitest" />
+
+Public API note
+- The frontend registration form fetches available mayors from a public endpoint so unauthenticated users can select a mayor when registering as a Viewer:
+
+    GET /api/public/mayors
+
+    This endpoint returns a summary list of users with role MAYOR (includes id, firstName, lastName, role, city summary and a notes stub). If you need to run the register page locally, ensure the backend is running and reachable at the URL configured in `NEXT_PUBLIC_API_URL` (defaults to http://localhost:4000).
 

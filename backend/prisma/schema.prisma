@@ -30,7 +30,17 @@ model User {
   email       String    @unique
   password    String
   role        Role
+
+  // Relation to City (only for MAYORs)
   city        City?     @relation(name: "CityMayor")
+
+  // ────────────────
+  // New Mayor–Viewer relationship
+  // ────────────────
+  mayorId     Int?                               // only for VIEWERs
+  mayor       User?     @relation("MayorViewers", fields: [mayorId], references: [id])
+  viewers     User[]    @relation("MayorViewers") // all Viewers assigned to this Mayor
+
   notes       Note[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

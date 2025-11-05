@@ -13,6 +13,7 @@ import GlobalNav from '../../components/molecules/GlobalNav';
 import { CityProvider } from '../../components/organisms/CityContext';
 import Header from '../../components/molecules/Header';
 import StatsPanel from '../../components/organisms/StatsPanel';
+import Spinner from '../../components/atoms/Spinner';
 import BuildingLogPanel from '../../components/organisms/BuildingLogPanel';
 import { City } from '../../types/city';
 
@@ -47,7 +48,12 @@ function MayorViewContent({ initialCity }: { initialCity?: City | null }) {
         <GridHeader>
           {initialCity && (
             <>
-              <Message>{initialCity.name}, {initialCity.country}</Message>
+             <Message>{ (initialCity as any).mayor ? (
+                  <span> Mayor: {(initialCity as any).mayor.firstName} {(initialCity as any).mayor.lastName}</span>
+                ) : null }</Message>
+                 <Message>{initialCity.name}, {initialCity.country}</Message>
+                
+              
             </>
           )}
         </GridHeader>
@@ -94,11 +100,35 @@ export default function MayorViewPage() {
   }, [mayorId]);
 
   if (loading) {
-    return <Message>Loading...</Message>;
+    return (
+      <MainTemplate>
+        <GlobalNav />
+        <ColWrapper>
+          <Header />
+          <RowWrapper>
+            <CenteredLoading>
+              <Spinner size={40} />
+            </CenteredLoading>
+          </RowWrapper>
+        </ColWrapper>
+      </MainTemplate>
+    );
   }
 
   if (!city) {
-    return <Message>City not found</Message>;
+    return (
+      <MainTemplate>
+        <GlobalNav />
+        <ColWrapper>
+          <Header />
+          <RowWrapper>
+            <CenteredLoading>
+              <Message>City not found</Message>
+            </CenteredLoading>
+          </RowWrapper>
+        </ColWrapper>
+      </MainTemplate>
+    );
   }
 
   return (
@@ -120,6 +150,7 @@ const Message = styled.div`
   position: relative;
   display: inline-flex;
   font-size: 16px;
+  color: #ffffff;
 `;
 
 
@@ -178,9 +209,17 @@ const GridContainer = styled.div`
 
 const InfoColumn = styled.div`
   width: 100%;
-  max-width: 240px;
-  min-width: 240px;
+  max-width:340px;
+  min-width: 340px;
   display: flex;
   flex-direction: column;
-  padding: 80px 20px;
+  padding: 20px;
+`;
+
+const CenteredLoading = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 420px;
 `;
