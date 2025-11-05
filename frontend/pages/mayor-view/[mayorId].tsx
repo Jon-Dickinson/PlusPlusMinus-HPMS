@@ -5,6 +5,8 @@ import CityMap from '../../components/organisms/CityMap';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
 import { isAdmin } from '../../utils/roles';
+import Authorized from '../../components/atoms/Authorized';
+import useAuthorized from '../../hooks/useAuthorized';
 import axios from '../../lib/axios';
 import BuildingSidebar from '../../components/organisms/BuildingSidebar';
 import GlobalNav from '../../components/molecules/GlobalNav';
@@ -45,14 +47,16 @@ function MayorViewContent({ initialCity }: { initialCity?: City | null }) {
         <GridHeader>
           {initialCity && (
             <>
-              <h2>{initialCity.name}, {initialCity.country}</h2>
+              <Message>{initialCity.name}, {initialCity.country}</Message>
             </>
           )}
         </GridHeader>
         <StatsPanel />
       </ResourceColumn>
 
-<BuildingSidebar />
+      <Authorized allowed={[ 'ADMIN' ]}>
+        <BuildingSidebar />
+      </Authorized>
 
       <MainGridArea>
         <GridContainer>
@@ -73,6 +77,7 @@ export default function MayorViewPage() {
   const { mayorId } = router.query;
   const [city, setCity] = useState<City | null>(null);
   const [loading, setLoading] = useState(true);
+  const canEdit = useAuthorized(['ADMIN']);
 
   useEffect(() => {
     if (mayorId) {
@@ -89,11 +94,11 @@ export default function MayorViewPage() {
   }, [mayorId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Message>Loading...</Message>;
   }
 
   if (!city) {
-    return <div>City not found</div>;
+    return <Message>City not found</Message>;
   }
 
   return (
@@ -102,7 +107,7 @@ export default function MayorViewPage() {
       <ColWrapper>
         <Header />
         <RowWrapper>
-          <CityProvider initialCityData={city} canEdit={isAdmin(user?.role)}>
+          <CityProvider initialCityData={city} canEdit={canEdit}>
             <MayorViewContent initialCity={city} />
           </CityProvider>
         </RowWrapper>
@@ -110,6 +115,13 @@ export default function MayorViewPage() {
     </MainTemplate>
   );
 }
+
+const Message = styled.div`
+  position: relative;
+  display: inline-flex;
+  font-size: 16px;
+`;
+
 
 const RowWrapper = styled.div`
   position: relative;

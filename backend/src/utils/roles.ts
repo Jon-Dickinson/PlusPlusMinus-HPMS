@@ -12,4 +12,24 @@ export function requireRoles(...allowed: Role[]) {
 	};
 }
 
+/**
+ * Middleware factory that allows access to users who have one of the allowed roles
+ * OR are the owner identified by a param or body field (e.g. userId).
+ *
+ * Usage: requireRoleOrOwner('userId', 'ADMIN')  -> allow ADMIN or owner matching req.params.userId
+ */
+export function requireRoleOrOwner(paramName: string, ...allowed: Role[]) {
+	return (req: Request, res: Response, next: NextFunction) => {
+		const user = (req as any).user;
+		if (!user) return res.status(401).json({ message: 'Unauthorized' });
+		// allow by role
+		if (allowed.includes(user.role)) return next();
+		// allow if owner (check params first, then body)
+		const ownerIdRaw = req.params?.[paramName] ?? req.body?.[paramName];
+		const ownerId = ownerIdRaw ? Number(ownerIdRaw) : NaN;
+		if (!Number.isNaN(ownerId) && ownerId === user.id) return next();
+		return res.status(403).json({ message: 'Forbidden' });
+	};
+}
+
 export const ALL_ROLES: Role[] = ['ADMIN', 'MAYOR', 'VIEWER'];

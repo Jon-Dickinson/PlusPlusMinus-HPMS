@@ -2,6 +2,7 @@ import express from 'express';
 import * as CityController from '../controllers/city.controller.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import { requireRoleOrOwner } from '../utils/roles.js';
 import { cityCreateSchema, cityUpdateSchema, updateCityDataSchema } from '../validators/city.validator.js';
 import { z } from 'zod';
 
@@ -26,6 +27,7 @@ router.post('/:id/notes', authMiddleware, validate(noteSchema), CityController.a
 
 // User-based city endpoints (frontend expects /api/city/:userId)
 router.get('/user/:userId', CityController.getCityByUserId);
-router.put('/user/:userId/save', authMiddleware, CityController.saveCityByUserId);
+// require auth and allow ADMIN or the owner (userId) to save
+router.put('/user/:userId/save', authMiddleware, requireRoleOrOwner('userId', 'ADMIN'), CityController.saveCityByUserId);
 
 export default router;

@@ -4,8 +4,10 @@ import CityMap from '../components/organisms/CityMap';
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
 import { isAdminOrMayor, isMayor } from '../utils/roles';
+import useAuthorized from '../hooks/useAuthorized';
 import axios from '../lib/axios';
 import BuildingSidebar from '../components/organisms/BuildingSidebar';
+import Authorized from '../components/atoms/Authorized';
 import GlobalNav from '../components/molecules/GlobalNav';
 import { CityProvider, useCity } from '../components/organisms/CityContext';
 import Header from '../components/molecules/Header';
@@ -69,6 +71,7 @@ const NotesInput = styled.textarea`
 
 function DashboardContent() {
   const { user, setUser } = useAuth();
+  const isMayorUser = useAuthorized(['MAYOR']);
   const [note, setNote] = React.useState('');
   const cityContext = useCity();
 
@@ -106,24 +109,15 @@ function DashboardContent() {
     <>
       <ResourceColumn>
         <GridHeader>
-          {user && isMayor(user?.role) && user.city && (
-            <>
-              <h3>Mayor: {user.firstName} {user.lastName}</h3>
-              <h2>{user.city.name}, {user.city.country}</h2>
-            </>
-          )}
-          {user && !isMayor(user?.role) && (
-            <>
-              <h3>{user.firstName} {user.lastName}</h3>
-              <h2>{user.role}</h2>
-            </>
-          )}
+         
         </GridHeader>
 
         <StatsPanel />
       </ResourceColumn>
 
-  {isAdminOrMayor(user?.role) && <BuildingSidebar />}
+  <Authorized allowed={[ 'ADMIN', 'MAYOR' ]}>
+    <BuildingSidebar />
+  </Authorized>
 
       <MainGridArea>
         <GridContainer>
@@ -137,16 +131,16 @@ function DashboardContent() {
         {/* Building log now driven from CityContext */}
         <BuildingLogPanel />
 
-  {user && isAdminOrMayor(user?.role) && (
+        <Authorized allowed={[ 'ADMIN', 'MAYOR' ]}>
           <>
             <NotesInput 
               placeholder="Enter your notes here..."
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)}
             />
             <SaveButton onClick={handleSave}>Save City Data</SaveButton>
           </>
-        )}
+        </Authorized>
       </InfoColumn>
     </>
   );
@@ -156,6 +150,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [serverTime, setServerTime] = React.useState<string | null>(null);
   const role = (user?.role || '').toUpperCase();
+  const canEdit = React.useMemo(() => isAdminOrMayor(user?.role), [user?.role]);
 
   useEffect(() => {
     // example call to backend
@@ -171,7 +166,7 @@ export default function Dashboard() {
       <ColWrapper>
         <Header />
         <RowWrapper>
-            <CityProvider initialCityData={user?.city} canEdit={isAdminOrMayor(user?.role)}>
+          <CityProvider initialCityData={user?.city} canEdit={canEdit}>
             <DashboardContent />
           </CityProvider>
         </RowWrapper>

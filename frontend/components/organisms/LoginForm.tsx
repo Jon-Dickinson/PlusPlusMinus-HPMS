@@ -203,7 +203,7 @@ export default function LoginForm() {
           <Input
             disabled={loading}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             placeholder="Email"
           />
 
@@ -212,7 +212,7 @@ export default function LoginForm() {
             disabled={loading}
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             placeholder="Password"
           />
 
