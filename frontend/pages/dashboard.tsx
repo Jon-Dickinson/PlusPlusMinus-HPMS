@@ -10,7 +10,7 @@ import { CityProvider, useCity } from '../components/organisms/CityContext';
 import Header from '../components/molecules/Header';
 import StatsPanel from '../components/organisms/StatsPanel';
 import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
-import QualityIndex from '../components/organisms/QualityIndex';
+
 
 const MapWrap = styled.div`
   position: relative;
@@ -72,18 +72,6 @@ function DashboardContent() {
   const cityContext = useCity();
 
   useEffect(() => {
-    if (user?.role === 'MAYOR' && user.id) {
-      axios.instance.get(`/users/${user.id}`)
-        .then(res => {
-          setUser(res.data);
-        })
-        .catch(err => {
-          console.error("Failed to fetch mayor data", err);
-        });
-    }
-  }, []);
-
-  useEffect(() => {
     if (user?.notes && user.notes.length > 0) {
       setNote(user.notes[0].content);
     }
@@ -143,7 +131,7 @@ function DashboardContent() {
       </MainGridArea>
     
       <InfoColumn>
-        <QualityBoxFromContext />
+    
 
         {/* Building log now driven from CityContext */}
         <BuildingLogPanel />
@@ -326,13 +314,3 @@ const BuildingLog = styled.div`
   }
 `;
 
-function QualityBoxFromContext() {
-  // Render a QualityBox that uses the QualityIndex component.
-  // This component is placed inside CityProvider in the page layout.
-  return (
-    <QualityBox>
-      <QualityIndex />
-      <h3>Quality Index</h3>
-    </QualityBox>
-  );
-}
