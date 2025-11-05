@@ -49,13 +49,13 @@ import { useCity } from './CityContext';
 
 const LeftColumn = styled.div`
   position: relative;
-  padding-top: 84px;
-  height: calc(100vh - 120px);
+  padding-top: 55px;
+  height: 100%;
   display: flex;
   width: 100%;
   max-width: 110px;
   padding-right: 10px;
-  gap: 10px;
+  gap: 5px;
   align-items: center;
   flex-direction: column;
 `;
@@ -65,7 +65,8 @@ const IconContainer = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: calc((100vh / 9) - 30px);
+  min-height: 60px;
 `;
 
 function imageForBuilding(building: any) {
@@ -164,15 +165,15 @@ function DraggableBuildingClient({ building }: { building: any }) {
       <div
         ref={drag}
         style={{
-          width: 64,
-          height: 64,
+          width: 60,
+          height: 60,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'grab',
         }}
       >
-        <div style={{ position: 'relative', width: 48, height: 48, display: 'block' }}>
+        
           <img
             src={imageForBuilding(building)}
             alt={building.name}
@@ -185,7 +186,7 @@ function DraggableBuildingClient({ building }: { building: any }) {
               background: 'transparent',
             }}
           />
-        </div>
+         
       </div>
 
       {/* property values removed per UX request */}

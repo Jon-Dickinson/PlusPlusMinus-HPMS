@@ -25,10 +25,6 @@ export async function saveUserNotes(req: Request, res: Response) {
 export async function saveNote(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = Number(req.params.userId);
-    const authUser = (req as any).user;
-    if (!authUser) return res.status(401).json({ message: 'Unauthorized' });
-    // only owner or admin can save
-    if (authUser.role !== 'ADMIN' && authUser.id !== userId) return res.status(403).json({ message: 'Forbidden' });
     const note = await NoteService.saveNoteForUser(userId, req.body);
     res.json(note);
   } catch (err) {

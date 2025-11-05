@@ -48,10 +48,7 @@ export async function getCityByUserId(req: Request, res: Response, next: NextFun
 export async function saveCityByUserId(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = Number(req.params.userId);
-    // only mayor themselves or admin can save — check req.user
-    const authUser = (req as any).user;
-    if (!authUser) return res.status(401).json({ message: 'Unauthorized' });
-    if (authUser.role !== 'ADMIN' && authUser.id !== userId) return res.status(403).json({ message: 'Forbidden' });
+    // auth/permissions are enforced by middleware (requireRoleOrOwner)
     const updated = await CityService.saveByMayorId(userId, req.body);
     res.json(updated);
   } catch (err) {

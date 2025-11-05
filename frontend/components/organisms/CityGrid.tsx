@@ -12,7 +12,7 @@ export default function CityGrid() {
   // provider via a small error-boundary fallback so the grid still appears.
 
   function GridInner() {
-    const { grid, addBuildingToCell, moveBuilding } = useCity();
+    const { grid, addBuildingToCell, moveBuilding, canEdit } = useCity();
     const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
     const [selectedBuildingData, setSelectedBuildingData] = useState<any | null>(null);
     const [isClient, setIsClient] = useState(false);
@@ -161,8 +161,10 @@ function GridCell({
   moveBuilding: (src: number, dest: number, id: number) => boolean;
   onBuildingClick?: (id: number) => void;
 }) {
+  const { canEdit } = useCity();
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ['BUILDING', 'MOVE_BUILDING'],
+    canDrop: () => canEdit,
     drop: (item: any) => {
       // item from move has sourceIndex
       if (typeof item?.sourceIndex === 'number') {
@@ -252,13 +254,15 @@ function BuildingItem({
   offset: number;
   onClick?: (id: number) => void;
 }) {
+  const { canEdit } = useCity();
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: 'MOVE_BUILDING',
       item: { id, sourceIndex: cellIndex, idx },
+      canDrag: () => canEdit,
       collect: (monitor: any) => ({ isDragging: !!monitor.isDragging() }),
     }),
-    [id, cellIndex, idx],
+    [id, cellIndex, idx, canEdit],
   );
 
   return (

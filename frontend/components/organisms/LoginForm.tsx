@@ -4,6 +4,7 @@ import Input from '../atoms/Input';
 import Button from '../atoms/Button';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin } from '../../utils/roles';
 import { useRouter } from 'next/router';
 import Spinner from '../atoms/Spinner';
 import Link from 'next/link';
@@ -165,7 +166,7 @@ export default function LoginForm() {
     try {
       const user = await login(email, password);
       if (user) {
-        if (user.role === 'ADMIN') {
+        if (isAdmin(user.role)) {
           router.push('/user-list');
         } else {
           router.push('/dashboard');
@@ -202,7 +203,7 @@ export default function LoginForm() {
           <Input
             disabled={loading}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             placeholder="Email"
           />
 
@@ -211,7 +212,7 @@ export default function LoginForm() {
             disabled={loading}
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             placeholder="Password"
           />
 

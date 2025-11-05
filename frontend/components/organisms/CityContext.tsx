@@ -21,11 +21,20 @@ type CityContextType = {
   buildingLog: string[];
   // clear the building log
   clearBuildingLog: () => void;
+  canEdit: boolean;
 };
 
 const CityContext = createContext<CityContextType | null>(null);
 
-export function CityProvider({ children, initialCityData }: { children: React.ReactNode, initialCityData?: any }) {
+export function CityProvider({
+  children,
+  initialCityData,
+  canEdit = false,
+}: {
+  children: React.ReactNode;
+  initialCityData?: any;
+  canEdit?: boolean;
+}) {
   // create distinct arrays for each cell
   // Start with 36 base cells (6x6). User requested 50 more blocks — add 50
   // extra empty cells so the grid grows without losing existing placements.
@@ -134,6 +143,7 @@ export function CityProvider({ children, initialCityData }: { children: React.Re
   }
 
   function addBuildingToCell(index: number, buildingId: number) {
+    if (!canEdit) return false;
     let added = false;
     setGrid((prev: number[][]) => {
       const next = prev.map((cell: number[], i: number) => {
@@ -170,6 +180,7 @@ export function CityProvider({ children, initialCityData }: { children: React.Re
   }
 
   function moveBuilding(sourceIndex: number, destIndex: number, buildingId: number) {
+    if (!canEdit) return false;
     let moved = false;
     setGrid((prev: number[][]) => {
       // shallow copy each cell
@@ -224,6 +235,7 @@ export function CityProvider({ children, initialCityData }: { children: React.Re
         totals,
         buildingLog,
         clearBuildingLog,
+        canEdit,
       }}
     >
       {children}

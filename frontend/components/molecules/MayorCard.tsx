@@ -1,28 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Notebook, MapPin, User, BarChart } from 'lucide-react';
+import { Notebook, MapPin, User } from 'lucide-react';
+import axios from '../../lib/axios';
 
 type Props = {
   id: number | string;
-  firstName: string;
-  lastName: string;
-  cityName?: string;
-  country?: string;
-  qualityIndex?: number | null;
-  hasNotes?: boolean;
   onClick?: (id: number | string) => void;
 };
 
 const Card = styled.button`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  gap: 12px;
   padding: 12px;
   background: #192748;
   color: #fff;
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
+  border-radius: 3px;
   cursor: pointer;
   width: 100%;
   text-align: left;
@@ -31,52 +26,117 @@ const Card = styled.button`
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(0,0,0,0.35);
   }
+`;
 
-  .row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+const Left = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+`;
 
-  .muted {
-    color: rgba(255,255,255,0.8);
-    font-size: 13px;
+const Meta = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`;
+
+const Muted = styled.div`
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const Center = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+`;
+
+const Properties = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  justify-content: flex-end;
+`;
+
+const Inner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  justify-content: flex-end;
+`;
+
+const NoteIcon = styled.span<{ has?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  color: ${(p) => (p.has ? '#3bb55c' : '#9aa3b2')};
+  opacity: ${(p) => (p.has ? 1 : 0.8)};
+
+  svg {
+    display: block;
   }
 `;
 
-export default function MayorCard({
-  id,
-  firstName,
-  lastName,
-  cityName = '—',
-  country = '—',
-  qualityIndex = null,
-  hasNotes = false,
-  onClick,
-}: Props) {
+export default function MayorCard({ id, onClick }: Props) {
+  const [loading, setLoading] = useState(true);
+  const [mayor, setMayor] = useState<any>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    axios.instance
+      .get(`/users/${id}`)
+      .then((res) => {
+        if (!mounted) return;
+        setMayor(res.data);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setMayor(null);
+      })
+      .finally(() => mounted && setLoading(false));
+
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
   const handleClick = () => onClick && onClick(id);
+
+  const cityName = mayor?.city?.name || '—';
+  const country = mayor?.city?.country || '—';
+  const firstName = mayor?.firstName || '—';
+  const lastName = mayor?.lastName || '—';
+  const hasNotes = Array.isArray(mayor?.notes) && mayor.notes.length > 0;
 
   return (
     <Card onClick={handleClick} aria-label={`Mayor ${firstName} ${lastName}`}>
-      <div className="row">
+      <Left>
         <MapPin size={16} />
-        <div className="muted">{cityName}, {country}</div>
-      </div>
+        <Meta>
+          <Muted>{cityName}, {country}</Muted>
+        </Meta>
+      </Left>
 
-      <div className="row">
+      <Center>
         <User size={16} />
-        <div style={{ fontWeight: 600 }}>{firstName} {lastName}</div>
-      </div>
+        <Muted>{firstName} {lastName}</Muted>
+      </Center>
 
-      <div className="row">
-        <BarChart size={16} />
-        <div className="muted">Quality Index: {qualityIndex !== null ? `${Number(qualityIndex).toFixed(1)}%` : '—'}</div>
-      </div>
-
-      <div className="row">
-        <Notebook size={16} color={hasNotes ? '#3bb55c' : '#9aa3b2'} style={{ opacity: hasNotes ? 1 : 0.8 }} />
-        <div className="muted">Notes: {hasNotes ? '1+' : '0'}</div>
-      </div>
+      <Properties>
+        <Inner>
+          <NoteIcon has={hasNotes}>
+            <Notebook size={16} />
+          </NoteIcon>
+          <Muted>{hasNotes ? `${mayor.notes.length} note${mayor.notes.length>1?'s':''}` : '0'}</Muted>
+        </Inner>
+      </Properties>
     </Card>
   );
 }

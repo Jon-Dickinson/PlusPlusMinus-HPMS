@@ -21,11 +21,15 @@ const MapPanel = styled.div`
 `;
 
 import { useAuth } from '../context/AuthContext';
+import { isAdmin, isMayor } from '../utils/roles';
+import useAuthorized from '../hooks/useAuthorized';
 
 
 export default function UserList() {
   const router = useRouter();
   const { user } = useAuth();
+
+  const canNavigateAdmin = useAuthorized(['ADMIN']);
 
   const isActive = (path: string) => router.pathname === path;
 
@@ -58,61 +62,48 @@ export default function UserList() {
 
       <ColWrapper>
         <Header />
-        <RowWrapper>
+        <ColWrapper>
           <CityProvider>
-            <ResourceColumn>
+           
               <GridHeader>
-                {user && user.role === 'MAYOR' && user.city && (
-                  <>
-                    <h3>Mayor: {user.firstName} {user.lastName}</h3>
-                    <h2>{user.city.name}, {user.city.country}</h2>
-                  </>
-                )}
-                 {user && user.role !== 'MAYOR' && (
-                  <>
-                    <h3>{user.firstName} {user.lastName}</h3>
-                    <h2>{user.role}</h2>
-                  </>
-                )}
+                <HeaderTitle>Mayors</HeaderTitle>
+                <HeadingRow>
+                  <HeadingLabel>Location</HeadingLabel>
+                  <HeadingLabel>Mayor</HeadingLabel>
+                  <HeadingLabelRight>Notes</HeadingLabelRight>
+                </HeadingRow>
               </GridHeader>
 
-              {loading ? (
-                <div style={{ color: '#fff', padding: '1rem' }}>Loading mayors...</div>
-              ) : mayors.length === 0 ? (
-                <div style={{ color: '#fff', padding: '1rem' }}>No mayors found.</div>
-              ) : (
-                <MayorGrid>
-                  {mayors.map((m: any) => (
+              <MayorGrid>
+                {loading ? (
+                  <Message>Loading mayors...</Message>
+                ) : mayors.length === 0 ? (
+                  <Message>No mayors found.</Message>
+                ) : (
+                  mayors.map((m: any) => (
                     <MayorCard
                       key={m.id}
                       id={m.id}
-                      firstName={m.firstName}
-                      lastName={m.lastName}
-                      cityName={m.city?.name}
-                      country={m.city?.country}
-                      qualityIndex={m.city?.qualityIndex}
-                      hasNotes={Array.isArray(m.notes) && m.notes.length > 0}
-                      onClick={(id) => {
-                        if (user?.role === 'ADMIN') {
+                      onClick={(id: number | string) => {
+                        if (canNavigateAdmin) {
                           router.push(`/mayor-view/${id}`);
                         }
                       }}
                     />
-                  ))}
-                </MayorGrid>
-              )}
-            </ResourceColumn>
+                  ))
+                )}
+              </MayorGrid>
+          
 
           
       
           </CityProvider>
-        </RowWrapper>
+        </ColWrapper>
       </ColWrapper>
     </MainTemplate>
   );
 }
 
-/* Layout styled components copied from dashboard for consistency */
 const RowWrapper = styled.div`
   position: relative;
   display: inline-flex;
@@ -129,47 +120,11 @@ const ColWrapper = styled.div`
   height: 100%;
 `;
 
-const Sidebar = styled.div`
-  width: 80px;
-  min-width: 80px;
-  background: #111d3a;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem 0;
-`;
-
-const NavIcons = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  padding-top: 5px;
-`;
-
-const ResourceColumn = styled.div`
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-/* ==== MAIN GRID AREA ==== */
-const MainGridArea = styled.div`
-  margin-top: 72px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-`;
-
 const GridHeader = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-left: 10px;
+  padding-left: 5px;
 
   h2 {
     font-size: 12px;
@@ -183,6 +138,7 @@ const GridHeader = styled.div`
     font-size: 18px;
     color: #ffffff;
     font-weight: 500;
+    padding-left: 20px;
   }
 `;
 
@@ -193,17 +149,10 @@ const GridContainer = styled.div`
 `;
 
 const MayorGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 12px;
-
-  @media (min-width: 480px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (min-width: 900px) {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
+  display: inline-flex;
+  width: 100%;
+  flex-direction: column;
+  padding: 25px;
 `;
 
 const InfoColumn = styled.div`
@@ -216,44 +165,38 @@ const InfoColumn = styled.div`
   gap: 1.5rem;
 `;
 
-const QualityBox = styled.div`
-  padding: 1rem;
-  text-align: center;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: #192748;
-
-  h3 {
-    color: #ffffff;
-    font-weight: 400;
-  }
-  span {
-    font-size: 2rem;
-    font-weight: 500;
-    color: #ffcc00;
-  }
+const HeadingRow = styled.div`
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 0 25px 8px 25px;
+  margin-top: 20px;
 `;
 
-const BuildingLog = styled.div`
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: #192748;
-  padding: 1rem;
+const HeadingLabel = styled.div`
+  color: rgba(255,255,255,0.85);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const HeadingLabelRight = styled(HeadingLabel)`
+  text-align: right;
+`;
+
+const HeaderTitle = styled.div`
+  margin: 0;
+  font-size: 18px;
   color: #ffffff;
-  h4 {
-    margin-bottom: 10px;
-    margin-top: 0;
-    font-weight: 400;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  li {
-    font-size: 13px;
-    padding: 0.25rem 0;
-  }
+  font-weight: 500;
+  padding-left: 20px;
+`;
+
+const Message = styled.div`
+  color: #ffffff;
+  padding: 1rem;
 `;
