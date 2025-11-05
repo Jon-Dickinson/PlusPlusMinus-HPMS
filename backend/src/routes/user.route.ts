@@ -10,6 +10,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // User management
+router.get('/mayors', UserController.listMayors);
 router.get('/', requireRoles('ADMIN'), UserController.getAllUsers);
 router.get('/:id', UserController.getUserById);
 router.post('/', validate(userCreateSchema), requireRoles('ADMIN'), UserController.createUser);

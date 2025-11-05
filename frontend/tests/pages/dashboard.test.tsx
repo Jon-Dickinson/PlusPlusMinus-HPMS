@@ -18,7 +18,7 @@ vi.mock('../../components/atoms/Authorized', () => ({ default: ({ children }: an
 const mockGet = vi.fn();
 vi.mock('../../lib/axios', () => ({ default: { instance: { get: (...args: any[]) => mockGet(...args) }, setAuthToken: () => {} } }));
 
-import Dashboard from '../dashboard';
+import Dashboard from '../../pages/dashboard';
 
 describe('Dashboard page', () => {
   it('renders without crashing and contains city map when user provided', async () => {

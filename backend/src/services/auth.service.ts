@@ -6,7 +6,7 @@ const SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 export async function register(data: {
   firstName: string; lastName: string; username: string; email: string; password: string;
-  role: 'MAYOR'|'VIEWER'; cityName?: string; country?: string;
+  role: 'ADMIN'|'MAYOR'|'VIEWER'; cityName?: string; country?: string; mayorId?: number;
 }) {
   const existingUsername = await prisma.user.findUnique({ where: { username: data.username } });
   if (existingUsername) throw new Error('Username already exists');
@@ -25,6 +25,21 @@ export async function register(data: {
       role: data.role,
     },
   });
+
+  // If registering a VIEWER and a mayorId was supplied, attempt to link the viewer to that mayor.
+  if (data.role === 'VIEWER' && data.mayorId) {
+    // Verify mayor exists and is of role MAYOR
+    const mayor = await prisma.user.findUnique({ where: { id: data.mayorId } });
+    if (!mayor) throw new Error('Selected mayor not found');
+    if (mayor.role !== 'MAYOR') throw new Error('Selected user is not a MAYOR');
+
+    try {
+      await prisma.user.update({ where: { id: user.id }, data: { mayorId: data.mayorId } as any });
+    } catch (e) {
+      // Convert DB errors into a clearer message
+      throw new Error('Failed to link viewer to mayor');
+    }
+  }
 
   if (data.role === 'MAYOR') {
     if (!data.cityName || !data.country) throw new Error('cityName and country required for MAYOR');

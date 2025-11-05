@@ -9,13 +9,15 @@ export const registerSchema = z.object({
   role: z.enum(['ADMIN', 'MAYOR', 'VIEWER']).optional(),
   cityName: z.string().optional(),
   country: z.string().optional(),
+  mayorId: z.number().int().positive().optional(),
 });
 
-// require cityName + country when role is MAYOR
+// require cityName + country when role is MAYOR, and require mayorId when role is VIEWER
 export const registerRefined = registerSchema.refine((data) => {
   if (data.role === 'MAYOR') return !!(data.cityName && data.country);
+  if (data.role === 'VIEWER') return !!data.mayorId;
   return true;
-}, { message: 'cityName and country are required for MAYOR' });
+}, { message: 'cityName and country are required for MAYOR, and mayorId is required for VIEWER' });
 
 export const loginSchema = z.object({
   username: z.string().min(1).optional(),

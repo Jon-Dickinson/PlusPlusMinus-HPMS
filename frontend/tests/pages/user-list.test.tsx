@@ -17,7 +17,7 @@ vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({ user: null, toke
 const mockGet = vi.fn();
 vi.mock('../../lib/axios', () => ({ default: { instance: { get: (...args: any[]) => mockGet(...args) } } }));
 
-import UserList from '../user-list';
+import UserList from '../../pages/user-list';
 
 describe('UserList page', () => {
   it('shows "No mayors found." when API returns empty', async () => {
