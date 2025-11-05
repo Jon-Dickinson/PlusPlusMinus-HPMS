@@ -3,6 +3,7 @@ import MainTemplate from '../templates/MainTemplate';
 import CityMap from '../components/organisms/CityMap';
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
+import { isAdminOrMayor, isMayor } from '../utils/roles';
 import axios from '../lib/axios';
 import BuildingSidebar from '../components/organisms/BuildingSidebar';
 import GlobalNav from '../components/molecules/GlobalNav';
@@ -105,13 +106,13 @@ function DashboardContent() {
     <>
       <ResourceColumn>
         <GridHeader>
-          {user && user.role === 'MAYOR' && user.city && (
+          {user && isMayor(user?.role) && user.city && (
             <>
               <h3>Mayor: {user.firstName} {user.lastName}</h3>
               <h2>{user.city.name}, {user.city.country}</h2>
             </>
           )}
-          {user && user.role !== 'MAYOR' && (
+          {user && !isMayor(user?.role) && (
             <>
               <h3>{user.firstName} {user.lastName}</h3>
               <h2>{user.role}</h2>
@@ -122,7 +123,7 @@ function DashboardContent() {
         <StatsPanel />
       </ResourceColumn>
 
-      <BuildingSidebar />
+  {isAdminOrMayor(user?.role) && <BuildingSidebar />}
 
       <MainGridArea>
         <GridContainer>
@@ -136,7 +137,7 @@ function DashboardContent() {
         {/* Building log now driven from CityContext */}
         <BuildingLogPanel />
 
-        {user && user.role === 'MAYOR' && (
+  {user && isAdminOrMayor(user?.role) && (
           <>
             <NotesInput 
               placeholder="Enter your notes here..."
@@ -154,6 +155,7 @@ function DashboardContent() {
 export default function Dashboard() {
   const { user } = useAuth();
   const [serverTime, setServerTime] = React.useState<string | null>(null);
+  const role = (user?.role || '').toUpperCase();
 
   useEffect(() => {
     // example call to backend
@@ -169,7 +171,7 @@ export default function Dashboard() {
       <ColWrapper>
         <Header />
         <RowWrapper>
-          <CityProvider initialCityData={user?.city}>
+            <CityProvider initialCityData={user?.city} canEdit={isAdminOrMayor(user?.role)}>
             <DashboardContent />
           </CityProvider>
         </RowWrapper>

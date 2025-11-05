@@ -4,6 +4,7 @@ import Input from '../atoms/Input';
 import Button from '../atoms/Button';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin } from '../../utils/roles';
 import { useRouter } from 'next/router';
 import Spinner from '../atoms/Spinner';
 import Link from 'next/link';
@@ -165,7 +166,7 @@ export default function LoginForm() {
     try {
       const user = await login(email, password);
       if (user) {
-        if (user.role === 'ADMIN') {
+        if (isAdmin(user.role)) {
           router.push('/user-list');
         } else {
           router.push('/dashboard');

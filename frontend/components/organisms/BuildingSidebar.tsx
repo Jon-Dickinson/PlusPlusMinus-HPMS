@@ -164,15 +164,15 @@ function DraggableBuildingClient({ building }: { building: any }) {
       <div
         ref={drag}
         style={{
-          width: 64,
-          height: 64,
+          width: 60,
+          height: 60,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'grab',
         }}
       >
-        <div style={{ position: 'relative', width: 48, height: 48, display: 'block' }}>
+        
           <img
             src={imageForBuilding(building)}
             alt={building.name}
@@ -185,7 +185,7 @@ function DraggableBuildingClient({ building }: { building: any }) {
               background: 'transparent',
             }}
           />
-        </div>
+         
       </div>
 
       {/* property values removed per UX request */}

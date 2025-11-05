@@ -10,3 +10,12 @@ export interface CityTotals {
   qualityIndex: number;
   foodProduction: number;
 }
+
+export type City = {
+  id: number;
+  name: string;
+  country: string;
+  mayorId: number;
+  gridState: any;
+  buildingLog: any;
+}

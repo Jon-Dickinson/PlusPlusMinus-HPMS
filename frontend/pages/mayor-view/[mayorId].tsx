@@ -4,13 +4,26 @@ import MainTemplate from '../../templates/MainTemplate';
 import CityMap from '../../components/organisms/CityMap';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin } from '../../utils/roles';
 import axios from '../../lib/axios';
+import BuildingSidebar from '../../components/organisms/BuildingSidebar';
 import GlobalNav from '../../components/molecules/GlobalNav';
 import { CityProvider } from '../../components/organisms/CityContext';
 import Header from '../../components/molecules/Header';
 import StatsPanel from '../../components/organisms/StatsPanel';
 import BuildingLogPanel from '../../components/organisms/BuildingLogPanel';
+import { City } from '../../types/city';
 
+const MapWrap = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: stretch;
+  width: 100%;
+  height: 100%;
+  background-color: #111d3a;
+`;
 
 const MapPanel = styled.div`
   position: relative;
@@ -22,33 +35,65 @@ const MapPanel = styled.div`
   width: 100%;
 `;
 
-export default function MayorView() {
+function MayorViewContent({ initialCity }: { initialCity?: City | null }) {
+  const { user } = useAuth();
+    const role = user?.role;
+
+  return (
+    <>
+      <ResourceColumn>
+        <GridHeader>
+          {initialCity && (
+            <>
+              <h2>{initialCity.name}, {initialCity.country}</h2>
+            </>
+          )}
+        </GridHeader>
+        <StatsPanel />
+      </ResourceColumn>
+
+<BuildingSidebar />
+
+      <MainGridArea>
+        <GridContainer>
+          <MapPanel><CityMap /></MapPanel>
+        </GridContainer>
+      </MainGridArea>
+    
+      <InfoColumn>
+        <BuildingLogPanel />
+      </InfoColumn>
+    </>
+  );
+}
+
+export default function MayorViewPage() {
+  const { user } = useAuth();
   const router = useRouter();
-  const { id } = router.query;
-  const { user: authUser } = useAuth();
-  const [mayor, setMayor] = useState<any>(null);
+  const { mayorId } = router.query;
+  const [city, setCity] = useState<City | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
-      axios.instance.get(`/users/${id}`)
-        .then(res => {
-          setMayor(res.data);
+    if (mayorId) {
+      axios.instance.get(`/cities/user/${mayorId}`)
+        .then(response => {
+          setCity(response.data);
           setLoading(false);
         })
-        .catch(err => {
-          console.error("Failed to fetch mayor data", err);
+        .catch(error => {
+          console.error('Failed to fetch city data', error);
           setLoading(false);
         });
     }
-  }, [id]);
+  }, [mayorId]);
 
   if (loading) {
-    return <MainTemplate><p>Loading...</p></MainTemplate>;
+    return <div>Loading...</div>;
   }
 
-  if (!mayor) {
-    return <MainTemplate><p>Mayor not found.</p></MainTemplate>;
+  if (!city) {
+    return <div>City not found</div>;
   }
 
   return (
@@ -57,39 +102,8 @@ export default function MayorView() {
       <ColWrapper>
         <Header />
         <RowWrapper>
-          <CityProvider initialCityData={mayor.city}>
-            <ResourceColumn>
-              <GridHeader>
-                <h3>Mayor: {mayor.firstName} {mayor.lastName}</h3>
-                <h2>{mayor.city?.name}, {mayor.city?.country}</h2>
-              </GridHeader>
-              <StatsPanel />
-            </ResourceColumn>
-
-            <MainGridArea>
-              <GridContainer>
-                <MapPanel>
-                  <CityMap />
-                </MapPanel>
-              </GridContainer>
-            </MainGridArea>
-          
-            <InfoColumn>
-           
-              <BuildingLogPanel />
-              <NotesPanel>
-                <h4>Mayor's Notes</h4>
-                {mayor.notes && mayor.notes.length > 0 ? (
-                  <ul>
-                    {mayor.notes.map((note: any) => (
-                      <li key={note.id}>{note.content}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No notes from this mayor.</p>
-                )}
-              </NotesPanel>
-            </InfoColumn>
+          <CityProvider initialCityData={city} canEdit={isAdmin(user?.role)}>
+            <MayorViewContent initialCity={city} />
           </CityProvider>
         </RowWrapper>
       </ColWrapper>
@@ -137,15 +151,8 @@ const GridHeader = styled.div`
   padding-left: 10px;
 
   h2 {
-    font-size: 12px;
-    margin: 0;
-    color: #ffffff;
-    font-weight: 400;
-  }
-
-  h3 {
-    margin: 0;
     font-size: 18px;
+    margin: 0;
     color: #ffffff;
     font-weight: 500;
   }
@@ -164,41 +171,4 @@ const InfoColumn = styled.div`
   display: flex;
   flex-direction: column;
   padding: 80px 20px;
-  gap: 1rem;
-`;
-
-const QualityBox = styled.div`
-  padding: 1rem;
-  text-align: center;
-  border-radius: 5px;
-  background-color: #192748;
-
-  h3 {
-    color: #ffffff;
-    font-weight: 400;
-  }
-  span {
-    font-size: 2rem;
-    font-weight: 500;
-    color: #ffcc00;
-  }
-`;
-
-const NotesPanel = styled.div`
-  background-color: #192748;
-  color: white;
-  padding: 1rem;
-  border-radius: 5px;
-  h4 {
-    margin-top: 0;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: 13px;
-  }
-  li {
-    padding: 0.25rem 0;
-  }
 `;

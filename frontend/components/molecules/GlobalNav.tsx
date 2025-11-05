@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin, isMayor } from '../../utils/roles';
 
 const Sidebar = styled.nav`
   width: 80px;
@@ -63,13 +64,13 @@ export default function GlobalNav() {
     
         <Logo src="/logo.svg" alt="City Builder" />
         
-        {role !== 'ADMIN' && (
+        {!isAdmin(role) && (
           <Link href="/dashboard" aria-label="Dashboard">
             <Icon src="/builder.svg" alt="Builder" active={isActive('/dashboard')} />
           </Link>
         )}
 
-        {role !== 'MAYOR' && (
+        {!isMayor(role) && (
           <Link href="/user-list" aria-label="User List">
             <Icon src="/list.svg" alt="User List" active={isActive('/user-list')} />
           </Link>

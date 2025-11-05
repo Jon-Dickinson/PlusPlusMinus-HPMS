@@ -21,6 +21,7 @@ const MapPanel = styled.div`
 `;
 
 import { useAuth } from '../context/AuthContext';
+import { isAdmin, isMayor } from '../utils/roles';
 
 
 export default function UserList() {
@@ -62,13 +63,13 @@ export default function UserList() {
           <CityProvider>
             <ResourceColumn>
               <GridHeader>
-                {user && user.role === 'MAYOR' && user.city && (
+                {user && isMayor(user?.role) && user.city && (
                   <>
                     <h3>Mayor: {user.firstName} {user.lastName}</h3>
                     <h2>{user.city.name}, {user.city.country}</h2>
                   </>
                 )}
-                 {user && user.role !== 'MAYOR' && (
+                 {user && !isMayor(user?.role) && (
                   <>
                     <h3>{user.firstName} {user.lastName}</h3>
                     <h2>{user.role}</h2>
@@ -93,7 +94,7 @@ export default function UserList() {
                       qualityIndex={m.city?.qualityIndex}
                       hasNotes={Array.isArray(m.notes) && m.notes.length > 0}
                       onClick={(id) => {
-                        if (user?.role === 'ADMIN') {
+                        if (isAdmin(user?.role)) {
                           router.push(`/mayor-view/${id}`);
                         }
                       }}

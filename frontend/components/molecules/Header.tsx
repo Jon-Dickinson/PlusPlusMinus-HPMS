@@ -17,13 +17,13 @@ const Root = styled.header`
 
 const Info = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 20px;
   align-items: center;
 `;
 
 const Heading = styled.div`
   color: #ffffff;
-  font-size: 32px;
+  font-size: 16px;
   font-weight: 500;
 `;
 
@@ -48,11 +48,13 @@ export default function Header() {
       <Info>
         {user ? (
           <>
-            <div>{user.name}</div>
-            <div style={{ color: '#6B7280' }}>{user.roles?.map((r) => r.role.name).join(', ')}</div>
+            <Heading>
+              {user.firstName || user.lastName
+                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                : user.username || user.email || 'User'}
+            </Heading>
+            <Heading>{user.role || 'USER'}</Heading>
             <Icon src="/user.svg" alt="User" />
-
-           
           </>
         ) : (
           <div>Guest</div>
