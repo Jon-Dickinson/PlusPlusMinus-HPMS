@@ -85,13 +85,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     axios.setAuthToken(null);
   }
 
-  function setUser(user: User | null) {
-    if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
+  function setUser(newUser: User | null) {
+    const oldUser = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    // Prevent re-render if user data is the same
+    if (JSON.stringify(newUser) === JSON.stringify(oldUser)) {
+      return;
+    }
+
+    if (newUser) {
+      localStorage.setItem('user', JSON.stringify(newUser));
     } else {
       localStorage.removeItem('user');
     }
-    setUserState(user);
+    setUserState(newUser);
   }
 
   return (

@@ -1,5 +1,5 @@
 // CityGrid.tsx — rebuilt to always display and integrate with CityContext and BuildingSidebar
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
 import { useCity, Cell, CityProvider } from './CityContext';
 import DndShell from '../molecules/DndShell';
@@ -15,6 +15,11 @@ export default function CityGrid() {
     const { grid, addBuildingToCell, moveBuilding } = useCity();
     const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
     const [selectedBuildingData, setSelectedBuildingData] = useState<any | null>(null);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+      setIsClient(true);
+    }, []);
 
     async function handleBuildingClick(buildingId: number) {
       const local = buildings.find((b: any) => b.id === buildingId) || null;
@@ -77,16 +82,21 @@ export default function CityGrid() {
             minHeight: 420,
           }}
         >
-          {grid.map((cell: Cell, index: number) => (
-            <GridCell
-              key={index}
-              index={index}
-              buildings={cell}
-              addBuilding={addBuildingToCell}
-              moveBuilding={moveBuilding}
-              onBuildingClick={handleBuildingClick}
-            />
-          ))}
+          {isClient &&
+            grid.map((cell: Cell, index: number) => (
+              <React.Suspense
+                key={index}
+                fallback={<div style={{ minWidth: 78, minHeight: 78, margin: '2px' }} />}
+              >
+                <GridCell
+                  index={index}
+                  buildings={cell}
+                  addBuilding={addBuildingToCell}
+                  moveBuilding={moveBuilding}
+                  onBuildingClick={handleBuildingClick}
+                />
+              </React.Suspense>
+            ))}
         </div>
         {selectedBuildingId && (
           <BuildingPopup
@@ -133,9 +143,7 @@ export default function CityGrid() {
 
   return (
     <LocalErrorBoundary>
-      <DndShell>
-        <GridInner />
-      </DndShell>
+      <GridInner />
     </LocalErrorBoundary>
   );
 }

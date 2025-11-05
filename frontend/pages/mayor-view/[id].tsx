@@ -10,7 +10,7 @@ import { CityProvider } from '../../components/organisms/CityContext';
 import Header from '../../components/molecules/Header';
 import StatsPanel from '../../components/organisms/StatsPanel';
 import BuildingLogPanel from '../../components/organisms/BuildingLogPanel';
-import QualityIndex from '../../components/organisms/QualityIndex';
+
 
 const MapPanel = styled.div`
   position: relative;
@@ -75,7 +75,7 @@ export default function MayorView() {
             </MainGridArea>
           
             <InfoColumn>
-              <QualityBoxFromContext />
+           
               <BuildingLogPanel />
               <NotesPanel>
                 <h4>Mayor's Notes</h4>
@@ -202,12 +202,3 @@ const NotesPanel = styled.div`
     padding: 0.25rem 0;
   }
 `;
-
-function QualityBoxFromContext() {
-  return (
-    <QualityBox>
-      <QualityIndex />
-      <h3>Quality Index</h3>
-    </QualityBox>
-  );
-}
