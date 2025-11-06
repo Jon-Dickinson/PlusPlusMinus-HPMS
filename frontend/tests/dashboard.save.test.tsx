@@ -8,7 +8,7 @@ vi.mock('../templates/MainTemplate', () => ({ default: ({ children }: any) => <d
 vi.mock('../components/molecules/GlobalNav', () => ({ default: () => <div /> }));
 vi.mock('../components/molecules/Header', () => ({ default: () => <div /> }));
 vi.mock('../components/organisms/CityMap', () => ({ default: () => <div /> }));
-vi.mock('../components/organisms/BuildingSidebar', () => ({ default: () => <div /> }));
+vi.mock('../components/organisms/BuidlingSidebar/BuildingSidebar', () => ({ default: () => <div /> }));
 vi.mock('../components/organisms/StatsPanel', () => ({ default: () => <div /> }));
 vi.mock('../components/organisms/BuildingLogPanel', () => ({ default: () => <div /> }));
 vi.mock('../components/atoms/Authorized', () => ({ default: ({ children }: any) => <div>{children}</div> }));

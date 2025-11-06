@@ -279,14 +279,23 @@ describe('RegisterForm', () => {
 
     renderWithProviders(<RegisterForm />);
 
-    // Wait for mayor loading to complete
+    // Wait for mayor loading to complete (which will fail)
     await waitFor(() => {
       expect(mockGet).toHaveBeenCalledWith('/public/mayors');
     });
 
-    // Should still show the select but with no options
+    // Wait for loading to finish
+    await waitFor(() => {
+      expect(screen.queryByText('Loading mayors...')).not.toBeInTheDocument();
+    });
+
+    // Should still show the mayor selection area with the select element
+    expect(screen.getByText('Select your Mayor')).toBeInTheDocument();
+    // The select element should still be rendered even when mayors loading failed
     const mayorSelect = screen.getByDisplayValue('-- Select Mayor --');
     expect(mayorSelect).toBeInTheDocument();
+    // Should have no mayor options (only the default option)
+    expect(mayorSelect).toHaveLength(1);
   });
 
   it('clears error on new form submission', async () => {

@@ -11,7 +11,7 @@ vi.mock('../../components/molecules/Header', () => ({ default: () => <div /> }))
 vi.mock('../../components/organisms/CityContext', () => ({ CityProvider: ({ children }: any) => <div>{children}</div> }));
 
 // Mock auth context so the page can render
-vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({ user: null, token: null, login: async () => null, logout: () => {}, setUser: () => {} }) }));
+vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({ user: { role: 'ADMIN' }, token: 'test-token', login: async () => null, logout: () => {}, setUser: () => {}, initialized: true }) }));
 
 // Mock axios to return empty list
 const mockGet = vi.fn();

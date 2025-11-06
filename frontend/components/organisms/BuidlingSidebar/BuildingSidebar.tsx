@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import buildings from '../../../data/buildings.json';
 import { LeftColumn } from './styles';
 import DraggableBuilding from '../DraggableBuilding';
