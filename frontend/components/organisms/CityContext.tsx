@@ -40,13 +40,13 @@ export function CityProvider({
   // extra empty cells so the grid grows without losing existing placements.
   const INITIAL_CELLS = 36 + 50; // 86 total
   const [grid, setGrid] = useState<number[][]>(() => {
-    if (initialCityData?.gridState) {
+    if (initialCityData?.gridState && Array.isArray(initialCityData.gridState) && initialCityData.gridState.every(Array.isArray)) {
       return initialCityData.gridState;
     }
     return Array.from({ length: INITIAL_CELLS }, () => []);
   });
   const [totals, setTotals] = useState<Totals>(() => {
-    if (initialCityData?.gridState) {
+    if (initialCityData?.gridState && Array.isArray(initialCityData.gridState) && initialCityData.gridState.every(Array.isArray)) {
       return computeTotalsFromGrid(initialCityData.gridState);
     }
     return {};
@@ -59,7 +59,8 @@ export function CityProvider({
   });
 
   function computeTotalsFromGrid(g: number[][]) {
-    return g.flat().reduce((acc: Totals, id: number) => {
+    if (!Array.isArray(g) || !g.every(Array.isArray)) return {};
+    return g.reduce((acc, arr) => acc.concat(arr), []).reduce((acc: Totals, id: number) => {
       const b: any = buildings.find((b: any) => b.id === id) || {};
       const resources: Record<string, number> = b.resources || {};
       for (const [key, val] of Object.entries(resources)) {
@@ -71,7 +72,20 @@ export function CityProvider({
 
   // normalize resource keys from building definitions to the CityTotals shape
   function normalizeTotals(resourceTotals: Totals, g: number[][]): CityTotals {
-    const buildingCount = g.flat().length;
+    if (!Array.isArray(g) || !g.every(Array.isArray)) {
+      return {
+        powerUsage: 0,
+        powerOutput: 0,
+        waterUsage: 0,
+        waterOutput: 0,
+        houses: 0,
+        employed: 0,
+        capacity: 0,
+        foodProduction: 0,
+        qualityIndex: 0,
+      };
+    }
+    const buildingCount = g.reduce((acc, arr) => acc.concat(arr), []).length;
     const serviceCoverage = resourceTotals['serviceCoverage'] || 0;
     const foodProduction = resourceTotals['foodProduction'] || 0;
     const houses = resourceTotals['population'] || 0;

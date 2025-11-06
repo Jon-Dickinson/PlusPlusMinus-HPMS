@@ -86,12 +86,14 @@ function DashboardContent() {
       return;
     }
 
-    const { grid, buildingLog } = cityContext;
+    const { grid, buildingLog, getTotals } = cityContext;
 
+    const totals = getTotals();
     const payload = {
       gridState: grid,
       buildingLog: buildingLog,
       note: note,
+      qualityIndex: totals.qualityIndex,
     };
 
     axios.instance.put(`/cities/${user.city.id}/data`, payload)

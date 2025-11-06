@@ -69,6 +69,7 @@ export async function updateCityData(cityId: number, userId: number, data: {
   gridState?: any;
   buildingLog?: any;
   note?: string;
+  qualityIndex?: number;
 }) {
   const city = await prisma.city.findUnique({ where: { id: cityId } });
 
@@ -80,12 +81,15 @@ export async function updateCityData(cityId: number, userId: number, data: {
     throw new Error('User is not the mayor of this city');
   }
 
-  const cityUpdateData: { gridState?: any, buildingLog?: any } = {};
+  const cityUpdateData: { gridState?: any, buildingLog?: any, qualityIndex?: number } = {};
   if (data.gridState) {
     cityUpdateData.gridState = data.gridState;
   }
   if (data.buildingLog) {
     cityUpdateData.buildingLog = data.buildingLog;
+  }
+  if (data.qualityIndex !== undefined) {
+    cityUpdateData.qualityIndex = data.qualityIndex;
   }
 
   const updatePromises = [];

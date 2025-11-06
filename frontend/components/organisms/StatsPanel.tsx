@@ -105,6 +105,8 @@ export default function StatsPanel(): JSX.Element {
   const serviceShort = t.capacity < t.houses;
   const foodShort = t.foodProduction < t.houses;
 
+  const qualityColor = t.qualityIndex <= 50 ? '#ef4444' : t.qualityIndex <= 69 ? '#FFD52B' : '#16a34a';
+
   return (
     <Panel>
       <Card warn={powerOver}>
@@ -166,8 +168,7 @@ export default function StatsPanel(): JSX.Element {
           <Stat color={serviceShort ? '#ef4444' : '#0ea5e9'}>
             Capacity: {t.capacity.toLocaleString()}
           </Stat>
-          {/* Quality Index text hidden per request; card remains */}
-          <Stat aria-hidden="true">&nbsp;</Stat>
+          <Stat color={qualityColor}>Quality Index: {t.qualityIndex}%</Stat>
         </StatsRow>
       </Card>
 
