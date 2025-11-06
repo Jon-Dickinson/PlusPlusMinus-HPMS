@@ -10,6 +10,7 @@ import axios from '../lib/axios';
 import { Trash2 } from 'lucide-react';
 
 import useAuthorized from '../hooks/useAuthorized';
+import { useAuth } from '../context/AuthContext';
 
 
 const ColWrapper = styled.div`
@@ -198,17 +199,34 @@ export default function UserList() {
     }
   };
 
+  const { initialized } = useAuth();
+
   useEffect(() => {
     let mounted = true;
 
-    fetchUsers().then(() => {
+    // Wait until auth is initialized (token set) before attempting protected fetches.
+    if (!initialized) return () => {
+      mounted = false;
+    };
+
+    (async () => {
+      if (!canNavigateAdmin) {
+        // Not authorized to view the users list — avoid making the API call.
+        if (mounted) {
+          setUsers([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      await fetchUsers();
       if (mounted) setLoading(false);
-    });
+    })();
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [initialized, canNavigateAdmin]);
 
   const mayors = users.filter((u) => u.role === 'MAYOR');
 

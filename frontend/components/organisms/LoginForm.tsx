@@ -165,8 +165,9 @@ export default function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    try {
-      const user = await login(email, password);
+  try {
+  // Trim the email to avoid accidental leading/trailing whitespace from user input
+  const user = await login(email.trim(), password);
       if (user) {
         if (isAdmin(user.role)) {
           router.push('/user-list');

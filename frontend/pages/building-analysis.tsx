@@ -218,14 +218,24 @@ export default function BuildingAnalysis() {
                     <ResourcesContainer>
                       <ResourcesTitle>Resources:</ResourcesTitle>
                       <ResourcesList>
-                        {Object.entries(selected.resources).map(([key, value]) => (
-                          <ResourceItem key={key}>
-                            {key
-                              .replace(/([A-Z])/g, ' $1')
-                              .replace(/^./, (str) => str.toUpperCase())}
-                            : {String(value)}
-                          </ResourceItem>
-                        ))}
+                        {/* Support two shapes returned by the API:
+                            1) An object map: { water: 10, powerOutput: 5 }
+                            2) An array of resource objects: [{ type: 'Water', amount: 10 }, ...]
+                        */}
+                        {Array.isArray(selected.resources)
+                          ? selected.resources.map((r: any, idx: number) => (
+                              <ResourceItem key={r.id ?? r.type ?? idx}>
+                                {(r.type || r.name || `Resource ${idx + 1}`)}: {String(r.amount ?? r.value ?? JSON.stringify(r))}
+                              </ResourceItem>
+                            ))
+                          : Object.entries(selected.resources).map(([key, value]) => (
+                              <ResourceItem key={key}>
+                                {key
+                                  .replace(/([A-Z])/g, ' $1')
+                                  .replace(/^./, (str) => str.toUpperCase())}
+                                : {String(value)}
+                              </ResourceItem>
+                            ))}
                       </ResourcesList>
                     </ResourcesContainer>
                   )}

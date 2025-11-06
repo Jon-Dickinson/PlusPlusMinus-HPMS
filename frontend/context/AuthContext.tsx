@@ -32,6 +32,7 @@ type User = {
 type AuthContextValue = {
   user: User | null;
   token: string | null;
+  initialized: boolean;
   login: (email: string, password: string) => Promise<User | null>;
   logout: () => void;
   setUser: (user: User | null) => void;
@@ -42,6 +43,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUserState] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const t = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -59,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserState(null);
       }
     }
+    setInitialized(true);
   }, []);
 
   async function login(email: string, password: string): Promise<User | null> {
@@ -103,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   return (
-    <AuthContext.Provider value={{ user: user, token, login, logout, setUser }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user: user, token, initialized, login, logout, setUser }}>{children}</AuthContext.Provider>
   );
 };
 
