@@ -19,16 +19,9 @@ export async function getById(id: number) {
 		return null;
 	}
 
-	// Transform the resources array into a key-value object
-	const resources = building.resources.reduce((acc, resource) => {
-		acc[resource.type] = resource.amount;
-		return acc;
-	}, {} as Record<string, number>);
-
 	return {
 		...building,
 		longDescription: building.category?.description, // Add description
-		resources,
 	};
 }
 
@@ -39,7 +32,24 @@ export async function create(data: any) {
 		data.categoryId = category.id;
 		delete data.category;
 	}
-	return prisma.building.create({ data });
+	
+	// Only pass valid fields to Prisma
+	const { name, categoryId, level, sizeX, sizeY, powerUsage, powerOutput, waterUsage, waterOutput, cityId } = data;
+	
+	return prisma.building.create({ 
+		data: { 
+			name, 
+			categoryId, 
+			level, 
+			sizeX, 
+			sizeY, 
+			powerUsage, 
+			powerOutput, 
+			waterUsage, 
+			waterOutput, 
+			cityId 
+		} 
+	});
 }
 
 export async function update(id: number, data: any) {

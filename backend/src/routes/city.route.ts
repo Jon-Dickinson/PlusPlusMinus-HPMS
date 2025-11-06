@@ -23,7 +23,7 @@ router.delete('/:id', CityController.deleteCity);
 // City subroutes (notes & logs)
 router.get('/:id/logs', CityController.getBuildLogs);
 router.post('/:id/logs', validate(logSchema), CityController.addBuildLog);
-router.get('/:id/notes', CityController.getNotes);
+router.get('/:id/notes', authMiddleware, CityController.getNotes);
 router.post('/:id/notes', authMiddleware, validate(noteSchema), CityController.addNote);
 
 // User-based city endpoints (frontend expects /api/city/:userId)
