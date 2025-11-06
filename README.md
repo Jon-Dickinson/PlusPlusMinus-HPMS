@@ -4,6 +4,25 @@
   <img src="./frontend/public/dashboard.png" alt="City Simulation Dashboard" width="100%">
 </p>
 
+## Backend Installation
+
+```
+cd backend
+npm install
+npm run build
+npm run dev
+```
+
+## Frontend Installation
+
+```
+cd frontend
+npm install
+npm run build
+npm run dev
+```
+
+
 
 ## Tech Stack
 
