@@ -27,10 +27,10 @@ export default function MapView({
   const cells = Array.from({ length: gridCols * gridRows });
 
   return (
-    <Scale $scale={scale}>
-      <GridOverlay />
-      <PlacementBounds $w={areaW} $h={areaH} />
-      <GridCells $cols={gridCols} $rows={gridRows} $w={areaW} $h={areaH}>
+    <Scale $scale={scale} data-testid="scale-container">
+      <GridOverlay data-testid="grid-overlay" />
+      <PlacementBounds $w={areaW} $h={areaH} data-testid="placement-bounds" />
+      <GridCells $cols={gridCols} $rows={gridRows} $w={areaW} $h={areaH} data-testid="grid-cells">
         {cells.map((_, i) => (
           <Cell key={i} />
         ))}

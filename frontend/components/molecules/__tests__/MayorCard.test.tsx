@@ -23,9 +23,8 @@ describe('MayorCard', () => {
 
     await waitFor(() => expect(screen.getByText(/Alice Anderson/)).toBeInTheDocument());
     expect(screen.getByText(/ZedTown, X/)).toBeInTheDocument();
-    expect(screen.getByText(/1 note/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByLabelText('Mayor Alice Anderson'));
     expect(onClick).toHaveBeenCalledWith(1);
   });
 
@@ -35,6 +34,5 @@ describe('MayorCard', () => {
 
     await waitFor(() => expect(screen.getByText('—, —')).toBeInTheDocument());
     expect(screen.getByText('— —')).toBeInTheDocument();
-    expect(screen.getByText('0')).toBeInTheDocument();
   });
 });

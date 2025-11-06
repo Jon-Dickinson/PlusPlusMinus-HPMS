@@ -23,15 +23,45 @@ async function main() {
 
   const passwordHash = await bcrypt.hash('Password123!', 10);
 
-  // Remove old default users and their data
-  await prisma.note.deleteMany({ where: { user: { username: { in: ['mayor', 'viewer'] } } } });
-  await prisma.city.deleteMany({ where: { mayor: { username: 'mayor' } } });
-  await prisma.user.deleteMany({ where: { username: { in: ['mayor', 'viewer'] } } });
-
   // ─────────────── USERS ───────────────
   let admin = await prisma.user.findFirst({ where: ({ username: 'admin' } as any) });
   if (!admin) {
     admin = await prisma.user.create({ data: { firstName: 'Alice', lastName: 'Admin', username: 'admin', email: 'admin@example.com', password: passwordHash, role: 'ADMIN' } as any });
+  }
+
+  // Create default MAYOR
+  let mayor = await prisma.user.findFirst({ where: { username: 'mayor' } });
+  if (!mayor) {
+    mayor = await prisma.user.create({
+      data: {
+        firstName: 'Bob',
+        lastName: 'Mayor',
+        username: 'mayor',
+        email: 'mayor@example.com',
+        password: passwordHash,
+        role: 'MAYOR'
+      } as any
+    });
+  }
+
+  // Create default VIEWERs assigned to the MAYOR
+  const viewers = [];
+  for (let i = 1; i <= 2; i++) {
+    let viewer = await prisma.user.findFirst({ where: { username: `viewer${i}` } });
+    if (!viewer) {
+      viewer = await prisma.user.create({
+        data: {
+          firstName: `Charlie${i}`,
+          lastName: `Viewer${i}`,
+          username: `viewer${i}`,
+          email: `viewer${i}@example.com`,
+          password: passwordHash,
+          role: 'VIEWER',
+          mayorId: mayor.id
+        } as any
+      });
+    }
+    viewers.push(viewer);
   }
 
   // ─────────────── CATEGORIES ───────────────
@@ -94,6 +124,9 @@ async function main() {
   console.log('✅ Seed completed successfully.');
   console.table([
     { role: 'Admin', username: (admin as any).username || 'admin', password: 'Password123!' },
+    { role: 'Mayor', username: (mayor as any).username || 'mayor', password: 'Password123!' },
+    { role: 'Viewer 1', username: viewers[0]?.username || 'viewer1', password: 'Password123!' },
+    { role: 'Viewer 2', username: viewers[1]?.username || 'viewer2', password: 'Password123!' },
   ]);
 }
 
