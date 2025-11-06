@@ -155,16 +155,9 @@ export default function RegisterForm() {
         <Title>Create an Account</Title>
         <form onSubmit={handleSubmit}>
           {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
-          <Row>
-            <Input name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required />
-            <Input name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} required />
-          </Row>
-          <Input name="username" placeholder="Username" value={formData.username} onChange={handleChange} required />
-          <Input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-          <Input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-          <p> Register as:</p>
+            <p> Register as:</p>
 
-          <RadioGroup>
+           <RadioGroup>
             <RadioLabel>
               <input type="radio" name="role" value="VIEWER" checked={formData.role === 'VIEWER'} onChange={handleRoleChange} />
               <span>Viewer</span>
@@ -183,7 +176,7 @@ export default function RegisterForm() {
           )}
 
           {formData.role === 'VIEWER' && (
-            <div style={{ marginTop: 12 }}>
+            <div className="my-10">
               <label htmlFor="mayor-select">Select your Mayor</label>
               <div>
                 {mayorsLoading ? (
@@ -199,13 +192,22 @@ export default function RegisterForm() {
                   >
                     <option value="">-- Select Mayor --</option>
                     {mayors.map((m) => (
-                      <option key={m.id} value={String(m.id)}>{`${m.firstName} ${m.lastName} (${m.username})`}</option>
+                      <option key={m.id} value={String(m.id)}>{`${m.firstName} ${m.lastName}${m.username ? ` (${m.username})` : ''}`}</option>
                     ))}
                   </select>
                 )}
               </div>
             </div>
           )}
+         
+          <Row>
+            <Input name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required autoComplete="new-password" />
+            <Input name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} required autoComplete="new-password" />
+          </Row>
+          <Input name="username" placeholder="Username" value={formData.username} onChange={handleChange} required autoComplete="new-password" />
+          <Input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required autoComplete="new-password" />
+          <Input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} required autoComplete="new-password" />
+        
 
           <Button type="submit" disabled={loading || (formData.role === 'VIEWER' && !formData.mayorId)} aria-busy={loading} style={{ width: '100%', marginTop: '16px' }}>
             {loading ? <Spinner size={16} /> : 'Register'}

@@ -35,6 +35,7 @@ export const updateCityDataSchema = z.object({
     gridState: z.any().optional(),
     buildingLog: z.any().optional(),
     note: z.string().optional(),
+    qualityIndex: z.number().min(0).optional(),
   }),
   params: z.object({
     id: z.string(),

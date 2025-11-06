@@ -1,6 +1,7 @@
+/// <reference types="node" />
 import { PrismaClient } from '@prisma/client';
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import bcrypt from 'bcryptjs';
 import { fileURLToPath } from 'url';
 
@@ -22,30 +23,15 @@ async function main() {
 
   const passwordHash = await bcrypt.hash('Password123!', 10);
 
+  // Remove old default users and their data
+  await prisma.note.deleteMany({ where: { user: { username: { in: ['mayor', 'viewer'] } } } });
+  await prisma.city.deleteMany({ where: { mayor: { username: 'mayor' } } });
+  await prisma.user.deleteMany({ where: { username: { in: ['mayor', 'viewer'] } } });
+
   // ─────────────── USERS ───────────────
   let admin = await prisma.user.findFirst({ where: ({ username: 'admin' } as any) });
   if (!admin) {
     admin = await prisma.user.create({ data: { firstName: 'Alice', lastName: 'Admin', username: 'admin', email: 'admin@example.com', password: passwordHash, role: 'ADMIN' } as any });
-  }
-
-  let mayor = await prisma.user.findFirst({ where: ({ username: 'mayor' } as any) });
-  if (!mayor) {
-    mayor = await prisma.user.create({ data: { firstName: 'Michael', lastName: 'Mayor', username: 'mayor', email: 'mayor@example.com', password: passwordHash, role: 'MAYOR' } as any });
-  }
-
-  // Create a city and assign the mayor
-  let sunrise = await prisma.city.findFirst({ where: { name: 'Sunrise Bay' } as any });
-  if (!sunrise) {
-    sunrise = await prisma.city.create({ data: { name: 'Sunrise Bay', country: 'South Africa', qualityIndex: 42, mayorId: mayor.id, buildingLog: [ 'Placed Residential Block', 'Built Water Plant' ], gridState: null } as any });
-  }
-
-  // Create some user notes (Note now belongs to user)
-  await prisma.note.create({ data: { userId: mayor.id, content: 'Started developing near the bay area.' } as any });
-  await prisma.note.create({ data: { userId: mayor.id, content: 'Next step: expand power generation.' } as any });
-
-  let viewer = await prisma.user.findFirst({ where: ({ username: 'viewer' } as any) });
-  if (!viewer) {
-    viewer = await prisma.user.create({ data: { firstName: 'Victor', lastName: 'Viewer', username: 'viewer', email: 'viewer@example.com', password: passwordHash, role: 'VIEWER' } as any });
   }
 
   // ─────────────── CATEGORIES ───────────────
@@ -75,6 +61,7 @@ async function main() {
     if (!building) {
       building = await prisma.building.create({
         data: {
+          id: b.id,
           name: b.name,
           categoryId: cat.id,
           // optional numeric defaults if provided in source data
@@ -107,8 +94,6 @@ async function main() {
   console.log('✅ Seed completed successfully.');
   console.table([
     { role: 'Admin', username: (admin as any).username || 'admin', password: 'Password123!' },
-    { role: 'Mayor', username: (mayor as any).username || 'mayor', password: 'Password123!' },
-    { role: 'Viewer', username: (viewer as any).username || 'viewer', password: 'Password123!' },
   ]);
 }
 
