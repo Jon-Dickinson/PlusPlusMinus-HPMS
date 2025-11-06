@@ -50,8 +50,9 @@ Every action — from building placement to resource consumption — is tracked,
 | Role | Email | Password |
 |------|--------|-----------|
 | **Admin** | `admin@example.com` | `Password123!` |
-| **Mayor** | `mayor@example.com` | `Password123!` |
-| **Viewer** | `viewer@example.com` | `Password123!` |
+| **Mayor** | `single_mayor@example.com` | `Password123!` |
+| **Viewer** | `viewer_a@example.com` | `Password123!` |
+| **Viewer** | `viewer_b@example.com` | `Password123!` |
 
 ### 4. Modular Architecture
 - **Frontend:** Next.js + Styled-Components for modern, component-driven design  
