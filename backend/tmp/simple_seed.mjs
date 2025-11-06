@@ -20,16 +20,16 @@ const prisma = new PrismaClient();
       const where = { name: b.name, categoryId: category.id };
       let building = await prisma.building.findFirst({ where });
       if (!building) {
-        building = await prisma.building.create({ data: { name: b.name, color: b.color ?? '#000', icon: b.icon ?? '', categoryId: category.id } });
+        building = await prisma.building.create({ data: { id: b.id, name: b.name, categoryId: category.id } });
       }
       const resources = b.resources || {};
       for (const key of Object.keys(resources)) {
         const value = Number(resources[key] ?? 0);
-        const r = await prisma.buildingResource.findFirst({ where: { buildingId: building.id, key } });
+        const r = await prisma.buildingResource.findFirst({ where: { buildingId: building.id, type: key } });
         if (!r) {
-          await prisma.buildingResource.create({ data: { buildingId: building.id, key, value } });
+          await prisma.buildingResource.create({ data: { buildingId: building.id, type: key, amount: value } });
         } else {
-          await prisma.buildingResource.update({ where: { id: r.id }, data: { value } });
+          await prisma.buildingResource.update({ where: { id: r.id }, data: { amount: value } });
         }
       }
     }

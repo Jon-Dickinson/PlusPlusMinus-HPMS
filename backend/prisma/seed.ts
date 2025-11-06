@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import buildingsData from './data/buildings.js';
 
 const prisma = new PrismaClient();
 
@@ -59,6 +60,50 @@ async function main() {
     create: { name: 'Singleton', country: 'Freedonia', mayorId: mayor.id },
   });
   console.log(`Ensured city 'Singleton' for mayor ${mayor.username}`);
+
+  // Seed building categories
+  const categories = Array.from(new Set((buildingsData as any[]).map((b: any) => b.category)));
+  for (const cat of categories) {
+    await prisma.buildingCategory.upsert({
+      where: { name: cat },
+      update: {},
+      create: { name: cat },
+    });
+  }
+  console.log(`Ensured ${categories.length} building categories`);
+
+  // Seed buildings
+  for (const b of buildingsData) {
+    const category = await prisma.buildingCategory.findUnique({ where: { name: b.category } });
+    const building = await prisma.building.upsert({
+      where: { id: b.id },
+      update: {},
+      create: {
+        id: b.id,
+        name: b.name,
+        categoryId: category!.id,
+      },
+    });
+
+    // Seed resources
+    const resources = b.resources || {};
+    for (const [type, amount] of Object.entries(resources)) {
+      const existing = await prisma.buildingResource.findFirst({
+        where: { buildingId: building.id, type },
+      });
+      if (existing) {
+        await prisma.buildingResource.update({
+          where: { id: existing.id },
+          data: { amount: Number(amount) },
+        });
+      } else {
+        await prisma.buildingResource.create({
+          data: { buildingId: building.id, type, amount: Number(amount) },
+        });
+      }
+    }
+  }
+  console.log(`Ensured ${buildingsData.length} buildings with resources`);
 
   // Ensure two viewers linked to single_mayor
   const viewerA = await prisma.user.upsert({
