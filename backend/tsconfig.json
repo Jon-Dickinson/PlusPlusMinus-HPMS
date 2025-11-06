@@ -39,6 +39,9 @@
     "prisma",
     "tests",
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "vitest.config.ts",
+    "vitest.config.integration.ts",
+    "vitest.config.performance.ts"
   ]
 }
