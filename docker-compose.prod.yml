@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: plusplusminus_postgres_prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: plusplusminus_prod
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plusplusminus_network
+
+  backend:
+    image: plusplusminus/backend:latest
+    container_name: plusplusminus_backend_prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/plusplusminus_prod
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - plusplusminus_network
+
+  frontend:
+    image: plusplusminus/frontend:latest
+    container_name: plusplusminus_frontend_prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+    networks:
+      - plusplusminus_network
+
+volumes:
+  postgres_prod_data:
+
+networks:
+  plusplusminus_network:
+    driver: bridge

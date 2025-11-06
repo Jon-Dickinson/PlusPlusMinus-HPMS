@@ -76,6 +76,65 @@ http://localhost:5555/
 
 ---
 
+## Deployment & CI/CD
+
+This project includes a comprehensive CI/CD pipeline for automated testing, building, and deployment.
+
+### Quick Start with Docker
+
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd plusplusminus-hpms
+   ```
+
+2. **Set up environment variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your database URL and secrets
+   ```
+
+3. **Run with Docker Compose:**
+   ```bash
+   # Development environment
+   docker-compose up --build
+
+   # Production environment
+   docker-compose -f docker-compose.prod.yml up --build
+   ```
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+- **Automated Testing:** Runs on every push to `main` and pull requests
+- **Multi-stage Docker Builds:** Optimized containerization for both frontend and backend
+- **Cloud Deployment:** Automatic deployment to Railway (backend) and Vercel (frontend)
+- **Health Checks:** Post-deployment verification of all services
+
+#### GitHub Secrets Required
+
+Set these secrets in your GitHub repository settings:
+
+```
+RAILWAY_TOKEN        # Railway CLI token
+VERCEL_TOKEN         # Vercel deployment token
+VERCEL_PROJECT_ID    # Vercel project ID
+VERCEL_ORG_ID        # Vercel organization ID
+DATABASE_URL         # Production database URL
+JWT_SECRET           # JWT signing secret
+```
+
+#### Deployment Scripts
+
+- `scripts/deploy.sh` - Manual deployment script
+- `scripts/docker-deploy.sh` - Docker-based deployment
+- `scripts/health-check.sh` - Service health verification
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+---
+
 ## Trello
 
 ```
@@ -93,8 +152,8 @@ https://console.neon.tech/app/projects/calm-dream-36516261/auth?tab=configuratio
 Start the server:
 
 ```
-npm run build
-npm run dev
+npm run build
+npm run dev
 ```
 
 Open the Swagger UI in your browser:
