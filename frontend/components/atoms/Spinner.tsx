@@ -16,5 +16,5 @@ const S = styled.div<{ size?: number }>`
 `;
 
 export default function Spinner({ size = 12 }: { size?: number }) {
-  return <S size={size} aria-hidden />;
+  return <S size={size} aria-hidden role="presentation" />;
 }

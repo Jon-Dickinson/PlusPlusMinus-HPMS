@@ -25,7 +25,7 @@ vi.mock('../../context/AuthContext', () => ({
 }));
 
 // Mock CityContext to provide grid and buildingLog
-const cityValue = { grid: { cells: [] }, buildingLog: [{ id: 1, action: 'b' }] };
+const cityValue = { grid: { cells: [] }, buildingLog: [{ id: 1, action: 'b' }], getTotals: () => ({ qualityIndex: 100 }) };
 vi.mock('../../components/organisms/CityContext', () => ({
   CityProvider: ({ children }: any) => <div>{children}</div>,
   useCity: () => cityValue,

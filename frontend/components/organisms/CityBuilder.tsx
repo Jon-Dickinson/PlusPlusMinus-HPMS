@@ -1,4 +1,5 @@
 // CityBuilder.tsx
+import React from 'react';
 import { CityProvider } from './CityContext';
 import BuildingSidebar from './BuildingSidebar';
 import CityGrid from './CityGrid';

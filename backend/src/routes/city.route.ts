@@ -17,6 +17,7 @@ router.get('/:id', CityController.getCityById);
 router.post('/', validate(cityCreateSchema), CityController.createCity);
 router.put('/:id', validate(cityUpdateSchema), CityController.updateCity);
 router.put('/:id/data', authMiddleware, validate(updateCityDataSchema), CityController.updateCityData);
+router.get('/:id/data', CityController.getCityData);
 router.delete('/:id', CityController.deleteCity);
 
 // City subroutes (notes & logs)

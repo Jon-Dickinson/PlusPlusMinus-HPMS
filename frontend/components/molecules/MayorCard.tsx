@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Notebook, MapPin, User } from 'lucide-react';
+import { MapPin, User, Trash2 } from 'lucide-react';
 import axios from '../../lib/axios';
 
 type Props = {
   id: number | string;
   onClick?: (id: number | string) => void;
+  onDelete?: (id: number | string) => void;
 };
 
 const Card = styled.button`
@@ -64,32 +65,11 @@ const Properties = styled.div`
   justify-content: flex-end;
 `;
 
-const Inner = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  justify-content: flex-end;
-`;
-
-const NoteIcon = styled.span<{ has?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  color: ${(p) => (p.has ? '#3bb55c' : '#9aa3b2')};
-  opacity: ${(p) => (p.has ? 1 : 0.8)};
-
-  svg {
-    display: block;
-  }
-`;
-
-export default function MayorCard({ id, onClick }: Props) {
-  const [loading, setLoading] = useState(true);
+export default function MayorCard({ id, onClick, onDelete }: Props) {
   const [mayor, setMayor] = useState<any>(null);
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
     axios.instance
       .get(`/users/${id}`)
       .then((res) => {
@@ -99,8 +79,7 @@ export default function MayorCard({ id, onClick }: Props) {
       .catch(() => {
         if (!mounted) return;
         setMayor(null);
-      })
-      .finally(() => mounted && setLoading(false));
+      });
 
     return () => {
       mounted = false;
@@ -113,7 +92,11 @@ export default function MayorCard({ id, onClick }: Props) {
   const country = mayor?.city?.country || '—';
   const firstName = mayor?.firstName || '—';
   const lastName = mayor?.lastName || '—';
-  const hasNotes = Array.isArray(mayor?.notes) && mayor.notes.length > 0;
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) onDelete(id);
+  };
 
   return (
     <Card onClick={handleClick} aria-label={`Mayor ${firstName} ${lastName}`}>
@@ -130,12 +113,9 @@ export default function MayorCard({ id, onClick }: Props) {
       </Center>
 
       <Properties>
-        <Inner>
-          <NoteIcon has={hasNotes}>
-            <Notebook size={16} />
-          </NoteIcon>
-          <Muted>{hasNotes ? `${mayor.notes.length} note${mayor.notes.length>1?'s':''}` : '0'}</Muted>
-        </Inner>
+        <button onClick={handleDelete} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
+          <Trash2 size={16} />
+        </button>
       </Properties>
     </Card>
   );

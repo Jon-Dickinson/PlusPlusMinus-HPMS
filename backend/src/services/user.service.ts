@@ -13,8 +13,16 @@ export function listMayors() {
 }
 
 export async function getAll() {
-  // Return only mayors with their city summary for admin user list
-  return prisma.user.findMany({ where: { role: 'MAYOR' } as any, select: { id: true, firstName: true, lastName: true, username: true, role: true, createdAt: true, updatedAt: true, city: { select: { id: true, name: true, qualityIndex: true } } as any } as any });
+  return prisma.user.findMany({
+    include: {
+      viewers: {
+        select: { id: true, firstName: true, lastName: true, username: true, role: true }
+      },
+      mayor: {
+        select: { id: true, firstName: true, lastName: true }
+      }
+    }
+  });
 }
 
 export async function getById(id: number) {
@@ -48,5 +56,10 @@ export async function update(id: number, data: any) {
 }
 
 export async function remove(id: number) {
+  // If the user is a MAYOR, delete their city first to avoid foreign key constraint
+  const user = await prisma.user.findUnique({ where: { id }, include: { city: true } });
+  if (user && user.role === 'MAYOR' && user.city) {
+    await prisma.city.delete({ where: { id: user.city.id } });
+  }
   return prisma.user.delete({ where: { id } });
 }

@@ -1,7 +1,8 @@
 // CityContext.tsx
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CityTotals } from '../../types/city';
 import buildings from '../../data/buildings.json';
+import axios from '../../lib/axios';
 
 type Totals = Record<string, number>;
 
@@ -57,6 +58,25 @@ export function CityProvider({
     }
     return [];
   });
+
+  useEffect(() => {
+    if (initialCityData?.id) {
+      axios.instance.get(`/cities/${initialCityData.id}/data`)
+        .then(response => {
+          const data = response.data;
+          if (data.gridState && Array.isArray(data.gridState)) {
+            setGrid(data.gridState);
+            setTotals(computeTotalsFromGrid(data.gridState));
+          }
+          if (data.buildingLog && Array.isArray(data.buildingLog)) {
+            setBuildingLog(data.buildingLog);
+          }
+        })
+        .catch(error => {
+          console.error('Failed to load city data', error);
+        });
+    }
+  }, [initialCityData?.id]);
 
   function computeTotalsFromGrid(g: number[][]) {
     if (!Array.isArray(g) || !g.every(Array.isArray)) return {};

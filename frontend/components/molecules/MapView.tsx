@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 // Grid overlay inlined from previous GridMap component (removed redundancy)
 import BuildingMarker from './BuildingMarker';
@@ -8,7 +8,6 @@ type Placement = { id?: number; buildingId: number; gx: number; gy: number };
 type RenderedItem = { p: Placement; b?: Building; isoX: number; isoY: number; imgSrc?: string };
 
 export default function MapView({
-  buildingsCount,
   gridCols,
   gridRows,
   areaW,
@@ -17,7 +16,6 @@ export default function MapView({
   onSelect,
   scale = 1,
 }: {
-  buildingsCount: number;
   gridCols: number;
   gridRows: number;
   areaW: number;
@@ -29,10 +27,10 @@ export default function MapView({
   const cells = Array.from({ length: gridCols * gridRows });
 
   return (
-    <Scale $scale={scale}>
-      <GridOverlay />
-      <PlacementBounds $w={areaW} $h={areaH} />
-      <GridCells $cols={gridCols} $rows={gridRows} $w={areaW} $h={areaH}>
+    <Scale $scale={scale} data-testid="scale-container">
+      <GridOverlay data-testid="grid-overlay" />
+      <PlacementBounds $w={areaW} $h={areaH} data-testid="placement-bounds" />
+      <GridCells $cols={gridCols} $rows={gridRows} $w={areaW} $h={areaH} data-testid="grid-cells">
         {cells.map((_, i) => (
           <Cell key={i} />
         ))}

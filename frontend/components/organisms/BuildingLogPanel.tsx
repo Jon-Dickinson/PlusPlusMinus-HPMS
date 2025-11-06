@@ -25,7 +25,7 @@ export default function BuildingLogPanel() {
   return (
     <>
      <LogBoxHeading>Building Log</LogBoxHeading>
-    <LogBox>
+      <LogBox>
      
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {buildingLog && buildingLog.length > 0 ? (

@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import MainTemplate from '../templates/MainTemplate';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
-import { CityProvider } from '../components/organisms/CityContext';
-import Header from '../components/molecules/Header';
-import BuildingSidebar from '../components/organisms/BuildingSidebar';
-import GlobalNav from '../components/molecules/GlobalNav';
-import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
 import buildings from '../data/buildings.json';
 import api from '../lib/axios';
+import parse from 'html-react-parser';
+import CityPageLayout from '../components/organisms/CityPageLayout';
 
-// A simple vertical list of all building images; clicking one fetches its description
 const SidebarList = styled.div`
   display: flex;
   flex-direction: column;
@@ -29,8 +24,6 @@ const ImageButton = styled.button`
   cursor: pointer;
   border-radius: 6px;
   overflow: visible;
-
-  
 
   img {
     width: 56px;
@@ -51,6 +44,113 @@ const AnalysisPlaceholder = styled.div`
   color: #ffffff;
 `;
 
+const RowWrapper = styled.div`
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+`;
+
+const ColWrapper = styled.div`
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+`;
+
+const ResourceColumn = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+
+const MainGridArea = styled.div`
+  margin-top: 72px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const GridContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+`;
+
+const LoadingText = styled.p`
+  color: #ffffff;
+  font-size: 16px;
+`;
+
+const ErrorContainer = styled.div`
+  color: #ffffff;
+`;
+
+const ErrorTitle = styled.h3`
+  color: #ff6b6b;
+  margin: 0 0 10px 0;
+`;
+
+const ErrorMessage = styled.p`
+  color: #ffffff;
+  margin: 0;
+`;
+
+const BuildingContainer = styled.div`
+  color: #ffffff;
+`;
+
+const BuildingTitle = styled.h3`
+  color: #ffffff;
+  margin: 0 0 15px 0;
+`;
+
+const DescriptionContainer = styled.div`
+  margin-bottom: 20px;
+`;
+
+const ResourcesContainer = styled.div`
+  margin-top: 20px;
+`;
+
+const ResourcesTitle = styled.h4`
+  color: #ffffff;
+  margin: 0 0 10px 0;
+`;
+
+const ResourcesList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const ResourceItem = styled.li`
+  color: #ffffff;
+  margin-bottom: 5px;
+  padding: 5px 0;
+  border-bottom: 1px solid #414e79;
+`;
+
+const DefaultContainer = styled.div`
+  color: #ffffff;
+`;
+
+const DefaultTitle = styled.h3`
+  color: #ffffff;
+  margin: 0 0 10px 0;
+`;
+
+const DefaultText = styled.p`
+  color: #ffffff;
+  margin: 0;
+`;
 
 export default function BuildingAnalysis() {
   const router = useRouter();
@@ -86,201 +186,60 @@ export default function BuildingAnalysis() {
   };
 
   return (
-    <MainTemplate>
-      <GlobalNav />
+    <CityPageLayout>
+      <ResourceColumn>
+        <SidebarList>
+          {buildings.map((b: any) => (
+            <ImageButton key={b.id} onClick={() => handleSelectBuilding(b.id)} title={b.name}>
+              <img src={(b.icon as string) || `/buildings/${b.id}.png`} alt={b.name} />
+            </ImageButton>
+          ))}
+        </SidebarList>
+      </ResourceColumn>
 
-      <ColWrapper>
-        <Header />
-        <RowWrapper>
-          <CityProvider>
-            <ResourceColumn>
-              {/* New vertical buildings column for analysis view */}
-              <SidebarList>
-                {buildings.map((b: any) => (
-                  <ImageButton
-                    key={b.id}
-                    onClick={() => handleSelectBuilding(b.id)}
-                    title={b.name}
-                  >
-                    <img src={(b.icon as string) || `/buildings/${b.id}.png`} alt={b.name} />
-                  </ImageButton>
-                ))}
-              </SidebarList>
-            </ResourceColumn>
-
-            <MainGridArea>
-              <GridContainer>
-                <AnalysisPlaceholder>
-                  {loading ? (
-                    <p>Loading...</p>
-                  ) : selected ? (
-                    selected.error ? (
-                      <div>
-                        <h3>Error</h3>
-                        <p>{selected.message || 'Unable to load building details.'}</p>
-                      </div>
-                    ) : (
-                      <div>
-                        <h3>{selected.name || 'Building'}</h3>
-                        <div dangerouslySetInnerHTML={{ __html: selected.longDescription || '<p>No description available.</p>' }} />
-                        {selected.resources && (
-                          <div>
-                            <h4>Resources:</h4>
-                            <ul>
-                              {Object.entries(selected.resources).map(([key, value]) => (
-                                <li key={key}>
-                                  {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}: {String(value)}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  ) : (
-                    <div>
-                      <h3>Building Analysis</h3>
-                      <p>Select a building on the left to see its details.</p>
-                    </div>
+      <MainGridArea>
+        <GridContainer>
+          <AnalysisPlaceholder>
+            {loading ? (
+              <LoadingText>Loading...</LoadingText>
+            ) : selected ? (
+              selected.error ? (
+                <ErrorContainer>
+                  <ErrorTitle>Error</ErrorTitle>
+                  <ErrorMessage>{selected.message || 'Unable to load building details.'}</ErrorMessage>
+                </ErrorContainer>
+              ) : (
+                <BuildingContainer>
+                  <BuildingTitle>{selected.name || 'Building'}</BuildingTitle>
+                  <DescriptionContainer>
+                    {parse(selected.longDescription || '<p>No description available.</p>')}
+                  </DescriptionContainer>
+                  {selected.resources && (
+                    <ResourcesContainer>
+                      <ResourcesTitle>Resources:</ResourcesTitle>
+                      <ResourcesList>
+                        {Object.entries(selected.resources).map(([key, value]) => (
+                          <ResourceItem key={key}>
+                            {key
+                              .replace(/([A-Z])/g, ' $1')
+                              .replace(/^./, (str) => str.toUpperCase())}
+                            : {String(value)}
+                          </ResourceItem>
+                        ))}
+                      </ResourcesList>
+                    </ResourcesContainer>
                   )}
-                </AnalysisPlaceholder>
-              </GridContainer>
-            </MainGridArea>
-          </CityProvider>
-        </RowWrapper>
-      </ColWrapper>
-    </MainTemplate>
+                </BuildingContainer>
+              )
+            ) : (
+              <DefaultContainer>
+                <DefaultTitle>Building Analysis</DefaultTitle>
+                <DefaultText>Select a building on the left to see its details.</DefaultText>
+              </DefaultContainer>
+            )}
+          </AnalysisPlaceholder>
+        </GridContainer>
+      </MainGridArea>
+    </CityPageLayout>
   );
 }
-
-/* Reuse layout styled definitions from dashboard */
-const RowWrapper = styled.div`
-  position: relative;
-  display: inline-flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-`;
-
-const ColWrapper = styled.div`
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-`;
-
-const Sidebar = styled.div`
-  width: 80px;
-  min-width: 80px;
-  background: #111d3a;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem 0;
-`;
-
-const NavIcons = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  padding-top: 5px;
-`;
-
-const ResourceColumn = styled.div`
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-/* ==== MAIN GRID AREA ==== */
-const MainGridArea = styled.div`
-  margin-top: 72px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-`;
-
-const GridHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-left: 10px;
-
-  h2 {
-    font-size: 12px;
-    margin: 0;
-    color: #ffffff;
-    font-weight: 400;
-  }
-
-  h3 {
-    margin: 0;
-    font-size: 18px;
-    color: #ffffff;
-    font-weight: 500;
-  }
-`;
-
-const GridContainer = styled.div`
-  display: flex;
-  align-items: flex-start;
-  flex: 1;
-`;
-
-const InfoColumn = styled.div`
-  width: 100%;
-  max-width: 240px;
-  min-width: 240px;
-  display: flex;
-  flex-direction: column;
-  padding: 80px 20px;
-  gap: 1.5rem;
-`;
-
-const QualityBox = styled.div`
-  padding: 1rem;
-  text-align: center;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: #192748;
-
-  h3 {
-    color: #ffffff;
-    font-weight: 400;
-  }
-  span {
-    font-size: 2rem;
-    font-weight: 500;
-    color: #ffcc00;
-  }
-`;
-
-const BuildingLog = styled.div`
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: #192748;
-  padding: 1rem;
-  color: #ffffff;
-  h4 {
-    margin-bottom: 10px;
-    margin-top: 0;
-    font-weight: 400;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  li {
-    font-size: 13px;
-    padding: 0.25rem 0;
-  }
-`;

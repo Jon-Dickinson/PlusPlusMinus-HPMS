@@ -9,7 +9,7 @@ import React from 'react';
 import CityGrid from './CityGrid';
 import styled from 'styled-components';
 
-export default function CityMap({ scale = 1 }: { scale?: number }) {
+export default function CityMap() {
   return (
     <Wrap>
       <GridContainer>

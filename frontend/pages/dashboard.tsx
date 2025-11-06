@@ -1,49 +1,18 @@
 import React, { useEffect } from 'react';
-import MainTemplate from '../templates/MainTemplate';
 import CityMap from '../components/organisms/CityMap';
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
-import { isAdminOrMayor, isMayor } from '../utils/roles';
-import useAuthorized from '../hooks/useAuthorized';
+import { isAdminOrMayor } from '../utils/roles';
 import axios from '../lib/axios';
 import BuildingSidebar from '../components/organisms/BuildingSidebar';
 import Authorized from '../components/atoms/Authorized';
-import GlobalNav from '../components/molecules/GlobalNav';
-import { CityProvider, useCity } from '../components/organisms/CityContext';
-import Header from '../components/molecules/Header';
+import { useCity } from '../components/organisms/CityContext';
 import StatsPanel from '../components/organisms/StatsPanel';
 import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
-
-
-const MapWrap = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  justify-content: stretch;
-  width: 100%;
-  height: 100%;
-  background-color: #111d3a;
-`;
-
-const MapPanel = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  min-height: 420px;
-  width: 100%;
-`;
-
-const Icon = styled.img`
-  height: 40px;
-  width: auto;
-  display: block;
-`;
+import CityPageLayout from '../components/organisms/CityPageLayout';
 
 const SaveButton = styled.button`
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   padding: 10px 15px;
   border: none;
@@ -69,118 +38,15 @@ const NotesInput = styled.textarea`
   resize: vertical;
 `;
 
-function DashboardContent() {
-  const { user, setUser } = useAuth();
-  const isMayorUser = useAuthorized(['MAYOR']);
-  const [note, setNote] = React.useState('');
-  const cityContext = useCity();
-
-  useEffect(() => {
-    if (user?.notes && user.notes.length > 0) {
-      setNote(user.notes[0].content);
-    }
-  }, [user]);
-
-  const handleSave = () => {
-    if (!user || !user.city || !cityContext) {
-      return;
-    }
-
-    const { grid, buildingLog, getTotals } = cityContext;
-
-    const totals = getTotals();
-    const payload = {
-      gridState: grid,
-      buildingLog: buildingLog,
-      note: note,
-      qualityIndex: totals.qualityIndex,
-    };
-
-    axios.instance.put(`/cities/${user.city.id}/data`, payload)
-      .then(response => {
-        console.log('City data saved successfully', response.data);
-        // Optionally, show a success message to the user
-      })
-      .catch(error => {
-        console.error('Failed to save city data', error);
-        // Optionally, show an error message to the user
-      });
-  };
-
-  return (
-    <>
-      <ResourceColumn>
-        <GridHeader>
-          {user?.role === 'MAYOR' && user.city && (
-            <>
-              <h3>{user.city.name}</h3>
-              <h2>{user.city.country}</h2>
-            </>
-          )}
-        </GridHeader>
-
-        <StatsPanel />
-      </ResourceColumn>
-
-  <Authorized allowed={[ 'ADMIN', 'MAYOR' ]}>
-    <BuildingSidebar />
-  </Authorized>
-
-      <MainGridArea>
-        <GridContainer>
-          <MapPanel>{user && <CityMap />}</MapPanel>
-        </GridContainer>
-      </MainGridArea>
-    
-      <InfoColumn>
-    
-
-        {/* Building log now driven from CityContext */}
-        <BuildingLogPanel />
-
-        <Authorized allowed={[ 'ADMIN', 'MAYOR' ]}>
-          <>
-            <NotesInput 
-              placeholder="Enter your notes here..."
-              value={note}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)}
-            />
-            <SaveButton onClick={handleSave}>Save City Data</SaveButton>
-          </>
-        </Authorized>
-      </InfoColumn>
-    </>
-  );
-}
-
-export default function Dashboard() {
-  const { user } = useAuth();
-  const [serverTime, setServerTime] = React.useState<string | null>(null);
-  const role = (user?.role || '').toUpperCase();
-  const canEdit = React.useMemo(() => isAdminOrMayor(user?.role), [user?.role]);
-
-  useEffect(() => {
-    // example call to backend
-    axios.instance
-      .get('/buildings')
-      .then(() => setServerTime(new Date().toISOString()))
-      .catch(() => {});
-  }, []);
-
-  return (
-    <MainTemplate>
-      <GlobalNav />
-      <ColWrapper>
-        <Header />
-        <RowWrapper>
-          <CityProvider initialCityData={user?.city} canEdit={canEdit}>
-            <DashboardContent />
-          </CityProvider>
-        </RowWrapper>
-      </ColWrapper>
-    </MainTemplate>
-  );
-}
+const MapPanel = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  min-height: 420px;
+  width: 100%;
+`;
 
 const RowWrapper = styled.div`
   position: relative;
@@ -196,24 +62,6 @@ const ColWrapper = styled.div`
   flex-direction: column;
   width: 100%;
   height: 100%;
-`;
-
-const Sidebar = styled.div`
-  width: 80px;
-  min-width: 80px;
-  background: #111d3a;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem 0;
-`;
-
-const NavIcons = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  padding-top: 5px;
 `;
 
 const ResourceColumn = styled.div`
@@ -261,60 +109,111 @@ const GridContainer = styled.div`
   flex: 1;
 `;
 
-const GridCell = styled.div`
-  border: 1px solid #414e79;
-  background: #1a1d23;
-  border-radius: 4px;
-`;
-
 const InfoColumn = styled.div`
   width: 100%;
   max-width: 340px;
   min-width: 340px;
   display: flex;
   flex-direction: column;
-  padding: 80px 20px;
+  padding: 40px 20px;
 `;
 
-const QualityBox = styled.div`
-  padding: 1rem;
-  text-align: center;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: #192748;
-
-  h3 {
-    color: #ffffff;
-    font-weight: 400;
-  }
-  span {
-    font-size: 2rem;
-    font-weight: 500;
-    color: #ffcc00;
-  }
+const MessageDiv = styled.div<{ type: 'success' | 'error' }>`
+  margin-top: 1rem;
+  color: ${(props) => (props.type === 'success' ? 'green' : 'red')};
 `;
 
-const BuildingLog = styled.div`
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background-color: #192748;
-  padding: 1rem;
-  color: #ffffff;
-  h4 {
-    margin-bottom: 10px;
-    margin-top: 0;
-    font-weight: 400;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  li {
-    font-size: 13px;
-    padding: 0.25rem 0;
-  }
-`;
+function DashboardContent() {
+  const { user } = useAuth();
+  const [note, setNote] = React.useState('');
+  const cityContext = useCity();
+  const [message, setMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(
+    null,
+  );
 
+  useEffect(() => {
+    if (user?.notes && user.notes.length > 0) {
+      setNote(user.notes[0].content);
+    }
+  }, [user]);
+
+  const handleSave = () => {
+    if (!user || !user.city || !cityContext) {
+      return;
+    }
+
+    const { grid, buildingLog, getTotals } = cityContext;
+
+    const totals = getTotals();
+    const payload = {
+      gridState: grid,
+      buildingLog: buildingLog,
+      note: note,
+      qualityIndex: totals.qualityIndex,
+    };
+
+    axios.instance
+      .put(`/cities/${user.city.id}/data`, payload)
+      .then((response) => {
+        setMessage({ type: 'success', text: 'City data saved successfully!' });
+      })
+      .catch((error) => {
+        setMessage({ type: 'error', text: 'Failed to save city data.' });
+      });
+  };
+
+  return (
+    <>
+      <ResourceColumn>
+        <GridHeader>
+          {user?.role === 'MAYOR' && user.city && (
+            <>
+              <h3>{user.city.name}</h3>
+              <h2>{user.city.country}</h2>
+            </>
+          )}
+        </GridHeader>
+
+        <StatsPanel />
+      </ResourceColumn>
+
+      <Authorized allowed={['ADMIN', 'MAYOR']}>
+        <BuildingSidebar />
+      </Authorized>
+
+      <MainGridArea>
+        <GridContainer>
+          <MapPanel>{user && <CityMap />}</MapPanel>
+        </GridContainer>
+      </MainGridArea>
+
+      <InfoColumn>
+        {/* Building log now driven from CityContext */}
+        <BuildingLogPanel />
+
+        <Authorized allowed={['ADMIN', 'MAYOR']}>
+          <>
+            <NotesInput
+              placeholder="Enter your notes here..."
+              value={note}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)}
+            />
+            <SaveButton onClick={handleSave}>Save City Data</SaveButton>
+            {message && <MessageDiv type={message.type}>{message.text}</MessageDiv>}
+          </>
+        </Authorized>
+      </InfoColumn>
+    </>
+  );
+}
+
+export default function Dashboard() {
+  const { user } = useAuth();
+  const canEdit = React.useMemo(() => isAdminOrMayor(user?.role), [user?.role]);
+
+  return (
+    <CityPageLayout initialCityData={user?.city} canEdit={canEdit}>
+      <DashboardContent />
+    </CityPageLayout>
+  );
+}

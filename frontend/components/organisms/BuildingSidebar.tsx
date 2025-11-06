@@ -122,12 +122,7 @@ function DraggableBuildingClient({ building }: { building: any }) {
   }));
 
   // read totals from context (re-renders when totals update)
-  const { totals } = useCity();
-
-  // pick the first resource key from the building definition (if any)
-  const resources = building.resources || {};
-  const resourceKey = Object.keys(resources)[0] || null;
-  const displayValue = resourceKey ? totals[resourceKey] || 0 : 0;
+  const { } = useCity();
 
   // register a transparent drag preview using the building image bitmap
   // this prevents the browser from rendering the element's surrounding
