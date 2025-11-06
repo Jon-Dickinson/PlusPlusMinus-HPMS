@@ -7,8 +7,12 @@ import { describe, it, expect, vi } from 'vitest';
 import CityBuilder, { CityBuilderLayout } from '../CityBuilder';
 
 // Mock child components
-vi.mock('../BuildingSidebar', () => ({
+vi.mock('../BuidlingSidebar/BuildingSidebar', () => ({
   default: () => <div data-testid="building-sidebar">BuildingSidebar</div>,
+}));
+
+vi.mock('../DraggableBuilding', () => ({
+  default: ({ building }: any) => <div data-testid={`draggable-building-${building.id}`}>DraggableBuilding</div>,
 }));
 
 vi.mock('../CityGrid', () => ({

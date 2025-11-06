@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useDrag } from 'react-dnd';
 import { useEffect, useState } from 'react';
 import { useCity } from './CityContext';

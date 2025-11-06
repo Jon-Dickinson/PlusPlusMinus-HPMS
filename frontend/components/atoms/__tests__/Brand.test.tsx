@@ -37,7 +37,7 @@ describe('Brand', () => {
     renderWithProviders(<Brand />);
     const container = screen.getByAltText('City Builder Logo').parentElement;
     expect(container).toHaveStyle('position: absolute');
-    expect(container).toHaveStyle('top: 10px');
+    expect(container).toHaveStyle('top: 30px');
     expect(container).toHaveStyle('left: 10px');
   });
 });
