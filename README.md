@@ -95,46 +95,12 @@ This project includes a comprehensive CI/CD pipeline for automated testing, buil
    # Edit .env with your database URL and secrets
    ```
 
-3. **Run with Docker Compose:**
-   ```bash
-   # Development environment
-   docker-compose up --build
-
-   # Production environment
-   docker-compose -f docker-compose.prod.yml up --build
-   ```
-
-### CI/CD Pipeline
-
-The project uses GitHub Actions for continuous integration and deployment:
-
-- **Automated Testing:** Runs on every push to `main` and pull requests
-- **Multi-stage Docker Builds:** Optimized containerization for both frontend and backend
-- **Cloud Deployment:** Automatic deployment to Railway (backend) and Vercel (frontend)
-- **Health Checks:** Post-deployment verification of all services
-
-#### GitHub Secrets Required
-
-Set these secrets in your GitHub repository settings:
+#### Secrets Required
 
 ```
-RAILWAY_TOKEN        # Railway CLI token
-VERCEL_TOKEN         # Vercel deployment token
-VERCEL_PROJECT_ID    # Vercel project ID
-VERCEL_ORG_ID        # Vercel organization ID
 DATABASE_URL         # Production database URL
 JWT_SECRET           # JWT signing secret
 ```
-
-#### Deployment Scripts
-
-- `scripts/deploy.sh` - Manual deployment script
-- `scripts/docker-deploy.sh` - Docker-based deployment
-- `scripts/health-check.sh` - Service health verification
-
-For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
-
----
 
 ## Trello
 
@@ -163,24 +129,6 @@ http://localhost:4000/api/docs
 Raw OpenAPI JSON:
 http://localhost:4000/api/docs/json
 
-### Public API endpoints
-
-- GET /api/public/mayors
-    - Returns a list of users with role `MAYOR`. This endpoint is intentionally public (no authentication required) to allow the frontend registration page to fetch available mayors for new Viewer accounts.
-    - Response shape (example):
-        ```json
-        [
-            {
-                "id": 1,
-                "firstName": "Alice",
-                "lastName": "Anderson",
-                "role": "MAYOR",
-                "city": { "name": "ZedTown", "country": "X", "qualityIndex": 42 },
-                "notes": [{ "id": 1 }]
-            }
-        ]
-        ```
-    - Usage: the frontend registration form calls `/api/public/mayors` to populate a required mayor selector when creating a Viewer account. If you change the route prefix in the server, update `frontend/lib/axios.ts` or `frontend/components/organisms/RegisterForm.tsx` accordingly.
 
 ```mermaid
 erDiagram
