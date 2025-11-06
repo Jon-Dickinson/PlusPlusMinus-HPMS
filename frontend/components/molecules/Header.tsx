@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/router';
 
@@ -74,14 +73,3 @@ const Left = styled.div`
   display: flex;
   align-items: center;
 `;
-
-const NavLink = styled(Link)`
-  color: #0068ff;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 6px 8px;
-  border-radius: 4px;
-  &:hover {
-    background: #f3f4f6;
-  }
-` as unknown as typeof Link;

@@ -3,8 +3,6 @@ import { useRouter } from 'next/router';
 import MainTemplate from '../../templates/MainTemplate';
 import CityMap from '../../components/organisms/CityMap';
 import styled from 'styled-components';
-import { useAuth } from '../../context/AuthContext';
-import { isAdmin } from '../../utils/roles';
 import Authorized from '../../components/atoms/Authorized';
 import useAuthorized from '../../hooks/useAuthorized';
 import axios from '../../lib/axios';
@@ -17,17 +15,6 @@ import Spinner from '../../components/atoms/Spinner';
 import BuildingLogPanel from '../../components/organisms/BuildingLogPanel';
 import { City } from '../../types/city';
 
-const MapWrap = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  justify-content: stretch;
-  width: 100%;
-  height: 100%;
-  background-color: #111d3a;
-`;
-
 const MapPanel = styled.div`
   position: relative;
   display: flex;
@@ -39,9 +26,6 @@ const MapPanel = styled.div`
 `;
 
 function MayorViewContent({ initialCity }: { initialCity?: City | null }) {
-  const { user } = useAuth();
-    const role = user?.role;
-
   return (
     <>
       <ResourceColumn>
@@ -78,7 +62,6 @@ function MayorViewContent({ initialCity }: { initialCity?: City | null }) {
 }
 
 export default function MayorViewPage() {
-  const { user } = useAuth();
   const router = useRouter();
   const { mayorId } = router.query;
   const [city, setCity] = useState<City | null>(null);

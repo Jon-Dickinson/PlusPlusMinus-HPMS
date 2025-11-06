@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { describe, it, vi, expect } from 'vitest';
 
 // Mock heavy nested components used by Dashboard

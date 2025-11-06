@@ -1,38 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import MainTemplate from '../templates/MainTemplate';
-import CityMap from '../components/organisms/CityMap';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
 import { CityProvider } from '../components/organisms/CityContext';
 import Header from '../components/molecules/Header';
 import MayorCard from '../components/molecules/MayorCard';
 import GlobalNav from '../components/molecules/GlobalNav';
-import BuildingLogPanel from '../components/organisms/BuildingLogPanel';
 import axios from '../lib/axios';
 import { Trash2 } from 'lucide-react';
 
-const MapPanel = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  min-height: 420px;
-  width: 100%;
-`;
-
-import { useAuth } from '../context/AuthContext';
-import { isAdmin, isMayor } from '../utils/roles';
 import useAuthorized from '../hooks/useAuthorized';
 
 
 export default function UserList() {
   const router = useRouter();
-  const { user } = useAuth();
 
   const canNavigateAdmin = useAuthorized(['ADMIN']);
-
-  const isActive = (path: string) => router.pathname === path;
 
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +81,7 @@ export default function UserList() {
           <CityProvider>
            
               <GridHeader>
-                <HeaderTitle>Mayors</HeaderTitle>
+                <HeaderTitle>Mayors and Viewers</HeaderTitle>
                 <HeadingRow>
                   <HeadingLabel>Location</HeadingLabel>
                   <HeadingLabel>Mayor</HeadingLabel>
@@ -170,14 +153,6 @@ export default function UserList() {
   );
 }
 
-const RowWrapper = styled.div`
-  position: relative;
-  display: inline-flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-`;
-
 const ColWrapper = styled.div`
   position: relative;
   display: inline-flex;
@@ -208,27 +183,11 @@ const GridHeader = styled.div`
   }
 `;
 
-const GridContainer = styled.div`
-  display: flex;
-  align-items: flex-start;
-  flex: 1;
-`;
-
 const MayorGrid = styled.div`
   display: inline-flex;
   width: 100%;
   flex-direction: column;
   padding: 25px;
-`;
-
-const InfoColumn = styled.div`
-  width: 100%;
-  max-width: 240px;
-  min-width: 240px;
-  display: flex;
-  flex-direction: column;
-  padding: 80px 20px;
-  gap: 1.5rem;
 `;
 
 const HeadingRow = styled.div`

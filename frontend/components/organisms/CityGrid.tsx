@@ -12,7 +12,7 @@ export default function CityGrid() {
   // provider via a small error-boundary fallback so the grid still appears.
 
   function GridInner() {
-    const { grid, addBuildingToCell, moveBuilding, canEdit } = useCity();
+    const { grid, addBuildingToCell, moveBuilding } = useCity();
     const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
     const [selectedBuildingData, setSelectedBuildingData] = useState<any | null>(null);
     const [isClient, setIsClient] = useState(false);
@@ -125,7 +125,7 @@ export default function CityGrid() {
     static getDerivedStateFromError() {
       return { hasError: true };
     }
-    componentDidCatch(error: any, info: any) {
+    componentDidCatch() {
       // swallow; we'll recover by rendering with providers
       // console.debug('CityGrid recovered from error', { error, info });
     }

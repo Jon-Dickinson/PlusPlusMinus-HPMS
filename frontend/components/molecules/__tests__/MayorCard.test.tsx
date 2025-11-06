@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
 import React from 'react';
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, vi, expect, beforeEach } from 'vitest';
 
 const mockGet = vi.fn();

@@ -66,12 +66,10 @@ const Properties = styled.div`
 `;
 
 export default function MayorCard({ id, onClick, onDelete }: Props) {
-  const [loading, setLoading] = useState(true);
   const [mayor, setMayor] = useState<any>(null);
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
     axios.instance
       .get(`/users/${id}`)
       .then((res) => {
@@ -81,8 +79,7 @@ export default function MayorCard({ id, onClick, onDelete }: Props) {
       .catch(() => {
         if (!mounted) return;
         setMayor(null);
-      })
-      .finally(() => mounted && setLoading(false));
+      });
 
     return () => {
       mounted = false;

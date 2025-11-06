@@ -5,7 +5,6 @@ import Button from '../atoms/Button';
 import Row from '../atoms/Blocks';
 import Spinner from '../atoms/Spinner';
 import Brand from '../atoms/Brand';
-import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/router';
 import axios from '../../lib/axios';
 
