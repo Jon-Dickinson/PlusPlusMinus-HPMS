@@ -1,8 +1,8 @@
 'use client';
 
-import buildings from '../../data/buildings.json';
-import { LeftColumn } from './BuidlingSidebar/styles';
-import DraggableBuilding from './DraggableBuilding';
+import buildings from '../../../data/buildings.json';
+import { LeftColumn } from './styles';
+import DraggableBuilding from '../DraggableBuilding';
 
 export default function BuildingSidebar() {
   return (

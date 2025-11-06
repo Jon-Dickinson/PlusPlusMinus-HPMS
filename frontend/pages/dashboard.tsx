@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
 import { isAdminOrMayor } from '../utils/roles';
 import axios from '../lib/axios';
-import BuildingSidebar from '../components/organisms/BuildingSidebar';
+import BuildingSidebar from '../components/organisms/BuidlingSidebar/BuildingSidebar';
 import Authorized from '../components/atoms/Authorized';
 import { useCity } from '../components/organisms/CityContext';
 import StatsPanel from '../components/organisms/StatsPanel';

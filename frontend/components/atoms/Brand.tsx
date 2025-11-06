@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 
 const BrandContainer = styled.div`
   position: absolute;
-  top: 10px;
+  top: 30px;
   left: 10px;
   display: inline-flex;
   align-items: center;
