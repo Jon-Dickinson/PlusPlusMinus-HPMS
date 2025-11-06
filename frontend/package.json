@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "docs": "typedoc",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "dependencies": {
@@ -35,6 +36,7 @@
     "eslint-config-next": "^16.0.1",
     "happy-dom": "^20.0.10",
     "prettier": "2.8.8",
+    "typedoc": "^0.28.14",
     "typescript": "5.2.2",
     "vitest": "^4.0.0"
   }

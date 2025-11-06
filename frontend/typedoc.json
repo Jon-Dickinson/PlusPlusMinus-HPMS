@@ -1,0 +1,46 @@
+{
+  "name": "PlusPlusMinus-HPMS Frontend",
+  "entryPoints": [
+    "pages",
+    "components",
+    "hooks",
+    "lib",
+    "utils",
+    "types",
+    "context"
+  ],
+  "out": "../docs/frontend",
+  "exclude": [
+    "**/node_modules/**",
+    "**/*.test.tsx",
+    "**/*.test.ts",
+    "**/*.spec.tsx",
+    "**/*.spec.ts",
+    "**/tests/**",
+    "**/coverage/**",
+    "**/.next/**",
+    "**/test-utils/**"
+  ],
+  "includeVersion": true,
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "hideGenerator": true,
+  "readme": "none",
+  "theme": "default",
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Pages",
+    "Components",
+    "Hooks",
+    "Context",
+    "Utils",
+    "Types",
+    "Lib",
+    "*"
+  ],
+  "sort": [
+    "source-order",
+    "visibility"
+  ]
+}
