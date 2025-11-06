@@ -5,21 +5,26 @@ import { prisma } from '../../src/db.js';
 
 describe('City endpoints', () => {
   beforeEach(async () => {
-    await prisma.note.deleteMany();
+    // Clean up in reverse dependency order to avoid foreign key constraints
     await prisma.buildLog.deleteMany();
+    await prisma.buildingResource.deleteMany();
+    await prisma.building.deleteMany();
+    await prisma.note.deleteMany();
     await prisma.city.deleteMany();
     await prisma.user.deleteMany();
+    await prisma.buildingCategory.deleteMany();
   });
 
   it('GET /api/cities/:id returns city and 404 for missing', async () => {
     // create a mayor (city created automatically)
+    const timestamp = Date.now();
     const m = await request(app).post('/api/auth/register').send({
-      firstName: 'Mayor', lastName: 'One', username: 'mayor-city', email: 'mayor-city@test.local', password: 'mayorpass1', role: 'MAYOR', cityName: 'Cty', country: 'T'
+      firstName: 'Mayor', lastName: 'One', username: `mayor-city-${timestamp}`, email: `mayor-city-${timestamp}@test.local`, password: 'mayorpass1', role: 'MAYOR', cityName: 'Cty', country: 'T'
     });
     expect(m.status).toBe(201);
 
     // find the city created
-    const mayor = await prisma.user.findUnique({ where: { username: 'mayor-city' } });
+    const mayor = await prisma.user.findUnique({ where: { username: `mayor-city-${timestamp}` } });
     const city = await prisma.city.findUnique({ where: { mayorId: mayor?.id } as any });
     expect(city).toBeTruthy();
 
@@ -33,14 +38,16 @@ describe('City endpoints', () => {
 
   it('PUT /api/cities/:id/data updates gridState, buildingLog and note', async () => {
     // create mayor
+    const timestamp = Date.now();
     await request(app).post('/api/auth/register').send({
-      firstName: 'Mayor', lastName: 'Two', username: 'mayor2', email: 'mayor2@test.local', password: 'mayorpass2', role: 'MAYOR', cityName: 'C2', country: 'T'
+      firstName: 'Mayor', lastName: 'Two', username: `mayor2-${timestamp}`, email: `mayor2-${timestamp}@test.local`, password: 'mayorpass2', role: 'MAYOR', cityName: 'C2', country: 'T'
     });
-    const mayor = await prisma.user.findUnique({ where: { username: 'mayor2' } });
+    const mayor = await prisma.user.findUnique({ where: { username: `mayor2-${timestamp}` } });
     const city = await prisma.city.findUnique({ where: { mayorId: mayor?.id } as any });
+    expect(city).toBeTruthy();
 
-  // login as mayor to get token
-  const login = await request(app).post('/api/auth/login').send({ username: 'mayor2', password: 'mayorpass2' });
+    // login as mayor to get token
+    const login = await request(app).post('/api/auth/login').send({ username: `mayor2-${timestamp}`, password: 'mayorpass2' });
     const token = login.body.token;
 
     const payload = { gridState: { foo: 'bar' }, buildingLog: [{ action: 'build', value: 1 }], note: 'updated!' };
