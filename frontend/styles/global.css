@@ -45,6 +45,10 @@ input:-webkit-autofill:active {
   margin-bottom: 10px;
 }
 
+.max-w-600 {
+  max-width: 600px;
+}
+
 .flex-1 {
   flex: 1;
 }

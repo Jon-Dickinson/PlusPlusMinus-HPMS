@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import Authorized from '../../components/atoms/Authorized';
 import useAuthorized from '../../hooks/useAuthorized';
 import axios from '../../lib/axios';
-import BuildingSidebar from '../../components/organisms/BuildingSidebar';
+import BuildingSidebar from '../../components/organisms/BuidlingSidebar/BuildingSidebar';
 import GlobalNav from '../../components/molecules/GlobalNav';
 import Header from '../../components/molecules/Header';
 import StatsPanel from '../../components/organisms/StatsPanel';
