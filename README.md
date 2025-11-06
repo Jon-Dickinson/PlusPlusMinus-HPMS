@@ -77,24 +77,6 @@ http://localhost:5555/
 
 ---
 
-## Deployment & CI/CD
-
-This project includes a comprehensive CI/CD pipeline for automated testing, building, and deployment.
-
-### Quick Start with Docker
-
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repo-url>
-   cd plusplusminus-hpms
-   ```
-
-2. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your database URL and secrets
-   ```
-
 #### Secrets Required
 
 ```
