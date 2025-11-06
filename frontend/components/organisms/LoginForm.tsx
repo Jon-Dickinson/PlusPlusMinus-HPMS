@@ -13,15 +13,13 @@ import Brand from '../atoms/Brand';
 
 const Root = styled.div`
   position: relative;
-  height: 100%;
+  min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   background-color: #ffffff;
-
-
 `;
 
 
@@ -34,6 +32,8 @@ const Form = styled.div`
   align-items: center;
   justify-content: center;
   padding: 50px;
+
+  z-index: 1;
 
 
   input:focus,
@@ -90,6 +90,8 @@ const Panel = styled.div`
   align-items: center;
   justify-content: center;
   padding: 40px;
+
+  z-index: 1;
 
 
   img {

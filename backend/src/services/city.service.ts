@@ -114,3 +114,14 @@ export async function updateCityData(cityId: number, userId: number, data: {
 
   return updatedCity;
 }
+
+export async function getCityData(cityId: number) {
+  const city = await prisma.city.findUnique({ where: { id: cityId }, select: { gridState: true, buildingLog: true, mayorId: true } });
+  if (!city) throw new Error('City not found');
+  const latestNote = await prisma.note.findFirst({ where: { userId: city.mayorId }, orderBy: { createdAt: 'desc' } });
+  return {
+    gridState: city.gridState,
+    buildingLog: city.buildingLog,
+    note: latestNote?.content || '',
+  };
+}

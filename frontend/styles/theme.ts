@@ -1,3 +1,7 @@
+// The theme system is set up correctly for styled-components usage. 
+// If more components start using theme values in the future, 
+// this foundation is already in place.
+
 const theme = {
   colors: {
     primary: '#2D6AFC',

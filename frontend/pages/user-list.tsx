@@ -12,147 +12,6 @@ import { Trash2 } from 'lucide-react';
 import useAuthorized from '../hooks/useAuthorized';
 
 
-export default function UserList() {
-  const router = useRouter();
-
-  const canNavigateAdmin = useAuthorized(['ADMIN']);
-
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string; role: string } | null>(null);
-
-  const fetchUsers = async () => {
-    try {
-      const res = await axios.instance.get('/users');
-      setUsers(res.data || []);
-    } catch (e) {
-      console.error('Failed to load users', e);
-      setUsers([]);
-    }
-  };
-
-  useEffect(() => {
-    let mounted = true;
-
-    fetchUsers().then(() => {
-      if (mounted) setLoading(false);
-    });
-
-    return () => { mounted = false; };
-  }, []);
-
-  const mayors = users.filter(u => u.role === 'MAYOR');
-
-  const handleDeleteUser = (userId: number | string) => {
-    const user = users.find(u => u.id === Number(userId));
-    if (user) {
-      setDeleteTarget({ id: Number(userId), name: `${user.firstName} ${user.lastName}`, role: user.role });
-      setShowDeleteModal(true);
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    try {
-      await axios.instance.delete(`/users/${deleteTarget.id}`);
-      // Refetch users to ensure UI is up to date
-      await fetchUsers();
-      setShowDeleteModal(false);
-      setDeleteTarget(null);
-    } catch (e) {
-      console.error('Failed to delete user', e);
-      alert('Failed to delete user');
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteModal(false);
-    setDeleteTarget(null);
-  };
-
-  return (
-    <MainTemplate>
-      <GlobalNav />
-
-      <ColWrapper>
-        <Header />
-        <ColWrapper>
-          <CityProvider>
-           
-              <GridHeader>
-                <HeaderTitle>Mayors and Viewers</HeaderTitle>
-                <HeadingRow>
-                  <HeadingLabel>Location</HeadingLabel>
-                  <HeadingLabel>Mayor</HeadingLabel>
-                  <HeadingLabelRight>Action</HeadingLabelRight>
-                </HeadingRow>
-              </GridHeader>
-
-              <MayorGrid>
-                {loading ? (
-                  <Message>Loading users...</Message>
-                ) : mayors.length === 0 ? (
-                  <Message>No mayors found.</Message>
-                ) : (
-                  mayors.map((m: any) => {
-                    const viewers = users.filter((u: any) => u.role === 'VIEWER' && u.mayorId === m.id);
-                    return (
-                      <MayorSection key={m.id}>
-                        <MayorCard
-                          id={m.id}
-                          onClick={(id: number | string) => {
-                            if (canNavigateAdmin) {
-                              router.push(`/mayor-view/${id}`);
-                            }
-                          }}
-                          onDelete={handleDeleteUser}
-                        />
-                        {viewers.length > 0 && (
-                          <ViewersList>
-                            <ViewersTitle>Viewers:</ViewersTitle>
-                            {viewers.map((viewer: any) => (
-                              <ViewerItem key={viewer.id}>
-                                <span>{viewer.firstName} {viewer.lastName} ({viewer.username})</span>
-                                <button onClick={() => handleDeleteUser(viewer.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
-                                  <Trash2 size={14} />
-                                </button>
-                              </ViewerItem>
-                            ))}
-                          </ViewersList>
-                        )}
-                      </MayorSection>
-                    );
-                  })
-                )}
-              </MayorGrid>
-          
-
-          
-      
-          </CityProvider>
-        </ColWrapper>
-      </ColWrapper>
-
-      {showDeleteModal && deleteTarget && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Confirm Delete</ModalTitle>
-            <ModalMessage>
-              Are you sure you want to delete {deleteTarget.role === 'MAYOR' ? 'Mayor' : 'Viewer'} {deleteTarget.name}?
-              {deleteTarget.role === 'MAYOR' && ' This will also delete all associated viewers.'}
-            </ModalMessage>
-            <ModalButtons>
-              <CancelButton onClick={cancelDelete}>Cancel</CancelButton>
-              <DeleteButton onClick={confirmDelete}>Delete</DeleteButton>
-            </ModalButtons>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-    </MainTemplate>
-  );
-}
-
 const ColWrapper = styled.div`
   position: relative;
   display: inline-flex;
@@ -201,7 +60,7 @@ const HeadingRow = styled.div`
 `;
 
 const HeadingLabel = styled.div`
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
@@ -236,7 +95,7 @@ const ViewersList = styled.div`
 `;
 
 const ViewersTitle = styled.div`
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 8px;
@@ -246,7 +105,7 @@ const ViewerItem = styled.div`
   color: #ffffff;
   font-size: 13px;
   padding: 4px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -313,3 +172,163 @@ const DeleteButton = styled.button`
     background: #dc2626;
   }
 `;
+
+
+export default function UserList() {
+  const router = useRouter();
+
+  const canNavigateAdmin = useAuthorized(['ADMIN']);
+
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: number;
+    name: string;
+    role: string;
+  } | null>(null);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.instance.get('/users');
+      setUsers(res.data || []);
+    } catch (e) {
+      console.error('Failed to load users', e);
+      setUsers([]);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetchUsers().then(() => {
+      if (mounted) setLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const mayors = users.filter((u) => u.role === 'MAYOR');
+
+  const handleDeleteUser = (userId: number | string) => {
+    const user = users.find((u) => u.id === Number(userId));
+    if (user) {
+      setDeleteTarget({
+        id: Number(userId),
+        name: `${user.firstName} ${user.lastName}`,
+        role: user.role,
+      });
+      setShowDeleteModal(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await axios.instance.delete(`/users/${deleteTarget.id}`);
+      // Refetch users to ensure UI is up to date
+      await fetchUsers();
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
+    } catch (e) {
+      console.error('Failed to delete user', e);
+      alert('Failed to delete user');
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeleteTarget(null);
+  };
+
+  return (
+    <MainTemplate>
+      <GlobalNav />
+
+      <ColWrapper>
+        <Header />
+        <ColWrapper>
+          <CityProvider>
+            <GridHeader>
+              <HeaderTitle>Mayors and Viewers</HeaderTitle>
+              <HeadingRow>
+                <HeadingLabel>Location</HeadingLabel>
+                <HeadingLabel>Mayor</HeadingLabel>
+                <HeadingLabelRight>Action</HeadingLabelRight>
+              </HeadingRow>
+            </GridHeader>
+
+            <MayorGrid>
+              {loading ? (
+                <Message>Loading users...</Message>
+              ) : mayors.length === 0 ? (
+                <Message>No mayors found.</Message>
+              ) : (
+                mayors.map((m: any) => {
+                  const viewers = users.filter(
+                    (u: any) => u.role === 'VIEWER' && u.mayorId === m.id,
+                  );
+                  return (
+                    <MayorSection key={m.id}>
+                      <MayorCard
+                        id={m.id}
+                        onClick={(id: number | string) => {
+                          if (canNavigateAdmin) {
+                            router.push(`/mayor-view/${id}`);
+                          }
+                        }}
+                        onDelete={handleDeleteUser}
+                      />
+                      {viewers.length > 0 && (
+                        <ViewersList>
+                          <ViewersTitle>Viewers:</ViewersTitle>
+                          {viewers.map((viewer: any) => (
+                            <ViewerItem key={viewer.id}>
+                              <span>
+                                {viewer.firstName} {viewer.lastName} ({viewer.username})
+                              </span>
+                              <button
+                                onClick={() => handleDeleteUser(viewer.id)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#ef4444',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </ViewerItem>
+                          ))}
+                        </ViewersList>
+                      )}
+                    </MayorSection>
+                  );
+                })
+              )}
+            </MayorGrid>
+          </CityProvider>
+        </ColWrapper>
+      </ColWrapper>
+
+      {showDeleteModal && deleteTarget && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>Confirm Delete</ModalTitle>
+            <ModalMessage>
+              Are you sure you want to delete {deleteTarget.role === 'MAYOR' ? 'Mayor' : 'Viewer'}{' '}
+              {deleteTarget.name}?
+              {deleteTarget.role === 'MAYOR' && ' This will also delete all associated viewers.'}
+            </ModalMessage>
+            <ModalButtons>
+              <CancelButton onClick={cancelDelete}>Cancel</CancelButton>
+              <DeleteButton onClick={confirmDelete}>Delete</DeleteButton>
+            </ModalButtons>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+    </MainTemplate>
+  );
+}

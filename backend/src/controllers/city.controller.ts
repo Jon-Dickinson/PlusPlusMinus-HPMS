@@ -135,3 +135,13 @@ export async function updateCityData(req: Request, res: Response, next: NextFunc
     next(err);
   }
 }
+
+export async function getCityData(req: Request, res: Response, next: NextFunction) {
+  try {
+    const cityId = Number(req.params.id);
+    const data = await CityService.getCityData(cityId);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
