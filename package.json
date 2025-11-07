@@ -1,0 +1,8 @@
+{
+  "name": "plusplusminus-hpms",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "cd backend && npm run start",
+    "build": "cd backend && npm run build"
+  }
+}
