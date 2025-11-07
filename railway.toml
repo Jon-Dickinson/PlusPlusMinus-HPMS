@@ -1,0 +1,29 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd backend && npm ci && npm run build",
+    "buildDirectory": "backend"
+  },
+  "start": {
+    "cmd": "cd backend && npm run start"
+  },
+  "deployCommand": "cd backend && npx prisma migrate deploy && npx prisma generate",
+  "deploy": {
+    "runtime": "V2",
+    "numReplicas": 1,
+    "sleepApplication": false,
+    "useLegacyStacker": false,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10,
+    "multiRegionConfig": {
+      "asia-southeast1": {
+        "numReplicas": 1
+      }
+    }
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "4000"
+  }
+}
