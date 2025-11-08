@@ -11,6 +11,7 @@ export const Row = styled.div<RowProps>`
   height: ${({ height }) => (height ? `${height}%` : 'auto')};
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   justify-content: ${({ justify }) => {
     switch (justify) {
       case 'start':

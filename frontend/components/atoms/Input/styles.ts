@@ -11,7 +11,8 @@ export const Input = styled.input`
   background: #ffffff !important;
   border-radius: 3px;
   border: 1px solid #a8a8a8ff;
-
+  font-family: inherit;
+  
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;

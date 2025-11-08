@@ -6,7 +6,7 @@ import Spinner from '../../atoms/Spinner';
 import Brand from '../../atoms/Brand';
 import { useRouter } from 'next/router';
 import { fetchMayors, registerUser, Mayor, RegisterPayload } from './api';
-import { Root, FormContainer, Title, ErrorMsg, RadioGroup, RadioLabel, MayorSelect, MayorSelectContainer, SubmitButton } from './styles';
+import { Root, FormContainer, Title, ErrorMsg, RadioGroup, RadioLabel, InnerContainer, MayorSelect, MayorSelectContainer, SubmitButton } from './styles';
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -113,7 +113,7 @@ export default function RegisterForm() {
           {formData.role === 'VIEWER' && (
             <MayorSelectContainer>
               <label htmlFor="mayor-select">Select your Mayor</label>
-              <div>
+              <InnerContainer>
                 {mayorsLoading ? (
                   <div>Loading mayors...</div>
                 ) : (
@@ -130,7 +130,7 @@ export default function RegisterForm() {
                     ))}
                   </MayorSelect>
                 )}
-              </div>
+              </InnerContainer>
             </MayorSelectContainer>
           )}
 
