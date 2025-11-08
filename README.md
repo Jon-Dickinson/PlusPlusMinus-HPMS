@@ -124,73 +124,84 @@ http://localhost:4000/api/docs/json
 
 ```mermaid
 erDiagram
+    User ||--o{ City : "owns (MAYOR)"
+    User ||--o{ User : "mayor-viewers"
+    User ||--o{ Note : "has"
+    City ||--o{ BuildLog : "logs"
+    City ||--o{ Building : "contains"
+    BuildingCategory ||--o{ Building : "categorizes"
+    Building ||--o{ BuildingResource : "produces/uses"
+
     User {
-        Int id PK
-        String firstName
-        String lastName
-        String username
-        String email
-        String password
-        Role role
+        int id PK
+        string firstName
+        string lastName
+        string username UK
+        string email UK
+        string password
+        Role role "ADMIN|MAYOR|VIEWER"
+        int mayorId FK "for VIEWERs only"
+        datetime createdAt
+        datetime updatedAt
     }
 
     City {
-        Int id PK
-        String name
-        String country
-        Float qualityIndex
-        Json buildingLog
-        Json gridState
-        Int mayorId FK
+        int id PK
+        string name
+        string country
+        float qualityIndex
+        json buildingLog
+        json gridState
+        int mayorId FK,UK
+        datetime createdAt
+        datetime updatedAt
     }
 
     BuildLog {
-        Int id PK
-        Int cityId FK
-        String action
-        Int value
+        int id PK
+        int cityId FK
+        string action
+        int value
+        datetime createdAt
     }
 
     Note {
-        Int id PK
-        Int userId FK
-        String content
+        int id PK
+        int userId FK
+        string content
+        datetime createdAt
+        datetime updatedAt
     }
 
     BuildingCategory {
-        Int id PK
-        String name
-        String description
+        int id PK
+        string name UK
+        string description
+        datetime createdAt
     }
 
     Building {
-        Int id PK
-        Int cityId FK
-        String name
-        Int categoryId FK
-        Int level
-        Int sizeX
-        Int sizeY
-        Int powerUsage
-        Int powerOutput
-        Int waterUsage
-        Int waterOutput
+        int id PK
+        int cityId FK
+        string name
+        int categoryId FK
+        int level
+        int sizeX
+        int sizeY
+        int powerUsage
+        int powerOutput
+        int waterUsage
+        int waterOutput
+        datetime createdAt
     }
 
     BuildingResource {
-        Int id PK
-        Int buildingId FK
-        String type
-        Int amount
+        int id PK
+        int buildingId FK
+        string type
+        int amount
+        datetime createdAt
     }
-
-    User ||--o{ Note : "has"
-    User ||--|{ City : "is mayor of"
-    City ||--o{ BuildLog : "has"
-    City ||--o{ Building : "has"
-    BuildingCategory ||--o{ Building : "has"
-    Building ||--o{ BuildingResource : "has"
-
 ```
 
 ## Trello
