@@ -22,8 +22,6 @@ npm run build
 npm run dev
 ```
 
-
-
 ## Tech Stack
 
 | Frontend | Backend | Database | Utilities |
@@ -107,13 +105,12 @@ JWT_SECRET           # JWT signing secret
 
 live version:
 
-```
 https://passionate-contentment-production.up.railway.app/api/docs/
-```
 
-Start the server:
+local version:
 
 ```
+cd backend
 npm run build
 npm run dev
 ```
@@ -198,12 +195,8 @@ erDiagram
 
 ## Trello
 
-```
 https://trello.com/b/dy9uG8Vx/plusplusminus
-```
 
 ### Neon
 
-```
 https://console.neon.tech/app/projects/calm-dream-36516261/auth?tab=configuration
-```
