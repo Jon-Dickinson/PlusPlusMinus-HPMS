@@ -72,14 +72,11 @@ export const Panel = styled.div`
   align-items: center;
   justify-content: center;
   padding: 40px;
-
   z-index: 1;
 
   img {
-    width: 100%;
+    max-width: 100%;
     height: auto;
-    object-fit: contain;
-    transition: width 0.3s ease, max-width 0.3s ease;
 
     @media (max-width: 960px) {
       padding-top: 50px;

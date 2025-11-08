@@ -66,7 +66,7 @@ export default function LoginForm() {
 
       <Row height={100} justify="between">
         <Panel className="hide--under-960">
-          <img className="flex-1 max-w-600" src="/login-city.png" alt="Building Blocks" />
+          <img className="max-w-600" src="/login-city.png" alt="Building Blocks" />
         </Panel>
         <Form>
           <InnerPanel>
