@@ -12,7 +12,6 @@ const Root = styled.div`
   width: calc(100% - 1px);
   height: 100%;
   overflow: hidden;
-  background-color: #111d3a;
 `;
 
 const Dashboard = styled.div`
@@ -21,6 +20,7 @@ const Dashboard = styled.div`
   flex-direction: row;
   width: 100%;
   height: 100%;
+  background-color: #111d3a;
 `;
 
 export default function MainTemplate({ children }: { children: React.ReactNode }) {
