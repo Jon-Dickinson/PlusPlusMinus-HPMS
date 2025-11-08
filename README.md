@@ -1,4 +1,4 @@
-# PlusPlusMinus: Hierarchical City Simulation & User Management System
+# City Builder: Hierarchical City Simulation & User Management System
 
 <p align="center">
   <img src="./frontend/public/dashboard.png" alt="City Simulation Dashboard" width="100%">
@@ -35,12 +35,12 @@ npm run dev
 
 ## Overview
 
-**PlusPlusMinus** is a full-stack simulation and management platform where users — acting as mayors — build and optimize their own cities in a shared hierarchical environment.
+**City Builder** is a full-stack simulation and management platform where users — acting as mayors — build and optimize their own cities in a shared hierarchical environment.
 
-The system models city growth, resource distribution, and administrative oversight across three user roles:
+The system models city capability, resource distribution, and administrative oversight across three user roles:
 
 - **Admin** — oversees all cities, reviews logs, and monitors global statistics  
-- **Mayor** — builds their own city grid, manages power, water, food, and housing resources  
+- **Mayor** — builds their own city, provides services, manages power, water, food, and housing resources  
 - **Viewer** — observes city stats in read-only mode  
 
 Every action — from building placement to resource consumption — is tracked, logged, and visualized through an intelligent, responsive dashboard.
@@ -50,7 +50,7 @@ Every action — from building placement to resource consumption — is tracked,
 ## Key Features
 
 ### 1. Dynamic City Dashboard
-- Real-time grid visualization (11 × 9 blocks)  
+- Real-time grid visualization 
 - Drag-and-drop building placement with live stats update  
 - Power, Water, Population, Services, and Food resource cards  
 - Automatic recalculation of production, demand, and quality index  
@@ -64,7 +64,7 @@ Every action — from building placement to resource consumption — is tracked,
 - Fully normalized **Prisma schema** connecting:
   - `User` ↔ `City` ↔ `BuildLog` ↔ `Note`
   - `Building` ↔ `BuildingCategory` ↔ `BuildingResource`
-- Seeded demo data for testing with default users:
+- Seeded data for testing with default users:
 
 | Role | Email | Password |
 |------|--------|-----------|
@@ -85,8 +85,8 @@ http://localhost:5555/
 - **Clean separation:** `/controllers`, `/services`, `/routes`, `/middlewares`, `/validators`
 
 ### 5. UI Design
-- Sleek dark-mode interface with 2 px white grid outlines  
-- Animated isometric building icons for each category  
+- Sleek dark UI
+- Draggable isometric building icons for each category  
 - Consistent color palette mapping to resource types:  
   - **Power** → `#FFD52B`  
   - **Water** → `#0068FF`  
@@ -103,19 +103,13 @@ DATABASE_URL         # Production database URL
 JWT_SECRET           # JWT signing secret
 ```
 
-## Trello
-
-```
-https://trello.com/b/dy9uG8Vx/plusplusminus
-```
-
-### Neon
-
-```
-https://console.neon.tech/app/projects/calm-dream-36516261/auth?tab=configuration
-```
-
 ### Swagger
+
+live version:
+
+```
+https://passionate-contentment-production.up.railway.app/api/docs/
+```
 
 Start the server:
 
@@ -200,4 +194,16 @@ erDiagram
     BuildingCategory ||--o{ Building : "has"
     Building ||--o{ BuildingResource : "has"
 
+```
+
+## Trello
+
+```
+https://trello.com/b/dy9uG8Vx/plusplusminus
+```
+
+### Neon
+
+```
+https://console.neon.tech/app/projects/calm-dream-36516261/auth?tab=configuration
 ```
