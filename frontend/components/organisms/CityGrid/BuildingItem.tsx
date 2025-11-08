@@ -5,7 +5,7 @@ import { BuildingItemContainer, BuildingImage, PlaceholderDiv } from './styles';
 
 interface BuildingItemProps {
   id: number;
-  idx: number;
+  buildingIndex: number;
   cellIndex: number;
   building: any;
   size: number;
@@ -14,7 +14,7 @@ interface BuildingItemProps {
 
 export default function BuildingItem({
   id,
-  idx,
+  buildingIndex,
   cellIndex,
   building,
   size,
@@ -24,15 +24,15 @@ export default function BuildingItem({
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: 'MOVE_BUILDING',
-      item: { id, sourceIndex: cellIndex, idx },
+      item: { id, sourceIndex: cellIndex, buildingIndex },
       canDrag: () => canEdit,
       collect: (monitor: any) => ({ isDragging: !!monitor.isDragging() }),
     }),
-    [id, cellIndex, idx, canEdit],
+    [id, cellIndex, buildingIndex, canEdit],
   );
 
   return (
-    <BuildingItemContainer ref={drag} offset={offset} idx={idx} isDragging={isDragging}>
+    <BuildingItemContainer ref={drag} offset={offset} buildingIndex={buildingIndex} isDragging={isDragging}>
       {building ? (
         <BuildingImage
           src={(building as any).icon ? (building as any).icon : (building as any).file || ''}

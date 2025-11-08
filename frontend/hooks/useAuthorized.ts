@@ -10,8 +10,8 @@ export function authorizeUser(user: any, allowed?: string[], predicate?: (user: 
   if (!user) return false;
   if (typeof predicate === 'function') return predicate(user);
   if (Array.isArray(allowed) && allowed.length > 0) {
-    const u = normalizeRole(user.role || '');
-    return allowed.map(normalizeRole).includes(u);
+    const userRole = normalizeRole(user.role || '');
+    return allowed.map(normalizeRole).includes(userRole);
   }
   return !!user;
 }

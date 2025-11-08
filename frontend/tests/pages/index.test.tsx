@@ -5,7 +5,7 @@ import { describe, it, vi, expect } from 'vitest';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
 // Mock MainTemplate and LoginForm so the page is lightweight
-vi.mock('../../templates/MainTemplate', () => ({
+vi.mock('../../components/templates/MainTemplate', () => ({
   default: ({ children }: any) => <div data-testid="main">{children}</div>,
 }));
 vi.mock('../../components/organisms/LoginForm', () => ({

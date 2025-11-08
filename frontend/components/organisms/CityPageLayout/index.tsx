@@ -1,25 +1,9 @@
 import React from 'react';
-import MainTemplate from '../../../templates/MainTemplate';
-import styled from 'styled-components';
+import MainTemplate from '../../templates/MainTemplate';
 import { CityProvider } from '../CityContext';
 import Header from '../../molecules/Header';
 import GlobalNav from '../../molecules/GlobalNav';
-
-const RowWrapper = styled.div`
-  position: relative;
-  display: inline-flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-`;
-
-const ColWrapper = styled.div`
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-`;
+import { RowWrapper, ColWrapper } from './styles';
 
 interface CityPageLayoutProps {
   children: React.ReactNode;

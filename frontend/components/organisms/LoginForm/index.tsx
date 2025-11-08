@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Row from '../../atoms/Blocks';
+import { Row } from '../../atoms/Blocks';
 import Input from '../../atoms/Input';
 import Button from '../../atoms/Button';
 import { useAuth } from '../../../context/AuthContext';

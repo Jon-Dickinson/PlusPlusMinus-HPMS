@@ -18,8 +18,8 @@ export function useGridOperations(canEdit: boolean) {
     if (!canEdit) return false;
     let added = false;
     setGrid((prev: number[][]) => {
-      const next = prev.map((cell: number[], i: number) => {
-        if (i !== index) return cell;
+      const next = prev.map((cell: number[], cellIndex: number) => {
+        if (cellIndex !== index) return cell;
         // if the cell is empty, always allow
         if (!cell || cell.length === 0) {
           added = true;
@@ -39,10 +39,10 @@ export function useGridOperations(canEdit: boolean) {
         setTotals(computeTotalsFromGrid(next));
         // record placed building in the building log (single-word label)
         try {
-          const b: any = buildings.find((b: any) => b.id === buildingId) || null;
-          const label = b && b.name ? String(b.name).split(/\s+/)[0] : String(buildingId);
+          const building: any = buildings.find((building: any) => building.id === buildingId) || null;
+          const label = building && building.name ? String(building.name).split(/\s+/)[0] : String(buildingId);
           setBuildingLog((prevLog) => [label, ...prevLog]);
-        } catch (e) {
+        } catch (error) {
           // ignore logging errors
         }
       }
@@ -56,7 +56,7 @@ export function useGridOperations(canEdit: boolean) {
     let moved = false;
     setGrid((prev: number[][]) => {
       // shallow copy each cell
-      const next = prev.map((c) => [...c]);
+      const next = prev.map((cell) => [...cell]);
 
       const srcCell = next[sourceIndex] || [];
       const destCell = next[destIndex] || [];

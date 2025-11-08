@@ -9,8 +9,16 @@ export const GridContainer = styled.div`
 `;
 
 export const CellContainer = styled.div<{ isOver: boolean }>`
-  min-width: 74px;
-  min-height: 74px;
+  /* Use vmin so it scales with both width and height of the screen */
+  width: 6vmin;
+  height: 6vmin;
+
+  /* Optional min/max limits so it doesn’t get too big or too small */
+  min-width: 50px;
+  min-height: 50px;
+  max-width: 90px;
+  max-height: 90px;
+
   margin: 2px;
   border: ${({ isOver }) => (isOver ? '1px solid #b6b9c5ff' : '1px solid #414E79')};
   background-color: transparent;
@@ -19,14 +27,16 @@ export const CellContainer = styled.div<{ isOver: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease; /* smoother scaling */
 `;
 
-export const BuildingItemContainer = styled.div<{ offset: number; idx: number; isDragging: boolean }>`
+
+export const BuildingItemContainer = styled.div<{ offset: number; buildingIndex: number; isDragging: boolean }>`
   position: absolute;
   bottom: ${({ offset }) => offset}px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: ${({ idx }) => idx + 1};
+  z-index: ${({ buildingIndex }) => buildingIndex + 1};
   opacity: ${({ isDragging }) => (isDragging ? 0.1 : 1)};
 `;
 

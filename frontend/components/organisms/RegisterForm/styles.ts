@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import Button from '../../atoms/Button';
 
 export const Root = styled.div`
   display: flex;
@@ -50,4 +51,19 @@ export const RadioLabel = styled.label`
     left: 0;
     transform: translateY(-50%);
   }
+`;
+
+export const MayorSelect = styled.select`
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+`;
+
+export const MayorSelectContainer = styled.div`
+  margin: 40px 0;
+`;
+
+export const SubmitButton = styled(Button)`
+  width: 100%;
+  margin-top: 16px;
 `;

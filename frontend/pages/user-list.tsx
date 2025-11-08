@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import MainTemplate from '../templates/MainTemplate';
+import MainTemplate from '../components/templates/MainTemplate';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
 import { CityProvider } from '../components/organisms/CityContext';
 import Header from '../components/molecules/Header';
-import MayorCard from '../components/molecules/MayorCard';
 import GlobalNav from '../components/molecules/GlobalNav';
+import UserGrid from '../components/molecules/UserGrid';
+import DeleteConfirmationModal from '../components/molecules/DeleteConfirmationModal';
 import axios from '../lib/axios';
-import { Trash2 } from 'lucide-react';
-
 import useAuthorized from '../hooks/useAuthorized';
 import { useAuth } from '../context/AuthContext';
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  role: string;
+  mayorId?: number;
+}
 
 const ColWrapper = styled.div`
   position: relative;
@@ -21,166 +28,13 @@ const ColWrapper = styled.div`
   height: 100%;
 `;
 
-const GridHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-left: 5px;
-
-  h2 {
-    font-size: 12px;
-    margin: 0;
-    color: #ffffff;
-    font-weight: 400;
-  }
-
-  h3 {
-    margin: 0;
-    font-size: 18px;
-    color: #ffffff;
-    font-weight: 500;
-    padding-left: 20px;
-  }
-`;
-
-const MayorGrid = styled.div`
-  display: inline-flex;
-  width: 100%;
-  flex-direction: column;
-  padding: 25px;
-`;
-
-const HeadingRow = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  align-items: center;
-  padding: 0 25px 8px 25px;
-  margin-top: 20px;
-`;
-
-const HeadingLabel = styled.div`
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const HeadingLabelRight = styled(HeadingLabel)`
-  text-align: right;
-`;
-
-const HeaderTitle = styled.div`
-  margin: 0;
-  font-size: 18px;
-  color: #ffffff;
-  font-weight: 500;
-  padding-left: 20px;
-`;
-
-const Message = styled.div`
-  color: #ffffff;
-  padding: 1rem;
-`;
-
-const MayorSection = styled.div`
-  margin-bottom: 20px;
-`;
-
-const ViewersList = styled.div`
-  margin-left: 25px;
-  margin-top: 10px;
-`;
-
-const ViewersTitle = styled.div`
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
-`;
-
-const ViewerItem = styled.div`
-  color: #ffffff;
-  font-size: 13px;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: #192748;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  color: #ffffff;
-`;
-
-const ModalTitle = styled.h3`
-  margin: 0 0 10px 0;
-  font-size: 18px;
-`;
-
-const ModalMessage = styled.p`
-  margin: 0 0 20px 0;
-  font-size: 14px;
-`;
-
-const ModalButtons = styled.div`
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-`;
-
-const CancelButton = styled.button`
-  background: #6b7280;
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background: #4b5563;
-  }
-`;
-
-const DeleteButton = styled.button`
-  background: #ef4444;
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background: #dc2626;
-  }
-`;
-
 
 export default function UserList() {
   const router = useRouter();
 
   const canNavigateAdmin = useAuthorized(['ADMIN']);
 
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -269,84 +123,24 @@ export default function UserList() {
         <Header />
         <ColWrapper>
           <CityProvider>
-            <GridHeader>
-              <HeaderTitle>Mayors and Viewers</HeaderTitle>
-              <HeadingRow>
-                <HeadingLabel>Location</HeadingLabel>
-                <HeadingLabel>Mayor</HeadingLabel>
-                <HeadingLabelRight>Action</HeadingLabelRight>
-              </HeadingRow>
-            </GridHeader>
-
-            <MayorGrid>
-              {loading ? (
-                <Message>Loading users...</Message>
-              ) : mayors.length === 0 ? (
-                <Message>No mayors found.</Message>
-              ) : (
-                mayors.map((m: any) => {
-                  const viewers = users.filter(
-                    (u: any) => u.role === 'VIEWER' && u.mayorId === m.id,
-                  );
-                  return (
-                    <MayorSection key={m.id}>
-                      <MayorCard
-                        id={m.id}
-                        onClick={(id: number | string) => {
-                          if (canNavigateAdmin) {
-                            router.push(`/mayor-view/${id}`);
-                          }
-                        }}
-                        onDelete={handleDeleteUser}
-                      />
-                      {viewers.length > 0 && (
-                        <ViewersList>
-                          <ViewersTitle>Viewers:</ViewersTitle>
-                          {viewers.map((viewer: any) => (
-                            <ViewerItem key={viewer.id}>
-                              <span>
-                                {viewer.firstName} {viewer.lastName} ({viewer.username})
-                              </span>
-                              <button
-                                onClick={() => handleDeleteUser(viewer.id)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  color: '#ef4444',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </ViewerItem>
-                          ))}
-                        </ViewersList>
-                      )}
-                    </MayorSection>
-                  );
-                })
-              )}
-            </MayorGrid>
+            <UserGrid
+              loading={loading}
+              mayors={mayors}
+              users={users}
+              canNavigateAdmin={canNavigateAdmin}
+              onMayorClick={(id: number | string) => router.push(`/mayor-view/${id}`)}
+              onDeleteUser={handleDeleteUser}
+            />
           </CityProvider>
         </ColWrapper>
       </ColWrapper>
 
-      {showDeleteModal && deleteTarget && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Confirm Delete</ModalTitle>
-            <ModalMessage>
-              Are you sure you want to delete {deleteTarget.role === 'MAYOR' ? 'Mayor' : 'Viewer'}{' '}
-              {deleteTarget.name}?
-              {deleteTarget.role === 'MAYOR' && ' This will also delete all associated viewers.'}
-            </ModalMessage>
-            <ModalButtons>
-              <CancelButton onClick={cancelDelete}>Cancel</CancelButton>
-              <DeleteButton onClick={confirmDelete}>Delete</DeleteButton>
-            </ModalButtons>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        deleteTarget={deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </MainTemplate>
   );
 }

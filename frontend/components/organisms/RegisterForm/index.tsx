@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Input from '../../atoms/Input';
-import Button from '../../atoms/Button';
-import Row from '../../atoms/Blocks';
+import { Row } from '../../atoms/Blocks';
 import Spinner from '../../atoms/Spinner';
 import Brand from '../../atoms/Brand';
 import { useRouter } from 'next/router';
-import axios from '../../../lib/axios';
-import { Root, FormContainer, Title, ErrorMsg, RadioGroup, RadioLabel } from './styles';
+import { fetchMayors, registerUser, Mayor, RegisterPayload } from './api';
+import { Root, FormContainer, Title, ErrorMsg, RadioGroup, RadioLabel, MayorSelect, MayorSelectContainer, SubmitButton } from './styles';
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -16,7 +15,7 @@ export default function RegisterForm() {
     username: '',
     email: '',
     password: '',
-    role: 'VIEWER',
+    role: 'VIEWER' as 'VIEWER' | 'MAYOR',
     cityName: '',
     country: '',
     mayorId: '',
@@ -25,7 +24,7 @@ export default function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const [mayors, setMayors] = useState<any[]>([]);
+  const [mayors, setMayors] = useState<Mayor[]>([]);
   const [mayorsLoading, setMayorsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -34,18 +33,18 @@ export default function RegisterForm() {
   };
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const role = e.target.value;
+    const role = e.target.value as 'VIEWER' | 'MAYOR';
     setFormData((prev) => ({ ...prev, role, mayorId: role === 'VIEWER' ? prev.mayorId : '' }));
   };
 
   // Fetch mayors when the role is VIEWER so the user can pick one
   useEffect(() => {
     let mounted = true;
-    async function fetchMayors() {
+    async function fetchMayorsData() {
       setMayorsLoading(true);
       try {
-        const res = await axios.instance.get('/public/mayors');
-        if (mounted) setMayors(res.data || []);
+        const mayorsData = await fetchMayors();
+        if (mounted) setMayors(mayorsData);
       } catch (e) {
         console.error('Failed to load mayors for registration', e);
         if (mounted) setMayors([]);
@@ -55,7 +54,7 @@ export default function RegisterForm() {
     }
 
     if (formData.role === 'VIEWER') {
-      fetchMayors();
+      fetchMayorsData();
     }
 
     return () => { mounted = false; };
@@ -68,8 +67,8 @@ export default function RegisterForm() {
 
     try {
       // Ensure mayorId is sent as number when provided
-      const payload = { ...formData, mayorId: formData.mayorId ? Number(formData.mayorId) : undefined };
-      await axios.instance.post('/auth/register', payload);
+      const payload: RegisterPayload = { ...formData, mayorId: formData.mayorId ? Number(formData.mayorId) : undefined };
+      await registerUser(payload);
       router.push('/');
     } catch (err) {
       const msg =
@@ -112,28 +111,27 @@ export default function RegisterForm() {
           )}
 
           {formData.role === 'VIEWER' && (
-            <div className="my-10">
+            <MayorSelectContainer>
               <label htmlFor="mayor-select">Select your Mayor</label>
               <div>
                 {mayorsLoading ? (
                   <div>Loading mayors...</div>
                 ) : (
-                  <select
+                  <MayorSelect
                     id="mayor-select"
                     name="mayorId"
                     value={formData.mayorId}
                     onChange={handleChange}
                     required
-                    style={{ width: '100%', padding: '8px', marginTop: 8 }}
                   >
                     <option value="">-- Select Mayor --</option>
                     {mayors.map((m) => (
                       <option key={m.id} value={String(m.id)}>{`${m.firstName} ${m.lastName}${m.username ? ` (${m.username})` : ''}`}</option>
                     ))}
-                  </select>
+                  </MayorSelect>
                 )}
               </div>
-            </div>
+            </MayorSelectContainer>
           )}
 
           <Row>
@@ -144,9 +142,9 @@ export default function RegisterForm() {
           <Input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required autoComplete="new-password" />
           <Input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} required autoComplete="new-password" />
 
-          <Button type="submit" disabled={loading || (formData.role === 'VIEWER' && !formData.mayorId)} aria-busy={loading} style={{ width: '100%', marginTop: '16px' }}>
+          <SubmitButton type="submit" disabled={loading || (formData.role === 'VIEWER' && !formData.mayorId)} aria-busy={loading}>
             {loading ? <Spinner size={16} /> : 'Register'}
-          </Button>
+          </SubmitButton>
         </form>
       </FormContainer>
     </Root>

@@ -13,8 +13,8 @@ describe('BuildingMarker', () => {
   it('renders building image', () => {
     renderWithProviders(
       <BuildingMarker
-        p={mockPlacement}
-        b={mockBuilding}
+        placement={mockPlacement}
+        building={mockBuilding}
         isoX={50}
         isoY={30}
       />
@@ -27,8 +27,8 @@ describe('BuildingMarker', () => {
   it('uses imgSrc when provided', () => {
     renderWithProviders(
       <BuildingMarker
-        p={mockPlacement}
-        b={mockBuilding}
+        placement={mockPlacement}
+        building={mockBuilding}
         isoX={50}
         isoY={30}
         imgSrc="/custom.png"
@@ -41,8 +41,8 @@ describe('BuildingMarker', () => {
   it('applies correct positioning', () => {
     renderWithProviders(
       <BuildingMarker
-        p={mockPlacement}
-        b={mockBuilding}
+        placement={mockPlacement}
+        building={mockBuilding}
         isoX={100}
         isoY={50}
       />
@@ -56,8 +56,8 @@ describe('BuildingMarker', () => {
     const handleClick = vi.fn();
     renderWithProviders(
       <BuildingMarker
-        p={mockPlacement}
-        b={mockBuilding}
+        placement={mockPlacement}
+        building={mockBuilding}
         isoX={50}
         isoY={30}
         onClick={handleClick}
@@ -71,8 +71,8 @@ describe('BuildingMarker', () => {
   it('has hover effects', () => {
     renderWithProviders(
       <BuildingMarker
-        p={mockPlacement}
-        b={mockBuilding}
+        placement={mockPlacement}
+        building={mockBuilding}
         isoX={50}
         isoY={30}
       />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { useCity } from '../CityContext';
 import { CellContainer, CountIndicator } from './styles';
@@ -23,6 +23,8 @@ export default function GridCell({
   moveBuilding,
 }: GridCellProps) {
   const { canEdit } = useCity();
+  const [isBouncing, setIsBouncing] = useState(false);
+
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ['BUILDING', 'MOVE_BUILDING'],
     canDrop: () => canEdit,
@@ -31,13 +33,16 @@ export default function GridCell({
       if (typeof item?.sourceIndex === 'number') {
         const ok = moveBuilding(item.sourceIndex, index, item.id);
         if (ok) {
-          // noop for now — animation could be triggered
+          setIsBouncing(true);
+          setTimeout(() => setIsBouncing(false), 360); // Match animation duration
         }
         return;
       }
 
       const ok = addBuilding(index, item.id);
       if (ok) {
+        setIsBouncing(true);
+        setTimeout(() => setIsBouncing(false), 360); // Match animation duration
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('city:update'));
         }
@@ -50,19 +55,19 @@ export default function GridCell({
   const topBuilding = topId ? buildingsLookup(topId) : null;
 
   return (
-    <CellContainer ref={drop} isOver={isOver}>
+    <CellContainer ref={drop} isOver={isOver} className={isBouncing ? 'cell-bounce' : ''}>
       {cellBuildings && cellBuildings.length > 0
         ? cellBuildings.map((id: number, idx: number) => {
-            const b = buildingsLookup(id);
-            const size = 52;
+            const building = buildingsLookup(id);
+            const size = 50;
             const offset = idx * 14;
             return (
               <BuildingItem
                 key={idx}
                 id={id}
-                idx={idx}
+                buildingIndex={idx}
                 cellIndex={index}
-                building={b}
+                building={building}
                 size={size}
                 offset={offset}
               />

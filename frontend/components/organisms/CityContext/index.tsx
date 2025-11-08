@@ -69,7 +69,7 @@ export function CityProvider({
 }
 
 export function useCity(): CityContextType {
-  const ctx = useContext(CityContext);
-  if (!ctx) throw new Error('useCity must be used within a CityProvider');
-  return ctx;
+  const cityContext = useContext(CityContext);
+  if (!cityContext) throw new Error('useCity must be used within a CityProvider');
+  return cityContext;
 }

@@ -46,16 +46,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    const t = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const u = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
 
-    if (t) {
-      setToken(t);
-      axios.setAuthToken(t);
+    if (storedToken) {
+      setToken(storedToken);
+      axios.setAuthToken(storedToken);
     }
-    if (u) {
+    if (storedUser) {
       try {
-        setUserState(JSON.parse(u));
+        setUserState(JSON.parse(storedUser));
       } catch (e) {
         // if decoding fails, silently ignore
         setUserState(null);
@@ -111,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export function useAuth() {
-  const c = useContext(AuthContext);
-  if (!c) throw new Error('useAuth must be used within AuthProvider');
-  return c;
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
 }

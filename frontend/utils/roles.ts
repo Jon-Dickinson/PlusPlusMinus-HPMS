@@ -11,8 +11,8 @@ export function isMayor(role?: string | null) {
 }
 
 export function isAdminOrMayor(role?: string | null) {
-  const r = normalizeRole(role);
-  return r === 'ADMIN' || r === 'MAYOR';
+  const normalizedRole = normalizeRole(role);
+  return normalizedRole === 'ADMIN' || normalizedRole === 'MAYOR';
 }
 
 export default {

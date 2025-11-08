@@ -8,8 +8,8 @@ import DraggableBuilding from '../DraggableBuilding';
 export default function BuildingSidebar() {
   return (
     <LeftColumn>
-      {buildings.map((b: any) => (
-        <DraggableBuilding key={b.id} building={b} />
+      {buildings.map((building: any) => (
+        <DraggableBuilding key={building.id} building={building} />
       ))}
     </LeftColumn>
   );

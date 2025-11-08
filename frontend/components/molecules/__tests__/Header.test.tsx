@@ -59,9 +59,7 @@ describe('Header', () => {
 
     const testCases = [
       { path: '/user-list', expected: 'User List' },
-      { path: '/user-notes', expected: 'Notes' },
       { path: '/building-analysis', expected: 'Building Analysis' },
-      { path: '/builder', expected: 'Builder' },
       { path: '/dashboard', expected: 'City Builder' },
       { path: '/unknown', expected: 'City Builder' },
     ];

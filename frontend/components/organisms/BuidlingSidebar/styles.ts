@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const LeftColumn = styled.div`
   position: relative;
-  padding-top: 80px;
+  padding-top: calc((100vh / 9) - 40px);
   height: 100%;
   display: flex;
   width: 100%;

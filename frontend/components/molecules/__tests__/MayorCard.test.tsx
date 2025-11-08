@@ -15,7 +15,7 @@ describe('MayorCard', () => {
   });
 
   it('renders mayor data when API returns a mayor', async () => {
-    const mayor = { id: 1, firstName: 'Alice', lastName: 'Anderson', city: { name: 'ZedTown', country: 'X' }, notes: [{ id: 1 }] };
+    const mayor = { id: 1, firstName: 'Alice', lastName: 'Anderson', city: { name: 'ZedTown', country: 'X', qualityIndex: 85 }, notes: [{ id: 1 }] };
     mockGet.mockResolvedValue({ data: mayor });
 
     const onClick = vi.fn();
@@ -23,6 +23,7 @@ describe('MayorCard', () => {
 
     await waitFor(() => expect(screen.getByText(/Alice Anderson/)).toBeInTheDocument());
     expect(screen.getByText(/ZedTown, X/)).toBeInTheDocument();
+    expect(screen.getByText('85')).toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText('Mayor Alice Anderson'));
     expect(onClick).toHaveBeenCalledWith(1);
