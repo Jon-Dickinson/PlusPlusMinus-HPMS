@@ -43,7 +43,7 @@ The system models city capability, resource distribution, and administrative ove
 - **Mayor** — builds their own city, provides services, manages power, water, food, and housing resources  
 - **Viewer** — observes city stats in read-only mode  
 
-Every action — from building placement to resource consumption — is tracked, logged, and visualized through an intelligent, responsive dashboard.
+Every building placement is tracked, logged, and visualized through an intelligent, responsive dashboard.
 
 ---
 
