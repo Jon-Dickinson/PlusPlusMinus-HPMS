@@ -190,7 +190,7 @@ const HierarchyNode: React.FC<HierarchyNodeProps> = ({
               <UserItem key={user.id}>
                 {user.firstName} {user.lastName}
                 <UserRoleContainer>
-                  <UserRole role={user.role}></UserRole>
+                  <UserRole role={user.role}>{user.role.toLowerCase()}</UserRole>
                   {user.role === 'MAYOR' && (
                     <StatusIndicator count={getStatusDotCount(node.level)}>
                       {Array.from({ length: getStatusDotCount(node.level) }, (_, index) => (
