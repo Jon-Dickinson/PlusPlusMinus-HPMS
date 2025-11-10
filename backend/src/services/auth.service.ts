@@ -1,6 +1,6 @@
 import { prisma } from '../db.js';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret';
 
