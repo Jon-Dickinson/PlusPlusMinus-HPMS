@@ -27,3 +27,4 @@ restartPolicyMaxRetries = 10
 [env]
 NODE_ENV = "production"
 PORT = "4000"
+JWT_SECRET = "X31hS0hWclh5Y25VUWptQjJxd3pwNlV4Z1QzZlgyc1c3c2hYc0tMdFdQcG5oR0Q3R3d5M0E0Yg=="
