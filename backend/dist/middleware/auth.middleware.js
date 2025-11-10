@@ -1,4 +1,4 @@
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 const SECRET = process.env.JWT_SECRET || 'dev-secret';
 export function requireAuth(req, res, next) {
     const raw = req.headers.authorization || '';
