@@ -47,6 +47,21 @@ export async function getAll() {
       },
       mayor: {
         select: { id: true, firstName: true, lastName: true }
+      },
+      city: { 
+        select: { 
+          id: true,
+          name: true, 
+          country: true, 
+          qualityIndex: true
+        } 
+      },
+      hierarchy: {
+        select: {
+          id: true,
+          name: true,
+          level: true
+        }
       }
     }
   });
