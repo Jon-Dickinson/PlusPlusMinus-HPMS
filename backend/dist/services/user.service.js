@@ -39,13 +39,18 @@ export function listMayors() {
 }
 export async function getAll() {
     return prisma.user.findMany({
-        include: {
-            viewers: {
-                select: { id: true, firstName: true, lastName: true, username: true, role: true }
-            },
-            mayor: {
-                select: { id: true, firstName: true, lastName: true }
-            },
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+            email: true,
+            role: true,
+            hierarchyId: true,
+            mayorId: true,
+            createdAt: true,
+            updatedAt: true,
+            // Only include city for MAYORs
             city: {
                 select: {
                     id: true,
@@ -61,6 +66,7 @@ export async function getAll() {
                     level: true
                 }
             }
+            // Removed viewers and mayor includes to reduce null fields in response
         }
     });
 }
