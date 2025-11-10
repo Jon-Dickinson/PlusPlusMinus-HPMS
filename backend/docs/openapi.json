@@ -5,7 +5,10 @@
     "version": "2.0.0",
     "description": "Hierarchical Permission Management System API for City Builder with role-based building access"
   },
-  "servers": [{ "url": "http://localhost:3000", "description": "Local" }],
+  "servers": [
+    { "url": "https://passionate-contentment-production.up.railway.app", "description": "Production (Railway)" },
+    { "url": "http://localhost:4000", "description": "Local Development" }
+  ],
   "security": [{ "bearerAuth": [] }],
   "tags": [
     {
@@ -17,8 +20,20 @@
       "description": "Building types and city placement management"
     },
     {
+      "name": "Cities",
+      "description": "City management and data operations"
+    },
+    {
       "name": "Hierarchy",
       "description": "Hierarchical permission system endpoints"
+    },
+    {
+      "name": "Notes",
+      "description": "User notes management"
+    },
+    {
+      "name": "Public",
+      "description": "Public endpoints that don't require authentication"
     },
     {
       "name": "Users",
@@ -304,6 +319,260 @@
           "404": { "description": "User not found" }
         }
       }
+    },
+    "/cities": {
+      "get": {
+        "summary": "List all cities",
+        "tags": ["Cities"],
+        "responses": {
+          "200": {
+            "description": "List of cities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/City" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create new city",
+        "tags": ["Cities"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CityCreate" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "City created" }
+        }
+      }
+    },
+    "/cities/{id}": {
+      "get": {
+        "summary": "Get city by ID",
+        "tags": ["Cities"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "City details",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/City" } }
+            }
+          },
+          "404": { "description": "City not found" }
+        }
+      },
+      "put": {
+        "summary": "Update city",
+        "tags": ["Cities"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CityUpdate" } }
+          }
+        },
+        "responses": { "200": { "description": "City updated" } }
+      },
+      "delete": {
+        "summary": "Delete city",
+        "tags": ["Cities"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "204": { "description": "City deleted" } }
+      }
+    },
+    "/cities/{id}/data": {
+      "get": {
+        "summary": "Get city grid and building data",
+        "tags": ["Cities"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "City grid data and buildings",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/CityData" } }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update city data (grid state, buildings)",
+        "tags": ["Cities"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CityDataUpdate" } }
+          }
+        },
+        "responses": { "200": { "description": "City data updated" } }
+      }
+    },
+    "/cities/user/{userId}": {
+      "get": {
+        "summary": "Get city by user/mayor ID",
+        "tags": ["Cities"],
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "User's city",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/City" } }
+            }
+          },
+          "404": { "description": "City not found for user" }
+        }
+      }
+    },
+    "/cities/user/{userId}/save": {
+      "put": {
+        "summary": "Save city by user ID (admin or owner only)",
+        "tags": ["Cities"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CityDataUpdate" } }
+          }
+        },
+        "responses": { "200": { "description": "City saved" } }
+      }
+    },
+    "/cities/{id}/logs": {
+      "get": {
+        "summary": "Get city build logs",
+        "tags": ["Cities"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Build logs" } }
+      },
+      "post": {
+        "summary": "Add build log entry",
+        "tags": ["Cities"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/BuildLog" } }
+          }
+        },
+        "responses": { "201": { "description": "Log entry added" } }
+      }
+    },
+    "/cities/{id}/notes": {
+      "get": {
+        "summary": "Get city notes",
+        "tags": ["Cities"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "City notes" } }
+      },
+      "post": {
+        "summary": "Add city note",
+        "tags": ["Cities"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Note" } }
+          }
+        },
+        "responses": { "201": { "description": "Note added" } }
+      }
+    },
+    "/notes/{userId}": {
+      "get": {
+        "summary": "Get user notes",
+        "tags": ["Notes"],
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "User notes" } }
+      },
+      "put": {
+        "summary": "Save user note (admin or owner only)",
+        "tags": ["Notes"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Note" } }
+          }
+        },
+        "responses": { "200": { "description": "Note saved" } }
+      }
+    },
+    "/public/mayors": {
+      "get": {
+        "summary": "List all mayors (public endpoint)",
+        "tags": ["Public"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of mayors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/BasicUser" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hierarchy/test": {
+      "get": {
+        "summary": "Test hierarchy routes deployment",
+        "tags": ["Hierarchy"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Test response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -478,6 +747,93 @@
           "example": ["Residential", "Agriculture"],
           "description": "Suburb level mayors can only build basic residential and agricultural buildings"
         }
+      }
+    },
+    "City": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "country": { "type": "string" },
+        "mayorId": { "type": "integer" },
+        "gridSize": { "type": "integer", "description": "City grid size (e.g., 50 for 50x50)" },
+        "gridState": { "type": "string", "description": "JSON string of city grid data" },
+        "buildingLog": { "type": "string", "description": "JSON string of building placement history" },
+        "qualityIndex": { "type": "integer", "description": "City quality percentage (0-100)" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "CityCreate": {
+      "type": "object",
+      "required": ["name", "country", "mayorId"],
+      "properties": {
+        "name": { "type": "string" },
+        "country": { "type": "string" },
+        "mayorId": { "type": "integer" },
+        "gridSize": { "type": "integer", "default": 50 }
+      }
+    },
+    "CityUpdate": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "country": { "type": "string" },
+        "mayorId": { "type": "integer" },
+        "gridSize": { "type": "integer" }
+      }
+    },
+    "CityData": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "gridSize": { "type": "integer" },
+        "gridState": { 
+          "type": "object",
+          "description": "Parsed city grid with building placements"
+        },
+        "buildingLog": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/BuildLogEntry" },
+          "description": "Parsed building placement history"
+        },
+        "qualityIndex": { "type": "integer" }
+      }
+    },
+    "CityDataUpdate": {
+      "type": "object",
+      "properties": {
+        "gridState": { "type": "string", "description": "JSON string of updated grid state" },
+        "buildingLog": { "type": "string", "description": "JSON string of updated building log" },
+        "qualityIndex": { "type": "integer" }
+      }
+    },
+    "BuildLog": {
+      "type": "object",
+      "required": ["action"],
+      "properties": {
+        "action": { "type": "string", "description": "Build action description" },
+        "value": { "type": "number", "description": "Optional numeric value" }
+      }
+    },
+    "BuildLogEntry": {
+      "type": "object",
+      "properties": {
+        "action": { "type": "string" },
+        "value": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Note": {
+      "type": "object",
+      "required": ["content"],
+      "properties": {
+        "id": { "type": "integer" },
+        "content": { "type": "string", "minLength": 1 },
+        "userId": { "type": "integer" },
+        "cityId": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
       }
     },
     "securitySchemes": {
