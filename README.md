@@ -38,10 +38,8 @@ npm run dev
 The system models city capability, resource distribution, and administrative oversight across three user roles:
 
 - **Admin** — oversees all cities, reviews logs, and monitors global statistics  
-- **Mayor** — builds their own city, provides services, manages power, water, food, and housing resources  
+- **Mayor** — 3 types of mayors exist. They build their own city, provides services, manages power, water, food, and housing resources  
 - **Viewer** — observes city stats in read-only mode  
-
-Every building placement is tracked, logged, and visualized through an intelligent, responsive dashboard.
 
 ---
 
@@ -104,8 +102,6 @@ Every building placement is tracked, logged, and visualized through an intellige
 | **Viewer** | `viewer4@example.com` | Read-only access to all cities |
 | **Viewer** | `viewer5@example.com` | Read-only access to all cities |
 
-**Note:** All cities are pre-populated with realistic building layouts and accurate Quality Index percentages that reflect actual resource balance (power, water, services, food production).
-
 ### 4. Modular Architecture
 - **Frontend:** Next.js + Styled-Components for modern, component-driven design  
 - **Backend:** Express + Prisma + Neon PostgreSQL
@@ -129,26 +125,10 @@ http://localhost:5555/
 
 ---
 
-#### Secrets Required
-
-```
-DATABASE_URL         # Production database URL
-JWT_SECRET           # JWT signing secret
-```
-
 ### Swagger
 
 live version:
-
 https://passionate-contentment-production.up.railway.app/api/docs/
-
-local version:
-
-```
-cd backend
-npm run build
-npm run dev
-```
 
 Open the Swagger UI in your browser:
 http://localhost:4000/api/docs
