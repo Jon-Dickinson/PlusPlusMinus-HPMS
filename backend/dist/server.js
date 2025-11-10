@@ -13,7 +13,15 @@ import docsRoutes from "./routes/docs.route.js";
 import hierarchyRoutes from "./routes/hierarchy.routes.js";
 const app = express();
 app.use(express.json());
-app.use(cors());
+// Configure CORS to allow frontend domain
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'https://plus-plus-minus-hpms.vercel.app'
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
 app.use(morgan('dev'));
 // routes
 app.use('/api/auth', authRoutes);
