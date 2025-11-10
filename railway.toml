@@ -11,7 +11,7 @@ buildDirectory = "backend"
 cmd = "cd backend && npm run start"
 
 # Runs before starting the app (for Prisma migrations)
-deployCommand = "cd backend && npx prisma migrate deploy && npx prisma generate && npm run seed"
+deployCommand = "cd backend && npx prisma migrate deploy && npx prisma generate"
 
 [deploy]
 runtime = "V2"
