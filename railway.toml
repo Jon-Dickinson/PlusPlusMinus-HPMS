@@ -1,5 +1,6 @@
 # Railway configuration for monorepo backend app
 # Located at /backend
+# Updated for CORS fix deployment
 
 [build]
 builder = "NIXPACKS"
