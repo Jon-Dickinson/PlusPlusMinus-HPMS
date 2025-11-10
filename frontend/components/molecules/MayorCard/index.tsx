@@ -57,7 +57,7 @@ export default function MayorCard({ id, onClick, onDelete }: MayorCardProps) {
       </Center>
 
       <QualityIndex>
-        <Muted>{qualityIndex !== undefined ? qualityIndex : '—'}</Muted>
+        <Muted>{qualityIndex !== undefined ? `${Math.round(qualityIndex)}%` : '—'}</Muted>
       </QualityIndex>
 
       <Properties>

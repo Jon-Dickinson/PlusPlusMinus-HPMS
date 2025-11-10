@@ -91,7 +91,7 @@ export const ServicesStatCard = ({ capacity, houses, qualityIndex }: { capacity:
       iconColor="#EE3E36"
       stats={[
         { label: 'Capacity', value: capacity, color: serviceShort ? '#ef4444' : '#0ea5e9' },
-        { label: 'Quality Index', value: `${qualityIndex}%`, color: qualityColor },
+        { label: 'Quality Index', value: `${Math.round(qualityIndex)}%`, color: qualityColor },
       ]}
     />
   );

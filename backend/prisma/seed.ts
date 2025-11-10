@@ -1,170 +1,92 @@
+/**
+ * Main Seed Orchestrator
+ * 
+ * Coordinates all seeding operations in the correct order:
+ * 1. Hierarchy Levels
+ * 2. Users 
+ * 3. Cities
+ * 4. Buildings & Categories
+ * 5. Building Permissions
+ * 6. Summary Report
+ */
+
 /// <reference types="node" />
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import buildingsData from './data/buildings.js';
+import { HierarchySeeder } from './seeders/hierarchy.seeder.js';
+import { UserSeeder } from './seeders/user.seeder.js';
+import { CitySeeder } from './seeders/city.seeder.js';
+import { BuildingSeeder } from './seeders/building.seeder.js';
+import { SummaryReporter } from './seeders/summary.reporter.js';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting inline Prisma seed...');
+  console.log('Starting comprehensive database seed...');
+  console.log('This will create a complete hierarchical permission system');
+  console.log('');
 
-  const PASSWORD = process.env.SEED_PASSWORD || 'Password123!';
-  const passwordHash = await bcrypt.hash(PASSWORD, 10);
+  try {
+    // Initialize all seeders
+    const hierarchySeeder = new HierarchySeeder(prisma);
+    const userSeeder = new UserSeeder(prisma);
+    const citySeeder = new CitySeeder(prisma);
+    const buildingSeeder = new BuildingSeeder(prisma);
+    const summaryReporter = new SummaryReporter(prisma);
 
-  // Ensure Admin (idempotent)
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {
-      username: 'admin',
-      password: passwordHash,
-      role: 'ADMIN',
-      firstName: 'Admin',
-      lastName: 'User',
-    },
-    create: {
-      username: 'admin',
-      email: 'admin@example.com',
-      password: passwordHash,
-      role: 'ADMIN',
-      firstName: 'Admin',
-      lastName: 'User',
-    },
-  });
-  console.log(`Ensured admin: ${admin.username} <${admin.email}>`);
+    // Step 1: Create hierarchy structure
+    console.log('STEP 1: Setting up hierarchy structure...');
+    const hierarchyData = await hierarchySeeder.seedHierarchy();
+    console.log('Hierarchy structure created successfully\n');
 
-  // Ensure Mayor (single_mayor) and attach a City (Singleton)
-  const mayor = await prisma.user.upsert({
-    where: { username: 'single_mayor' },
-    update: {
-      email: 'single_mayor@example.com',
-      password: passwordHash,
-      role: 'MAYOR',
-      firstName: 'Solo',
-      lastName: 'Mayor',
-    },
-    create: {
-      username: 'single_mayor',
-      email: 'single_mayor@example.com',
-      password: passwordHash,
-      role: 'MAYOR',
-      firstName: 'Solo',
-      lastName: 'Mayor',
-    },
-  });
-  console.log(`Ensured mayor: ${mayor.username} <${mayor.email}>`);
+    // Step 2: Create users
+    console.log('STEP 2: Creating user accounts...');
+    const users = await userSeeder.seedUsers(hierarchyData);
+    console.log('User accounts created successfully\n');
 
-  // City has unique mayorId in schema — use upsert by mayorId
-  await prisma.city.upsert({
-    where: { mayorId: mayor.id },
-    update: { name: 'Singleton', country: 'Freedonia' },
-    create: { name: 'Singleton', country: 'Freedonia', mayorId: mayor.id },
-  });
-  console.log(`Ensured city 'Singleton' for mayor ${mayor.username}`);
+    // Step 3: Create cities for mayors
+    console.log('STEP 3: Creating cities for mayors...');
+    const cities = await citySeeder.seedCities(users, hierarchyData);
+    console.log('Cities created successfully\n');
 
-  // Seed building categories
-  const categories = Array.from(new Set((buildingsData as any[]).map((b: any) => b.category)));
-  for (const cat of categories) {
-    await prisma.buildingCategory.upsert({
-      where: { name: cat },
-      update: {},
-      create: { name: cat },
-    });
+    // Step 4: Setup buildings and categories
+    console.log('STEP 4: Setting up buildings and categories...');
+    await buildingSeeder.seedBuildings();
+    console.log('Buildings and categories setup successfully\n');
+
+    // Step 5: Assign building permissions
+    console.log('STEP 5: Assigning building permissions...');
+    await buildingSeeder.seedBuildingPermissions(users);
+    console.log('Building permissions assigned successfully\n');
+
+    // Step 6: Generate summary report
+    console.log('STEP 6: Generating summary report...');
+    await summaryReporter.generateSeedSummary(users, cities);
+
+    console.log('\n' + '='.repeat(60));
+    console.log('SEED PROCESS COMPLETED SUCCESSFULLY');
+    console.log('='.repeat(60));
+    console.log('Your database now contains:');
+    console.log('- Complete hierarchical structure (National > City > Suburb)');
+    console.log('- 20 user accounts with appropriate permissions');
+    console.log('- Realistic city assignments for all mayors');
+    console.log('- Building permission matrix based on hierarchy level');
+    console.log('- Ready-to-use test accounts for all user types');
+    console.log('');
+    console.log('You can now start the application and test with any of the');
+    console.log('user accounts listed in the summary above.');
+
+  } catch (error) {
+    console.error('Seed process failed:', error);
+    throw error;
   }
-  console.log(`Ensured ${categories.length} building categories`);
-
-  // Seed buildings
-  for (const b of buildingsData) {
-    const category = await prisma.buildingCategory.findUnique({ where: { name: b.category } });
-    const building = await prisma.building.upsert({
-      where: { id: b.id },
-      update: {},
-      create: {
-        id: b.id,
-        name: b.name,
-        categoryId: category!.id,
-      },
-    });
-
-    // Seed resources
-    const resources = b.resources || {};
-    for (const [type, amount] of Object.entries(resources)) {
-      const existing = await prisma.buildingResource.findFirst({
-        where: { buildingId: building.id, type },
-      });
-      if (existing) {
-        await prisma.buildingResource.update({
-          where: { id: existing.id },
-          data: { amount: Number(amount) },
-        });
-      } else {
-        await prisma.buildingResource.create({
-          data: { buildingId: building.id, type, amount: Number(amount) },
-        });
-      }
-    }
-  }
-  console.log(`Ensured ${buildingsData.length} buildings with resources`);
-
-  // Ensure two viewers linked to single_mayor
-  const viewerA = await prisma.user.upsert({
-    where: { username: 'viewer_a' },
-    update: {
-      email: 'viewer_a@example.com',
-      password: passwordHash,
-      role: 'VIEWER',
-      firstName: 'Viewer',
-      lastName: 'A',
-      mayorId: mayor.id,
-    },
-    create: {
-      username: 'viewer_a',
-      email: 'viewer_a@example.com',
-      password: passwordHash,
-      role: 'VIEWER',
-      firstName: 'Viewer',
-      lastName: 'A',
-      mayorId: mayor.id,
-    },
-  });
-  console.log(`Ensured viewer: ${viewerA.username} linked to mayor ${mayor.username}`);
-
-  const viewerB = await prisma.user.upsert({
-    where: { username: 'viewer_b' },
-    update: {
-      email: 'viewer_b@example.com',
-      password: passwordHash,
-      role: 'VIEWER',
-      firstName: 'Viewer',
-      lastName: 'B',
-      mayorId: mayor.id,
-    },
-    create: {
-      username: 'viewer_b',
-      email: 'viewer_b@example.com',
-      password: passwordHash,
-      role: 'VIEWER',
-      firstName: 'Viewer',
-      lastName: 'B',
-      mayorId: mayor.id,
-    },
-  });
-  console.log(`Ensured viewer: ${viewerB.username} linked to mayor ${mayor.username}`);
-
-  console.log('\n✅ Inline seed completed successfully.');
-  console.table([
-    { role: 'Admin', username: admin.username, email: admin.email, password: PASSWORD },
-    { role: 'Mayor', username: mayor.username, email: mayor.email, password: PASSWORD },
-    { role: 'Viewer 1', username: viewerA.username, email: viewerA.email, password: PASSWORD },
-    { role: 'Viewer 2', username: viewerB.username, email: viewerB.email, password: PASSWORD },
-  ]);
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((error) => {
+    console.error('Fatal error during seed process:', error);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
+    console.log('Database connection closed.');
   });
- 

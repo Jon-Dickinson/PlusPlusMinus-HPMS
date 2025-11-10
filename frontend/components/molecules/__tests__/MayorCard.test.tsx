@@ -23,7 +23,7 @@ describe('MayorCard', () => {
 
     await waitFor(() => expect(screen.getByText(/Alice Anderson/)).toBeInTheDocument());
     expect(screen.getByText(/ZedTown, X/)).toBeInTheDocument();
-    expect(screen.getByText('85')).toBeInTheDocument();
+    expect(screen.getByText('85%')).toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText('Mayor Alice Anderson'));
     expect(onClick).toHaveBeenCalledWith(1);

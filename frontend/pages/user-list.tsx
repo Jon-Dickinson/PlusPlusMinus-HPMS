@@ -7,9 +7,12 @@ import Header from '../components/molecules/Header';
 import GlobalNav from '../components/molecules/GlobalNav';
 import UserGrid from '../components/molecules/UserGrid';
 import DeleteConfirmationModal from '../components/molecules/DeleteConfirmationModal';
+import HierarchyTreeView from '../components/organisms/HierarchyTreeView';
 import axios from '../lib/axios';
 import useAuthorized from '../hooks/useAuthorized';
 import { useAuth } from '../context/AuthContext';
+import { HierarchyAPI, useHierarchy } from '../lib/hierarchyAPI';
+import { HierarchyLevel } from '../types/hierarchy';
 
 interface User {
   id: number;
@@ -18,6 +21,12 @@ interface User {
   username: string;
   role: string;
   mayorId?: number;
+  hierarchyId?: number;
+  hierarchy?: {
+    id: number;
+    name: string;
+    level: number;
+  };
 }
 
 const ColWrapper = styled.div`
@@ -28,9 +37,53 @@ const ColWrapper = styled.div`
   height: 100%;
 `;
 
+const ContentWrapper = styled.div`
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  height: calc(100vh - 120px);
+  overflow: hidden;
+`;
+
+const LeftPanel = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+`;
+
+const RightPanel = styled.div`
+  flex: 1;
+  overflow-y: auto;
+`;
+
+const TabContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+`;
+
+const Tab = styled.button<{ active: boolean }>`
+  padding: 0.75rem 1rem;
+  border: none;
+  background: ${props => props.active ? '#004AEE' : 'transparent'};
+  color: ${props => props.active ? 'white' : '#ffffff'};
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  font-weight: ${props => props.active ? '600' : '400'};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.active ? '#004AEE' : 'rgba(255, 255, 255, 0.1)'};
+  }
+`;
+
 
 export default function UserList() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const canNavigateAdmin = useAuthorized(['ADMIN']);
 
@@ -43,6 +96,13 @@ export default function UserList() {
     role: string;
   } | null>(null);
 
+  // Hierarchy-related state
+  const [activeTab, setActiveTab] = useState<'users' | 'hierarchy'>('users');
+  const [selectedHierarchyNode, setSelectedHierarchyNode] = useState<HierarchyLevel | null>(null);
+
+  // Use the hierarchy hook
+  const { hierarchyTree, loading: hierarchyLoading, error: hierarchyError } = useHierarchy();
+
   const fetchUsers = async () => {
     try {
       const res = await axios.instance.get('/users');
@@ -52,6 +112,8 @@ export default function UserList() {
       setUsers([]);
     }
   };
+
+
 
   const { initialized } = useAuth();
 
@@ -80,7 +142,7 @@ export default function UserList() {
     return () => {
       mounted = false;
     };
-  }, [initialized, canNavigateAdmin]);
+  }, [initialized, canNavigateAdmin, user?.hierarchyId]);
 
   const mayors = users.filter((u) => u.role === 'MAYOR');
 
@@ -115,24 +177,91 @@ export default function UserList() {
     setDeleteTarget(null);
   };
 
+  const handleHierarchyNodeSelect = (node: HierarchyLevel) => {
+    setSelectedHierarchyNode(node);
+  };
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'users':
+        return (
+          <UserGrid
+            loading={loading}
+            mayors={mayors}
+            users={users}
+            canNavigateAdmin={canNavigateAdmin}
+            onMayorClick={(id: number | string) => router.push(`/mayor-view/${id}`)}
+            onDeleteUser={handleDeleteUser}
+          />
+        );
+      case 'hierarchy':
+        return (
+          <HierarchyTreeView
+            tree={hierarchyTree}
+            onNodeSelect={handleHierarchyNodeSelect}
+            selectedNodeId={selectedHierarchyNode?.id}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Show hierarchy tabs only for users with hierarchy access
+  const showHierarchyTabs = user?.hierarchyId && canNavigateAdmin;
+
   return (
     <MainTemplate>
       <GlobalNav />
 
       <ColWrapper>
         <Header />
-        <ColWrapper>
-          <CityProvider>
-            <UserGrid
-              loading={loading}
-              mayors={mayors}
-              users={users}
-              canNavigateAdmin={canNavigateAdmin}
-              onMayorClick={(id: number | string) => router.push(`/mayor-view/${id}`)}
-              onDeleteUser={handleDeleteUser}
-            />
-          </CityProvider>
-        </ColWrapper>
+        <ContentWrapper>
+          <LeftPanel>
+            {showHierarchyTabs && (
+              <TabContainer>
+                <Tab 
+                  active={activeTab === 'users'} 
+                  onClick={() => setActiveTab('users')}
+                >
+                  All Users
+                </Tab>
+                <Tab 
+                  active={activeTab === 'hierarchy'} 
+                  onClick={() => setActiveTab('hierarchy')}
+                >
+                  Hierarchy Tree
+                </Tab>
+              </TabContainer>
+            )}
+            
+            <CityProvider>
+              {renderActiveTab()}
+            </CityProvider>
+          </LeftPanel>
+
+          {/* Right panel for additional hierarchy info */}
+          {showHierarchyTabs && selectedHierarchyNode && (
+            <RightPanel>
+              <div style={{ padding: '1rem', background: 'transparent', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff' }}>
+                <h3>Selected Level: {selectedHierarchyNode.name}</h3>
+                <p><strong>Level:</strong> {selectedHierarchyNode.level}</p>
+                {selectedHierarchyNode.users && selectedHierarchyNode.users.length > 0 && (
+                  <div>
+                    <h4>Users at this level:</h4>
+                    <ul>
+                      {selectedHierarchyNode.users.map(user => (
+                        <li key={user.id}>
+                          {user.firstName} {user.lastName} ({user.role})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </RightPanel>
+          )}
+        </ContentWrapper>
       </ColWrapper>
 
       <DeleteConfirmationModal

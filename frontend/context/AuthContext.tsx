@@ -17,6 +17,12 @@ type Note = {
   updatedAt: string;
 }
 
+type HierarchyInfo = {
+  id: number;
+  name: string;
+  level: number;
+}
+
 type User = {
   id: number;
   email: string;
@@ -25,6 +31,8 @@ type User = {
   lastName: string;
   role: 'ADMIN' | 'MAYOR' | 'VIEWER';
   mayorId?: number | null;
+  hierarchyId?: number | null;
+  hierarchy?: HierarchyInfo | null;
   city?: City | null;
   notes?: Note[];
 };

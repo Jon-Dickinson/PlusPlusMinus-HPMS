@@ -23,6 +23,7 @@ export async function register(data: {
       email: data.email,
       password: hashed,
       role: data.role,
+      hierarchyId: undefined, // Set to undefined for backward compatibility
     },
   });
 
@@ -65,6 +66,7 @@ export async function login({ username, email, password }: { username?: string; 
     where,
     include: {
       city: true,
+      hierarchy: true,
       notes: {
         orderBy: {
           createdAt: 'desc',

@@ -2,15 +2,34 @@
   "openapi": "3.0.1",
   "info": {
     "title": "PlusPlusMinus HPMS API",
-    "version": "1.0.0",
-    "description": "API for City Builder: Buildings and City placements"
+    "version": "2.0.0",
+    "description": "Hierarchical Permission Management System API for City Builder with role-based building access"
   },
   "servers": [{ "url": "http://localhost:3000", "description": "Local" }],
   "security": [{ "bearerAuth": [] }],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User registration and login endpoints"
+    },
+    {
+      "name": "Buildings",
+      "description": "Building types and city placement management"
+    },
+    {
+      "name": "Hierarchy",
+      "description": "Hierarchical permission system endpoints"
+    },
+    {
+      "name": "Users",
+      "description": "User management endpoints"
+    }
+  ],
   "paths": {
     "/auth/register": {
       "post": {
         "summary": "Register new user (public)",
+        "tags": ["Authentication"],
         "security": [],
         "requestBody": {
           "required": true,
@@ -27,6 +46,7 @@
     "/auth/login": {
       "post": {
         "summary": "Login (public)",
+        "tags": ["Authentication"],
         "security": [],
         "requestBody": {
           "required": true,
@@ -43,12 +63,14 @@
     "/buildings": {
       "get": {
         "summary": "List building types",
+        "tags": ["Buildings"],
         "responses": {
           "200": { "description": "List of buildings" }
         }
       },
       "post": {
         "summary": "Create building (admin)",
+        "tags": ["Buildings"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -65,6 +87,7 @@
     "/buildings/{id}": {
       "get": {
         "summary": "Get building",
+        "tags": ["Buildings"],
         "parameters": [
           { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
         ],
@@ -72,6 +95,7 @@
       },
       "patch": {
         "summary": "Update building (admin)",
+        "tags": ["Buildings"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
@@ -85,6 +109,7 @@
       },
       "delete": {
         "summary": "Delete building (admin)",
+        "tags": ["Buildings"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
@@ -95,6 +120,7 @@
     "/buildings/cities/{cityId}": {
       "get": {
         "summary": "List placed buildings in a city",
+        "tags": ["Buildings"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } }
@@ -103,6 +129,7 @@
       },
       "post": {
         "summary": "Place building in city",
+        "tags": ["Buildings"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } }
@@ -118,6 +145,7 @@
     "/buildings/cities/{cityId}/{id}": {
       "patch": {
         "summary": "Update city placement",
+        "tags": ["Buildings"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } },
@@ -132,12 +160,149 @@
       },
       "delete": {
         "summary": "Delete city placement",
+        "tags": ["Buildings"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } },
           { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
         ],
         "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+    "/hierarchy/tree": {
+      "get": {
+        "summary": "Get complete hierarchy tree structure",
+        "description": "Returns the full organizational hierarchy with all levels, children, and assigned users",
+        "tags": ["Hierarchy"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Hierarchy tree structure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/HierarchyLevel" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/hierarchy/buildings/allowed/{userId}": {
+      "get": {
+        "summary": "Get buildings a user can build",
+        "description": "Returns building categories and buildings that the specified user has permission to build based on their hierarchy level",
+        "tags": ["Hierarchy", "Buildings"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "ID of the user to check permissions for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Allowed buildings by category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AllowedBuildingCategory" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/hierarchy/users/subordinates/{userId}": {
+      "get": {
+        "summary": "Get subordinate users in hierarchy",
+        "description": "Returns all users that are subordinate to the specified user in the organizational hierarchy (same level and below)",
+        "tags": ["Hierarchy", "Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "ID of the user to get subordinates for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of subordinate users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/HierarchyUser" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "List all users",
+        "description": "Get list of all users in the system (admin only)",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/HierarchyUser" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden - Admin access required" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HierarchyUser" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "User not found" }
+        }
       }
     }
   },
@@ -209,6 +374,110 @@
       "properties": {
         "token": { "type": "string" },
         "user": { "$ref": "#/components/schemas/Building" }
+      }
+    },
+    "HierarchyLevel": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string", "description": "Level name (e.g., 'National', 'City A', 'Suburb A1')" },
+        "level": { "type": "integer", "description": "Hierarchy depth (1=National, 2=City, 3=Suburb)" },
+        "parentId": { "type": "integer", "nullable": true, "description": "ID of parent level" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/HierarchyLevel" },
+          "description": "Child hierarchy levels"
+        },
+        "users": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/BasicUser" },
+          "description": "Users assigned to this hierarchy level"
+        }
+      }
+    },
+    "BasicUser": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { 
+          "type": "string", 
+          "enum": ["ADMIN", "MAYOR", "VIEWER"],
+          "description": "User role: ADMIN (all permissions), MAYOR (hierarchy-based permissions), VIEWER (read-only)"
+        }
+      }
+    },
+    "HierarchyUser": {
+      "allOf": [
+        { "$ref": "#/components/schemas/BasicUser" },
+        {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string", "format": "email" },
+            "hierarchy": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer" },
+                "name": { "type": "string" },
+                "level": { "type": "integer" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AllowedBuildingCategory": {
+      "type": "object",
+      "properties": {
+        "categoryId": { "type": "integer" },
+        "categoryName": { "type": "string", "description": "Building category name (e.g., 'Residential', 'Commercial')" },
+        "description": { "type": "string", "nullable": true },
+        "buildings": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/BuildingDetails" },
+          "description": "Buildings in this category that the user can build"
+        }
+      }
+    },
+    "BuildingDetails": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "level": { "type": "integer", "description": "Building level/tier" },
+        "sizeX": { "type": "integer", "description": "Grid width" },
+        "sizeY": { "type": "integer", "description": "Grid height" },
+        "powerUsage": { "type": "integer", "description": "Power consumption" },
+        "powerOutput": { "type": "integer", "description": "Power generation" },
+        "waterUsage": { "type": "integer", "description": "Water consumption" },
+        "waterOutput": { "type": "integer", "description": "Water generation" }
+      }
+    },
+    "PermissionMatrix": {
+      "type": "object",
+      "description": "Building permissions by hierarchy level",
+      "properties": {
+        "National": {
+          "type": "array",
+          "items": { "type": "string" },
+          "example": ["Infrastructure", "Commercial", "Services", "Residential", "Agriculture", "Emergency", "Government"],
+          "description": "National level mayors can build all building categories"
+        },
+        "City": {
+          "type": "array", 
+          "items": { "type": "string" },
+          "example": ["Infrastructure", "Commercial", "Services", "Residential", "Agriculture"],
+          "description": "City level mayors can build most categories except specialized ones"
+        },
+        "Suburb": {
+          "type": "array",
+          "items": { "type": "string" },
+          "example": ["Residential", "Agriculture"],
+          "description": "Suburb level mayors can only build basic residential and agricultural buildings"
+        }
       }
     },
     "securitySchemes": {

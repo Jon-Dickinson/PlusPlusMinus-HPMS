@@ -31,11 +31,18 @@ model User {
   password    String
   role        Role
 
-  // Relation to City (only for MAYORs)
+  // Hierarchical assignment
+  hierarchyId Int?
+  hierarchy   HierarchyLevel? @relation(fields: [hierarchyId], references: [id])
+
+  // Building permissions
+  permissions UserPermission[]
+
+  // Relation to City (only for MAYORs) - keeping for backward compatibility
   city        City?     @relation(name: "CityMayor")
 
   // ────────────────
-  // New Mayor–Viewer relationship
+  // New Mayor–Viewer relationship - keeping for backward compatibility
   // ────────────────
   mayorId     Int?                               // only for VIEWERs
   mayor       User?     @relation("MayorViewers", fields: [mayorId], references: [id], onDelete: Cascade)
@@ -80,6 +87,29 @@ model Note {
   user      User     @relation(fields: [userId], references: [id])
 }
 
+model HierarchyLevel {
+  id        Int @id @default(autoincrement())
+  name      String           // "National", "City", "Suburb"
+  level     Int              // 1, 2, 3 (hierarchy depth)
+  parentId  Int?
+  parent    HierarchyLevel? @relation("HierarchyTree", fields: [parentId], references: [id])
+  children  HierarchyLevel[] @relation("HierarchyTree")
+  users     User[]
+  createdAt DateTime @default(now())
+}
+
+model UserPermission {
+  id          Int @id @default(autoincrement())
+  userId      Int
+  categoryId  Int
+  canBuild    Boolean @default(false)
+  user        User @relation(fields: [userId], references: [id])
+  category    BuildingCategory @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, categoryId])
+}
+
 model BuildingCategory {
   id          Int       @id @default(autoincrement())
   name        String    @unique
@@ -87,6 +117,7 @@ model BuildingCategory {
   createdAt   DateTime  @default(now())
 
   buildings   Building[]
+  permissions UserPermission[]
 }
 
 model Building {

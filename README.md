@@ -62,14 +62,49 @@ Every building placement is tracked, logged, and visualized through an intellige
 - Fully normalized **Prisma schema** connecting:
   - `User` ↔ `City` ↔ `BuildLog` ↔ `Note`
   - `Building` ↔ `BuildingCategory` ↔ `BuildingResource`
-- Seeded data for testing with default users:
+- Seeded data for testing with 20 hierarchical users (all use password `Password123!`):
 
-| Role | Email | Password |
-|------|--------|-----------|
-| **Admin** | `admin@example.com` | `Password123!` |
-| **Mayor** | `single_mayor@example.com` | `Password123!` |
-| **Viewer** | `viewer_a@example.com` | `Password123!` |
-| **Viewer** | `viewer_b@example.com` | `Password123!` |
+#### Admin Users
+| Role | Email | Access Level |
+|------|--------|--------------|
+| **Admin** | `admin@example.com` | Full system access |
+
+#### National Level Mayors (All Buildings)
+| Role | Email | City Assignment | Building Access |
+|------|--------|-----------------|-----------------|
+| **National Mayor** | `national1@example.com` | National Capital - National1's District | All 8 building types |
+| **National Mayor** | `national2@example.com` | National Capital - National2's District | All 8 building types |
+
+#### City Level Mayors (6 Building Types)
+| Role | Email | City Assignment | Building Access |
+|------|--------|-----------------|-----------------|
+| **City Mayor** | `citya1@example.com` | City A | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+| **City Mayor** | `citya2@example.com` | City A | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+| **City Mayor** | `cityb1@example.com` | City B | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+| **City Mayor** | `cityb2@example.com` | City B | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+
+#### Suburb Level Mayors (2 Building Types)
+| Role | Email | City Assignment | Building Access |
+|------|--------|-----------------|-----------------|
+| **Suburb Mayor** | `suburb_a11@example.com` | Suburb A1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_a12@example.com` | Suburb A1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_a21@example.com` | Suburb A2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_a22@example.com` | Suburb A2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b11@example.com` | Suburb B1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b12@example.com` | Suburb B1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b21@example.com` | Suburb B2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b22@example.com` | Suburb B2 Township | Residential, Agriculture only |
+
+#### Viewers (Read-Only Access)
+| Role | Email | Access Level |
+|------|--------|--------------|
+| **Viewer** | `viewer1@example.com` | Read-only access to all cities |
+| **Viewer** | `viewer2@example.com` | Read-only access to all cities |
+| **Viewer** | `viewer3@example.com` | Read-only access to all cities |
+| **Viewer** | `viewer4@example.com` | Read-only access to all cities |
+| **Viewer** | `viewer5@example.com` | Read-only access to all cities |
+
+**Note:** All cities are pre-populated with realistic building layouts and accurate Quality Index percentages that reflect actual resource balance (power, water, services, food production).
 
 ### 4. Modular Architecture
 - **Frontend:** Next.js + Styled-Components for modern, component-driven design  
