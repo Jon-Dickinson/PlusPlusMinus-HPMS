@@ -38,8 +38,6 @@ const ColWrapper = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  display: flex;
-  gap: 1rem;
   padding: 1rem;
   height: calc(100vh - 120px);
   overflow: hidden;
@@ -50,11 +48,6 @@ const LeftPanel = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  overflow-y: auto;
-`;
-
-const RightPanel = styled.div`
-  flex: 1;
   overflow-y: auto;
 `;
 
@@ -98,7 +91,6 @@ export default function UserList() {
 
   // Hierarchy-related state
   const [activeTab, setActiveTab] = useState<'users' | 'hierarchy'>('users');
-  const [selectedHierarchyNode, setSelectedHierarchyNode] = useState<HierarchyLevel | null>(null);
 
   // Use the hierarchy hook
   const { hierarchyTree, loading: hierarchyLoading, error: hierarchyError } = useHierarchy();
@@ -177,9 +169,7 @@ export default function UserList() {
     setDeleteTarget(null);
   };
 
-  const handleHierarchyNodeSelect = (node: HierarchyLevel) => {
-    setSelectedHierarchyNode(node);
-  };
+
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -198,8 +188,6 @@ export default function UserList() {
         return (
           <HierarchyTreeView
             tree={hierarchyTree}
-            onNodeSelect={handleHierarchyNodeSelect}
-            selectedNodeId={selectedHierarchyNode?.id}
           />
         );
       default:
@@ -240,27 +228,7 @@ export default function UserList() {
             </CityProvider>
           </LeftPanel>
 
-          {/* Right panel for additional hierarchy info */}
-          {showHierarchyTabs && selectedHierarchyNode && (
-            <RightPanel>
-              <div style={{ padding: '1rem', background: 'transparent', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff' }}>
-                <h3>Selected Level: {selectedHierarchyNode.name}</h3>
-                <p><strong>Level:</strong> {selectedHierarchyNode.level}</p>
-                {selectedHierarchyNode.users && selectedHierarchyNode.users.length > 0 && (
-                  <div>
-                    <h4>Users at this level:</h4>
-                    <ul>
-                      {selectedHierarchyNode.users.map(user => (
-                        <li key={user.id}>
-                          {user.firstName} {user.lastName} ({user.role})
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </RightPanel>
-          )}
+
         </ContentWrapper>
       </ColWrapper>
 
