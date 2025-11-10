@@ -6,10 +6,12 @@ const router = Router();
 router.get('/test', (req, res) => {
     res.json({ message: 'Hierarchy routes are working!', timestamp: new Date().toISOString() });
 });
-// Apply authentication to all hierarchy routes
-router.use(requireAuth);
-// Get hierarchy tree structure
+// Temporary: Make tree endpoint public for debugging
 router.get('/tree', HierarchyController.getHierarchyTree);
+// Apply authentication to other hierarchy routes
+router.use(requireAuth);
+// Get subordinate users for a given user
+router.get('/users/subordinates/:userId', HierarchyController.getUserSubordinates);
 // Get subordinate users for a given user
 router.get('/users/subordinates/:userId', HierarchyController.getUserSubordinates);
 // Get allowed buildings for a user

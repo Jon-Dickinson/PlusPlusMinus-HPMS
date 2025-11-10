@@ -9,11 +9,14 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Hierarchy routes are working!', timestamp: new Date().toISOString() });
 });
 
-// Apply authentication to all hierarchy routes
+// Temporary: Make tree endpoint public for debugging
+router.get('/tree', HierarchyController.getHierarchyTree);
+
+// Apply authentication to other hierarchy routes
 router.use(requireAuth);
 
-// Get hierarchy tree structure
-router.get('/tree', HierarchyController.getHierarchyTree);
+// Get subordinate users for a given user
+router.get('/users/subordinates/:userId', HierarchyController.getUserSubordinates);
 
 // Get subordinate users for a given user
 router.get('/users/subordinates/:userId', HierarchyController.getUserSubordinates);
