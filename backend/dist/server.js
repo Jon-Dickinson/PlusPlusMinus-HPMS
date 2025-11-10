@@ -10,6 +10,7 @@ import cityRoutes from "./routes/city.route.js";
 import noteRoutes from "./routes/note.route.js";
 import buildingRoutes from "./routes/building.route.js";
 import docsRoutes from "./routes/docs.route.js";
+import hierarchyRoutes from "./routes/hierarchy.routes.js";
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -23,6 +24,7 @@ app.use('/api/cities', cityRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/buildings', buildingRoutes);
 app.use('/api/docs', docsRoutes);
+app.use('/api/hierarchy', hierarchyRoutes);
 // global error handler
 app.use(errorHandler);
 export default app;

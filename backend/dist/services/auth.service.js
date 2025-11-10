@@ -18,6 +18,7 @@ export async function register(data) {
             email: data.email,
             password: hashed,
             role: data.role,
+            hierarchyId: undefined, // Set to undefined for backward compatibility
         },
     });
     // If registering a VIEWER and a mayorId was supplied, attempt to link the viewer to that mayor.
@@ -60,6 +61,7 @@ export async function login({ username, email, password }) {
         where,
         include: {
             city: true,
+            hierarchy: true,
             notes: {
                 orderBy: {
                     createdAt: 'desc',

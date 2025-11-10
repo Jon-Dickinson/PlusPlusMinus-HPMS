@@ -93,9 +93,26 @@ export async function getCityData(cityId) {
     if (!city)
         throw new Error('City not found');
     const latestNote = await prisma.note.findFirst({ where: { userId: city.mayorId }, orderBy: { createdAt: 'desc' } });
+    // Parse JSON strings from database
+    let gridState = [];
+    let buildingLog = [];
+    try {
+        gridState = city.gridState && typeof city.gridState === 'string' ? JSON.parse(city.gridState) : [];
+    }
+    catch (e) {
+        console.error('Failed to parse gridState JSON:', e);
+        gridState = [];
+    }
+    try {
+        buildingLog = city.buildingLog && typeof city.buildingLog === 'string' ? JSON.parse(city.buildingLog) : [];
+    }
+    catch (e) {
+        console.error('Failed to parse buildingLog JSON:', e);
+        buildingLog = [];
+    }
     return {
-        gridState: city.gridState,
-        buildingLog: city.buildingLog,
+        gridState,
+        buildingLog,
         note: latestNote?.content || '',
     };
 }

@@ -4,6 +4,11 @@ import { requireAuth } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
+// Test endpoint without auth to verify deployment
+router.get('/test', (req, res) => {
+  res.json({ message: 'Hierarchy routes are working!', timestamp: new Date().toISOString() });
+});
+
 // Apply authentication to all hierarchy routes
 router.use(requireAuth);
 
