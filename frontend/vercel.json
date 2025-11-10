@@ -4,6 +4,7 @@
   "framework": "nextjs",
   "installCommand": "npm install",
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "NEXT_PUBLIC_API_URL": "https://passionate-contentment-production.up.railway.app"
   }
 }
