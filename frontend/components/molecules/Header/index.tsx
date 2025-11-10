@@ -2,6 +2,13 @@ import React from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useRouter } from 'next/router';
 import { Root, Info, Heading, Icon, Left } from './styles';
+import { 
+  RoleBadgeContainer, 
+  RoleBadge, 
+  StatusIndicator, 
+  StatusDot, 
+  getStatusDotCount 
+} from '../--shared-styles';
 
 export default function Header() {
   const { user } = useAuth();
@@ -27,7 +34,18 @@ export default function Header() {
                 ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
                 : user.username || user.email || 'User'}
             </Heading>
-            <Heading>{user.role || 'USER'}</Heading>
+            <RoleBadgeContainer>
+              <RoleBadge role={user.role || 'USER'}>
+                {(user.role || 'USER').toLowerCase()}
+              </RoleBadge>
+              {user.role === 'MAYOR' && user.hierarchy?.level && (
+                <StatusIndicator>
+                  {Array.from({ length: getStatusDotCount(user.hierarchy.level) }, (_, index) => (
+                    <StatusDot key={index} />
+                  ))}
+                </StatusIndicator>
+              )}
+            </RoleBadgeContainer>
             <Icon src="/user.svg" alt="User" />
           </>
         ) : (

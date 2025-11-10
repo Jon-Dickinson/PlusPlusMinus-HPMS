@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { HierarchyUser } from '../../../types/hierarchy';
+import { RoleBadge } from '../../molecules/--shared-styles';
 
 interface SubordinateUsersProps {
   subordinates: HierarchyUser[];
@@ -55,20 +56,11 @@ const UserName = styled.div`
   font-size: 1rem;
 `;
 
-const UserRole = styled.span<{ role: string }>`
-  display: inline-block;
+// Using shared RoleBadge with slight styling override for font size
+const UserRole = styled(RoleBadge)`
   font-size: 0.75rem;
   padding: 3px 8px;
   border-radius: 12px;
-  color: white;
-  background: ${props => {
-    switch (props.role) {
-      case 'ADMIN': return '#f44336';
-      case 'MAYOR': return '#2196f3';
-      case 'VIEWER': return '#4caf50';
-      default: return '#757575';
-    }
-  }};
 `;
 
 const UserDetails = styled.div`

@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { HierarchyLevel, BasicUser } from '../../../types/hierarchy';
+import { 
+  UserRole, 
+  UserRoleContainer, 
+  StatusIndicator, 
+  StatusDot, 
+  getStatusDotCount 
+} from '../../molecules/--shared-styles';
 
 interface HierarchyTreeProps {
   tree: HierarchyLevel[];
@@ -84,43 +91,7 @@ const UserItem = styled.div`
   color: #ffffff;
 `;
 
-const UserRole = styled.span<{ role: string }>`
-  display: inline-block;
-  font-size: 11px;
-  padding: 2px 9px;
-  border-radius: 10px;
-  margin-left: 8px;
-  color: #ffffff;
-  font-weight: 500;
-  background: ${props => {
-    switch (props.role) {
-      case 'ADMIN': return '#FF2226';
-      case 'MAYOR': return '#0048FF';
-      case 'VIEWER': return '#28B216';
-      default: return '#757575';
-    }
-  }};
-`;
 
-const UserRoleContainer = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-const StatusIndicator = styled.div<{ count: number }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 4px;
-`;
-
-const StatusDot = styled.div`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #fae902ff;
-`;
 
 const ExpandButton = styled.button`
   background: none;
@@ -135,15 +106,7 @@ const ExpandButton = styled.button`
   }
 `;
 
-// Helper function to get the number of status dots based on hierarchy level
-const getStatusDotCount = (hierarchyLevel: number): number => {
-  switch (hierarchyLevel) {
-    case 1: return 3; // National - 3 dots
-    case 2: return 2; // City - 2 dots  
-    case 3: return 1; // Suburb - 1 dot
-    default: return 0;
-  }
-};
+
 
 const HierarchyNode: React.FC<HierarchyNodeProps> = ({ 
   node, 
@@ -192,7 +155,7 @@ const HierarchyNode: React.FC<HierarchyNodeProps> = ({
                 <UserRoleContainer>
                   <UserRole role={user.role}>{user.role.toLowerCase()}</UserRole>
                   {user.role === 'MAYOR' && (
-                    <StatusIndicator count={getStatusDotCount(node.level)}>
+                    <StatusIndicator>
                       {Array.from({ length: getStatusDotCount(node.level) }, (_, index) => (
                         <StatusDot key={index} />
                       ))}
