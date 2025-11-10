@@ -3,21 +3,54 @@ import { MapPin, User, Trash2 } from 'lucide-react';
 import { fetchMayor, Mayor } from './api';
 import { Card, Left, Meta, Muted, Center, QualityIndex, DeleteButton, Properties } from './styles';
 
+interface MayorData {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  role: string;
+  mayorId?: number;
+  hierarchyId?: number;
+  hierarchy?: {
+    id: number;
+    name: string;
+    level: number;
+  };
+  city?: {
+    name: string;
+    country: string;
+    qualityIndex?: number;
+  };
+}
+
 export interface MayorCardProps {
   id: number | string;
+  mayorData?: MayorData;
   onClick?: (id: number | string) => void;
   onDelete?: (id: number | string) => void;
 }
 
-export default function MayorCard({ id, onClick, onDelete }: MayorCardProps) {
+export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCardProps) {
   const [mayor, setMayor] = useState<Mayor | null>(null);
 
   useEffect(() => {
+    // If mayorData is provided, use it directly and skip API call
+    if (mayorData) {
+      setMayor({
+        id: mayorData.id,
+        firstName: mayorData.firstName,
+        lastName: mayorData.lastName,
+        city: mayorData.city
+      });
+      return;
+    }
+
+    // Fallback to API call if no mayorData provided
     let mounted = true;
     fetchMayor(id)
-      .then((mayorData) => {
+      .then((mayorDataFromApi) => {
         if (!mounted) return;
-        setMayor(mayorData);
+        setMayor(mayorDataFromApi);
       })
       .catch(() => {
         if (!mounted) return;
@@ -27,7 +60,7 @@ export default function MayorCard({ id, onClick, onDelete }: MayorCardProps) {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [id, mayorData]);
 
   const handleClick = () => onClick && onClick(id);
 

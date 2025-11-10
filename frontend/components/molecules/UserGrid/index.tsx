@@ -19,6 +19,17 @@ interface User {
   username: string;
   role: string;
   mayorId?: number;
+  hierarchyId?: number;
+  hierarchy?: {
+    id: number;
+    name: string;
+    level: number;
+  };
+  city?: {
+    name: string;
+    country: string;
+    qualityIndex?: number;
+  };
 }
 
 interface UserGridProps {
@@ -65,6 +76,7 @@ export default function UserGrid({
               <React.Fragment key={mayor.id}>
                 <MayorCard
                   id={mayor.id}
+                  mayorData={mayor}
                   onClick={(id: number | string) => {
                     if (canNavigateAdmin) {
                       onMayorClick(id);

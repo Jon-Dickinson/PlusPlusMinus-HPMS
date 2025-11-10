@@ -60,10 +60,11 @@ const NodeTitle = styled.span`
 `;
 
 const NodeLevel = styled.span`
-  font-size: 0.8rem;
+  font-size: 13px;
+  font-weight: 600;
   color: #111d3a;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 2px 6px;
+  background: rgba(255, 255, 255, 1);
+  padding: 1px 9px;
   border-radius: 12px;
 `;
 
@@ -74,31 +75,51 @@ const UserCount = styled.span`
 
 const UserList = styled.div`
   margin-top: 8px;
-  padding-left: 16px;
+  padding-left: 30px;
 `;
 
 const UserItem = styled.div`
   padding: 4px 0;
-  font-size: 0.9rem;
+  font-size: 14px;
   color: #ffffff;
 `;
 
 const UserRole = styled.span<{ role: string }>`
   display: inline-block;
-  font-size: 12px;
-  padding: 2px 6px;
+  font-size: 11px;
+  padding: 2px 9px;
   border-radius: 10px;
   margin-left: 8px;
-  color: #111d3a;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 500;
   background: ${props => {
     switch (props.role) {
-      case 'ADMIN': return '#f44336';
-      case 'MAYOR': return '#2196f3';
-      case 'VIEWER': return '#4caf50';
+      case 'ADMIN': return '#FF2226';
+      case 'MAYOR': return '#0048FF';
+      case 'VIEWER': return '#28B216';
       default: return '#757575';
     }
   }};
+`;
+
+const UserRoleContainer = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const StatusIndicator = styled.div<{ count: number }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+`;
+
+const StatusDot = styled.div`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #fae902ff;
 `;
 
 const ExpandButton = styled.button`
@@ -113,6 +134,16 @@ const ExpandButton = styled.button`
     color: #2196f3;
   }
 `;
+
+// Helper function to get the number of status dots based on hierarchy level
+const getStatusDotCount = (hierarchyLevel: number): number => {
+  switch (hierarchyLevel) {
+    case 1: return 3; // National - 3 dots
+    case 2: return 2; // City - 2 dots  
+    case 3: return 1; // Suburb - 1 dot
+    default: return 0;
+  }
+};
 
 const HierarchyNode: React.FC<HierarchyNodeProps> = ({ 
   node, 
@@ -158,7 +189,16 @@ const HierarchyNode: React.FC<HierarchyNodeProps> = ({
             {node.users!.map((user: BasicUser) => (
               <UserItem key={user.id}>
                 {user.firstName} {user.lastName} ({user.username})
-                <UserRole role={user.role}>{user.role}</UserRole>
+                <UserRoleContainer>
+                  <UserRole role={user.role}>{user.role}</UserRole>
+                  {user.role === 'MAYOR' && (
+                    <StatusIndicator count={getStatusDotCount(node.level)}>
+                      {Array.from({ length: getStatusDotCount(node.level) }, (_, index) => (
+                        <StatusDot key={index} />
+                      ))}
+                    </StatusIndicator>
+                  )}
+                </UserRoleContainer>
               </UserItem>
             ))}
           </UserList>
