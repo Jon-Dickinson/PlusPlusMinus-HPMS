@@ -77,7 +77,10 @@ export class UserSeeder {
   private async createAdmin(passwordHash: string, hierarchyId: number) {
     return await this.prisma.user.upsert({
       where: { username: 'admin' },
-      update: {},
+      update: {
+        hierarchyId: hierarchyId,
+        role: 'ADMIN'
+      },
       create: {
         firstName: 'Alice',
         lastName: 'Admin',
@@ -93,7 +96,10 @@ export class UserSeeder {
   private async createNationalMayor(index: number, passwordHash: string, hierarchyId: number) {
     return await this.prisma.user.upsert({
       where: { username: `national_mayor${index}` },
-      update: {},
+      update: {
+        hierarchyId: hierarchyId,
+        role: 'MAYOR'
+      },
       create: {
         firstName: `National${index}`,
         lastName: 'Mayor',
@@ -110,7 +116,10 @@ export class UserSeeder {
     const cityLetter = String.fromCharCode(65 + cityIndex); // A, B, C...
     return await this.prisma.user.upsert({
       where: { username: `city${cityLetter}_mayor${mayorIndex}` },
-      update: {},
+      update: {
+        hierarchyId: hierarchyId,
+        role: 'MAYOR'
+      },
       create: {
         firstName: `City${cityLetter}${mayorIndex}`,
         lastName: 'Mayor',
@@ -129,7 +138,10 @@ export class UserSeeder {
     
     return await this.prisma.user.upsert({
       where: { username },
-      update: {},
+      update: {
+        hierarchyId: hierarchyId,
+        role: 'MAYOR'
+      },
       create: {
         firstName: `${suburb.name}${mayorIndex}`,
         lastName: 'Mayor',
@@ -145,7 +157,10 @@ export class UserSeeder {
   private async createViewer(index: number, passwordHash: string, hierarchyId: number) {
     return await this.prisma.user.upsert({
       where: { username: `viewer${index}` },
-      update: {},
+      update: {
+        hierarchyId: hierarchyId,
+        role: 'VIEWER'
+      },
       create: {
         firstName: `Viewer${index}`,
         lastName: 'User',

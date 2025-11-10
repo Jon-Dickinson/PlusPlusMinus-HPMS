@@ -6,7 +6,37 @@ export async function getHierarchyTree() {
                 include: {
                     children: {
                         include: {
-                            children: true
+                            children: {
+                                include: {
+                                    users: {
+                                        select: {
+                                            id: true,
+                                            firstName: true,
+                                            lastName: true,
+                                            username: true,
+                                            role: true
+                                        }
+                                    }
+                                }
+                            },
+                            users: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true,
+                                    username: true,
+                                    role: true
+                                }
+                            }
+                        }
+                    },
+                    users: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            username: true,
+                            role: true
                         }
                     }
                 }
