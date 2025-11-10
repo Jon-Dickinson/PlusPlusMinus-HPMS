@@ -28,3 +28,7 @@ restartPolicyMaxRetries = 10
 NODE_ENV = "production"
 PORT = "4000"
 JWT_SECRET = "X31hS0hWclh5Y25VUWptQjJxd3pwNlV4Z1QzZlgyc1c3c2hYc0tMdFdQcG5oR0Q3R3d5M0E0Yg=="
+DATABASE_URL = "postgresql://neondb_owner:npg_tBWDYklvF93i@ep-floral-base-abz6128n-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require"
+NEXT_PUBLIC_STACK_PROJECT_ID = "35d6e253-aece-470e-b442-836df94e9d08"
+NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY = "pck_k96endr1pzmbadqddbmr4vr167msykvsp1wk7hbc6p3sr"
+STACK_SECRET_SERVER_KEY = "ssk_0svmame5c9e4dtda8t7s98s2eb5czs14ybrs5f55m7bag"
