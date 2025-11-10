@@ -13,17 +13,15 @@
 /// <reference types="node" />
 import { PrismaClient } from '@prisma/client';
 import { HierarchySeeder } from './seeders/hierarchy.seeder.js';
-import { UserSeeder } from './seeders/user.seeder.js';
-import { CitySeeder } from './seeders/city.seeder.js';
-import { BuildingSeeder } from './seeders/building.seeder.js';
+import { UserSeeder } from './seeders/user-assets/user.seeder.js';
+import { CitySeeder } from './seeders/city-assets/city.seeder.js';
+import { BuildingSeeder } from './seeders/city-assets/building.seeder.js';
 import { SummaryReporter } from './seeders/summary.reporter.js';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Starting comprehensive database seed...');
-  console.log('This will create a complete hierarchical permission system');
-  console.log('');
+  console.log('Starting database seed...');
 
   try {
     // Initialize all seeders
@@ -65,15 +63,6 @@ async function main() {
     console.log('\n' + '='.repeat(60));
     console.log('SEED PROCESS COMPLETED SUCCESSFULLY');
     console.log('='.repeat(60));
-    console.log('Your database now contains:');
-    console.log('- Complete hierarchical structure (National > City > Suburb)');
-    console.log('- 20 user accounts with appropriate permissions');
-    console.log('- Realistic city assignments for all mayors');
-    console.log('- Building permission matrix based on hierarchy level');
-    console.log('- Ready-to-use test accounts for all user types');
-    console.log('');
-    console.log('You can now start the application and test with any of the');
-    console.log('user accounts listed in the summary above.');
 
   } catch (error) {
     console.error('Seed process failed:', error);
