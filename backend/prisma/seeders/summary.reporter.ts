@@ -141,7 +141,7 @@ export class SummaryReporter {
       {
         role: 'Suburb Mayor',
         username: 'suburb_a1_mayor1',
-        email: 'suburb_a11@example.com',
+        email: 'suburb_a1_mayor1@example.com',
         hierarchyLevel: 'Suburb A1',
         access: 'Residential, Agriculture only'
       },

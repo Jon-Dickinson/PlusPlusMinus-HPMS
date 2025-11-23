@@ -88,7 +88,7 @@ interface CityGridResult {
 }
 
 export class CityGridGenerator {
-  private readonly GRID_SIZE = 86; // Match frontend: 36 + 50 total cells
+  private readonly GRID_SIZE = 100; // default grid size (match frontend)
   
   /**
    * Generate a populated city grid based on hierarchy level

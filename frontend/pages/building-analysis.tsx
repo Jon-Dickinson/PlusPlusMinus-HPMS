@@ -72,7 +72,7 @@ const ResourceColumn = styled.div`
 
 
 const MainGridArea = styled.div`
-  margin-top: 72px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   width: 100%;

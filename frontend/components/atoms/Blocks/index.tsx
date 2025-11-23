@@ -1,1 +1,1 @@
-export { Row } from './styles';
+export { Row, Column } from './styles';

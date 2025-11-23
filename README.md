@@ -84,14 +84,14 @@ The system models city capability, resource distribution, and administrative ove
 #### Suburb Level Mayors (2 Building Types)
 | Role | Email | City Assignment | Building Access |
 |------|--------|-----------------|-----------------|
-| **Suburb Mayor** | `suburb_a11@example.com` | Suburb A1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_a12@example.com` | Suburb A1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_a21@example.com` | Suburb A2 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_a22@example.com` | Suburb A2 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b11@example.com` | Suburb B1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b12@example.com` | Suburb B1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b21@example.com` | Suburb B2 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b22@example.com` | Suburb B2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_a1_mayor1@example.com` | Suburb A1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_a1_mayor2@example.com` | Suburb A1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_a2_mayor1@example.com` | Suburb A2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_a2_mayor2@example.com` | Suburb A2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b1_mayor1@example.com` | Suburb B1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b1_mayor2@example.com` | Suburb B1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b2_mayor1@example.com` | Suburb B2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_b2_mayor2@example.com` | Suburb B2 Township | Residential, Agriculture only |
 
 #### Viewers (Read-Only Access)
 | Role | Email | Access Level |

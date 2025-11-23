@@ -4,7 +4,7 @@ import { computeTotalsFromGrid } from './utils';
 import buildings from '../../../data/buildings.json';
 
 export function useGridOperations(canEdit: boolean) {
-  const INITIAL_CELLS = 36 + 50; // 86 total
+  const INITIAL_CELLS = 100; // default grid size
 
   const [grid, setGrid] = useState<number[][]>(() =>
     Array.from({ length: INITIAL_CELLS }, () => [])
@@ -88,6 +88,31 @@ export function useGridOperations(canEdit: boolean) {
     return moved;
   }, [canEdit]);
 
+  const removeBuildingFromCell = useCallback((sourceIndex: number, buildingId: number): boolean => {
+    if (!canEdit) return false;
+    let removed = false;
+    setGrid((prev: number[][]) => {
+      const next = prev.map((cell) => [...cell]);
+      const srcCell = next[sourceIndex] || [];
+
+      // find last instance index of buildingId
+      const srcPos = srcCell.lastIndexOf(buildingId);
+      if (srcPos === -1) return prev; // nothing to remove
+
+      srcCell.splice(srcPos, 1);
+      next[sourceIndex] = srcCell;
+      removed = true;
+
+      if (removed) {
+        setTotals(computeTotalsFromGrid(next));
+      }
+
+      return next;
+    });
+
+    return removed;
+  }, [canEdit]);
+
   const clearBuildingLog = useCallback(() => {
     setBuildingLog([]);
   }, []);
@@ -104,6 +129,7 @@ export function useGridOperations(canEdit: boolean) {
     buildingLog,
     addBuildingToCell,
     moveBuilding,
+    removeBuildingFromCell,
     clearBuildingLog,
     initializeGrid,
   };

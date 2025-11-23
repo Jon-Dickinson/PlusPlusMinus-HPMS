@@ -29,12 +29,12 @@ export default function GridCell({
     accept: ['BUILDING', 'MOVE_BUILDING'],
     canDrop: () => canEdit,
     drop: (item: any) => {
-      // item from move has sourceIndex
+      
       if (typeof item?.sourceIndex === 'number') {
         const ok = moveBuilding(item.sourceIndex, index, item.id);
         if (ok) {
           setIsBouncing(true);
-          setTimeout(() => setIsBouncing(false), 360); // Match animation duration
+          setTimeout(() => setIsBouncing(false), 360);
         }
         return;
       }
@@ -42,7 +42,7 @@ export default function GridCell({
       const ok = addBuilding(index, item.id);
       if (ok) {
         setIsBouncing(true);
-        setTimeout(() => setIsBouncing(false), 360); // Match animation duration
+        setTimeout(() => setIsBouncing(false), 360);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('city:update'));
         }
@@ -59,7 +59,7 @@ export default function GridCell({
       {cellBuildings && cellBuildings.length > 0
         ? cellBuildings.map((id: number, idx: number) => {
             const building = buildingsLookup(id);
-            const size = 50;
+            const size = 48;
             const offset = idx * 14;
             return (
               <BuildingItem

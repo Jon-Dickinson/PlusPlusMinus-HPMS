@@ -9,8 +9,8 @@ const Root = styled.div`
   position: relative;
   display: inline-flex;
   flex-direction: column;
-  width: calc(100% - 1px);
-  height: 100%;
+  width: 100%;
+  height: 100vh;
   overflow: hidden;
 `;
 

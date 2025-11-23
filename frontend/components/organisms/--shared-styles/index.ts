@@ -13,7 +13,7 @@ import styled from 'styled-components';
  */
 
 export const MainGridArea = styled.div`
-  margin-top: 72px;
+  
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -22,19 +22,21 @@ export const MainGridArea = styled.div`
 export const GridHeader = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding-left: 10px;
+  align-items: space-between;
+  padding-left: 20px;
+  width: 100%;
+  margin-bottom: 10px;
 
   h2 {
-    font-size: 12px;
     margin: 0;
+    font-size: 14px;
     color: #ffffff;
-    font-weight: 400;
+    font-weight: 500;
   }
 
   h3 {
-    margin: 0;
-    font-size: 18px;
+     margin: 10px 0;
+    font-size: 14px;
     color: #ffffff;
     font-weight: 500;
   }

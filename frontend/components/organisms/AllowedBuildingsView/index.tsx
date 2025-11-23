@@ -1,4 +1,5 @@
 import React from 'react';
+import { LoadingSpinner } from '../../atoms/Spinner';
 import styled from 'styled-components';
 import { AllowedBuildingCategory, BuildingDetails } from '../../../types/hierarchy';
 
@@ -107,7 +108,10 @@ const EmptyState = styled.div`
 `;
 
 const LoadingState = styled.div`
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
   padding: 2rem;
   color: #ffffff;
 `;
@@ -121,7 +125,9 @@ const AllowedBuildingsView: React.FC<AllowedBuildingsProps> = ({
   if (isLoading) {
     return (
       <Container>
-        <LoadingState>Loading available buildings...</LoadingState>
+        <LoadingState>
+          <LoadingSpinner size={20} aria-hidden role="presentation" />
+        </LoadingState>
       </Container>
     );
   }

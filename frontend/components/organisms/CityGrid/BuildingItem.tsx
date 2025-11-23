@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDrag } from 'react-dnd';
+import useBuildingDrag from './useBuildingDrag';
 import { useCity } from '../CityContext';
 import { BuildingItemContainer, BuildingImage, PlaceholderDiv } from './styles';
 
@@ -20,16 +20,8 @@ export default function BuildingItem({
   size,
   offset,
 }: BuildingItemProps) {
-  const { canEdit } = useCity();
-  const [{ isDragging }, drag] = useDrag(
-    () => ({
-      type: 'MOVE_BUILDING',
-      item: { id, sourceIndex: cellIndex, buildingIndex },
-      canDrag: () => canEdit,
-      collect: (monitor: any) => ({ isDragging: !!monitor.isDragging() }),
-    }),
-    [id, cellIndex, buildingIndex, canEdit],
-  );
+  const { canEdit, removeBuildingFromCell } = useCity();
+  const [{ isDragging }, drag] = useBuildingDrag({ id, cellIndex, buildingIndex, canEdit, removeBuildingFromCell });
 
   return (
     <BuildingItemContainer ref={drag} offset={offset} buildingIndex={buildingIndex} isDragging={isDragging}>

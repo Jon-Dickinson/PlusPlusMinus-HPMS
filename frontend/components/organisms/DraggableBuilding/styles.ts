@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 
-export const DragHandle = styled.div`
+export const DragHandle = styled.div<{ isDragging?: boolean }>`
   width: 60px;
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: grab;
+  cursor: ${({ isDragging }) => (isDragging ? 'grabbing' : 'grab')};
 `;
 
 export const BuildingImage = styled.img`

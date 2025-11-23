@@ -2,13 +2,12 @@ import styled from 'styled-components';
 
 export const LeftColumn = styled.div`
   position: relative;
-  padding-top: calc((100vh / 9) - 40px);
+  padding-top: 20px;
   height: 100%;
   display: flex;
   width: 100%;
   max-width: 110px;
-  padding-right: 10px;
-  gap: 5px;
+  gap: 0;
   align-items: center;
   flex-direction: column;
 `;
@@ -18,6 +17,6 @@ export const IconContainer = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  height: calc((100vh / 9) - 30px);
+  height: 60px;
   min-height: 60px;
 `;

@@ -6,6 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { isAdmin, isMayor } from '../../../utils/roles';
 import Authorized from '../../atoms/Authorized';
 import { Sidebar, NavIcons, Logo, Icon, ExitButton } from './styles';
+import NotesModal from '../NotesModal';
 
 export default function GlobalNav() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function GlobalNav() {
     logout();
     router.push('/');
   };
+
+  const [showNotesModal, setShowNotesModal] = React.useState(false);
 
   return (
     <Sidebar>
@@ -56,6 +59,21 @@ export default function GlobalNav() {
         <Link href="/building-analysis" aria-label="Components">
           <Icon src="/component.svg" alt="Component" active={isActive('/building-analysis')} />
         </Link>
+
+        <Authorized predicate={(user) => isMayor(user.role)}>
+          <button
+            aria-label="Notes"
+            onClick={() => setShowNotesModal(true)}
+            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+            title="Notes"
+          >
+            <Icon src="/notes.svg" alt="Notes" active={isActive('/notes')} />
+          </button>
+        </Authorized>
+        
+        {showNotesModal && (
+          <NotesModal isOpen={showNotesModal} onClose={() => setShowNotesModal(false)} />
+        )}
       
       </NavIcons>
       <ExitButton onClick={handleLogout}>

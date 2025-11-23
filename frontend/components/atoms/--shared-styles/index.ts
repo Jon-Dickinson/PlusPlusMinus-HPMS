@@ -13,15 +13,20 @@ import styled from 'styled-components';
  */
 
 export const SaveButton = styled.button`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
   background-color: #4caf50;
   color: white;
-  padding: 10px 15px;
+  padding: 8px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px;
-  margin-top: 1rem;
-
+  font-size: 14px;
+  font-family: Poppins, sans-serif;
+  max-width: 100px;
   &:hover {
     background-color: #45a049;
   }

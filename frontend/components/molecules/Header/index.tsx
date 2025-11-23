@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useRouter } from 'next/router';
 import { Root, Info, Heading, Icon, Left } from './styles';
+import Authorized from '../../atoms/Authorized';
+import { SaveButton } from '../../atoms/--shared-styles';
+import { useCity } from '../../organisms/CityContext';
+import axios from '../../../lib/axios';
+import Toast from '../../atoms/Toast';
 import { 
   RoleBadgeContainer, 
   RoleBadge, 
@@ -9,10 +14,21 @@ import {
   StatusDot, 
   getStatusDotCount 
 } from '../--shared-styles';
+import { Row, Column } from '../../atoms/Blocks';
 
 export default function Header() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const router = useRouter();
+  // Header may be used on pages that don't include a CityProvider (e.g., user-list),
+  // so call useCity safely and treat absence of provider as null.
+  let cityContext: any = null;
+  try {
+    cityContext = useCity();
+  } catch (err) {
+    cityContext = null;
+  }
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showToast, setShowToast] = useState(false);
 
   const titleForPath = (path: string) => {
     if (path.startsWith('/user-list')) return 'User List';
@@ -26,9 +42,61 @@ export default function Header() {
       <Left>
         <Heading>{heading}</Heading>
       </Left>
+        <Authorized allowed={['ADMIN', 'MAYOR']}>
+          {user?.city && cityContext && (
+            <SaveButton onClick={async () => {
+              if (!user || !user.city) return;
+              try {
+                // gather state
+                const { grid, buildingLog, getTotals } = cityContext as any;
+                const totals = getTotals ? getTotals() : { qualityIndex: 0 };
+                const payload = {
+                  gridState: grid,
+                  buildingLog: buildingLog,
+                  note: (user.notes && user.notes[0] && user.notes[0].content) || '',
+                  qualityIndex: totals.qualityIndex,
+                };
+
+                const response = await axios.instance.put(`/cities/${user.city.id}/data`, payload);
+                setMessage({ type: 'success', text: 'City data saved successfully!' });
+                setShowToast(true);
+
+                // update stored user and initialize grid in-place if the server returned the saved city
+                try {
+                  const updatedCity = response.data;
+                  if (updatedCity && setUser) {
+                    const newUser = { ...user, city: updatedCity } as any;
+                    setUser(newUser);
+
+                    // attempt to re-init grid
+                    try {
+                      const gridStateRaw = updatedCity.gridState;
+                      let gridArray: any[] = [];
+                      if (gridStateRaw) {
+                        if (typeof gridStateRaw === 'string') {
+                          try { gridArray = JSON.parse(gridStateRaw); } catch (e) { gridArray = []; }
+                        } else if (Array.isArray(gridStateRaw)) {
+                          gridArray = gridStateRaw;
+                        }
+                      }
+                      const buildingLog = updatedCity.buildingLog && Array.isArray(updatedCity.buildingLog) ? updatedCity.buildingLog : [];
+                      if (gridArray && gridArray.length && cityContext && cityContext.initializeGrid) {
+                        cityContext.initializeGrid(gridArray, buildingLog);
+                      }
+                    } catch (e) { /* ignore */ }
+                  }
+                } catch (e) { /* ignore */ }
+              } catch (err) {
+                setMessage({ type: 'error', text: 'Failed to save city data.' });
+                setShowToast(true);
+              }
+            }}>Save</SaveButton>
+          )}
+        </Authorized>
       <Info>
+      <Column>
         {user ? (
-          <>
+          <Row justify="end" align="center">
             <Heading>
               {user.firstName || user.lastName
                 ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
@@ -47,10 +115,18 @@ export default function Header() {
               )}
             </RoleBadgeContainer>
             <Icon src="/user.svg" alt="User" />
-          </>
+          </Row>
         ) : (
-          <div>Guest</div>
+          <div> </div>
         )}
+      </Column>
+       <Column>
+      
+       </Column>
+       {showToast && message && (
+         <Toast message={message.text} type={message.type} onClose={() => { setShowToast(false); setMessage(null);} } />
+       )}
+
       </Info>
     </Root>
   );

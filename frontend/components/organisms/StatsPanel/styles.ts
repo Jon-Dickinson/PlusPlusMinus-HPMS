@@ -10,22 +10,13 @@ export const Panel = styled.section`
 `;
 
 export const Card = styled.div<{ warn?: boolean }>`
-  height: calc((100vh - 160px) / 6);
-  min-height: 90px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 15px 18px;
-  margin: 5px 0;
+  margin: 0;
   width: 100%;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background-color: #192748;
-
-  :hover {
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-  }
 
   ${({ warn }) =>
     warn &&
@@ -38,15 +29,12 @@ export const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 `;
 
 export const IconWrapper = styled.div<{ color?: string }>`
-  color: ${({ color }) => color || '#000'};
-  svg {
+  img {
     width: 28px;
     height: 28px;
-    stroke-width: 2;
   }
 `;
 
@@ -61,12 +49,26 @@ export const StatsRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: #ffffff;
+  width: 100%;
+
+  span {
+    width: auto;
+  }
+
+  span:nth-child(1n) {
+    margin-left: 15px;
+  }
+
+  span:nth-child(2n) {
+    text-align: right;
+    margin-right: 5px;
+  }
 `;
 
-export const Stat = styled.span<{ color?: string; outlined?: boolean; outlineColor?: string }>`
+export const Stat = styled.span<{ color?: string; outlined?: boolean; outlineColor?: string; rightAlign?: boolean }>`
   color: ${({ color }) => color || '#ffffff'};
   ${({ outlined, outlineColor }) =>
     outlined &&
@@ -75,4 +77,4 @@ export const Stat = styled.span<{ color?: string; outlined?: boolean; outlineCol
       border-radius: 8px;
       padding: 2px 6px;
     `}
-`;
+    `;

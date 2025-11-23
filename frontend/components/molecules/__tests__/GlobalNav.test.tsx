@@ -25,6 +25,11 @@ vi.mock('../../../utils/roles', () => ({
   isMayor: vi.fn((role) => role === 'MAYOR'),
 }));
 
+// Mock axios used by NotesModal so tests do not hit network
+const mockAxiosGet = vi.fn().mockResolvedValue({ data: [] });
+const mockAxiosPut = vi.fn().mockResolvedValue({ data: {} });
+vi.mock('../../../lib/axios', () => ({ default: { instance: { get: (...args: any[]) => mockAxiosGet(...args), put: (...args: any[]) => mockAxiosPut(...args) }, setAuthToken: () => {} } }));
+
 import GlobalNav from '../GlobalNav';
 
 describe('GlobalNav', () => {
@@ -98,5 +103,37 @@ describe('GlobalNav', () => {
     renderWithProviders(<GlobalNav />);
     const componentIcon = screen.getByAltText('Component');
     expect(componentIcon).toHaveStyle('opacity: 1');
+  });
+
+  it('shows notes icon for mayors and opens the notes modal', async () => {
+    // mock a mayor user with id so NotesModal can fetch
+    mockUseAuth.mockReturnValue({ role: 'MAYOR', id: 7 });
+    mockUseRouter.mockReturnValue({ pathname: '/', asPath: '/' });
+
+    // configure axios mocks for this test
+    mockAxiosGet.mockReset();
+    mockAxiosPut.mockReset();
+    mockAxiosGet.mockResolvedValue({ data: [{ id: 11, content: 'my note' }] });
+    mockAxiosPut.mockResolvedValue({ data: { id: 11, content: 'updated' } });
+
+    renderWithProviders(<GlobalNav />);
+
+    // notes icon should be visible
+    const notesButton = screen.getByTitle('Notes');
+    expect(notesButton).toBeInTheDocument();
+
+    // clicking should open the modal and fetch notes
+    fireEvent.click(notesButton!);
+
+    const textarea = await screen.findByPlaceholderText('Enter your notes here...');
+    expect(textarea).toBeInTheDocument();
+    expect(mockAxiosGet).toHaveBeenCalledWith('/notes/7');
+  });
+
+  it('hides notes icon for non-mayor users', () => {
+    mockUseAuth.mockReturnValue({ role: 'ADMIN' });
+    mockUseRouter.mockReturnValue({ pathname: '/', asPath: '/' });
+    renderWithProviders(<GlobalNav />);
+    expect(screen.queryByTitle('Notes')).not.toBeInTheDocument();
   });
 });

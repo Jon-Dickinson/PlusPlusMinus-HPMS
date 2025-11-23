@@ -53,5 +53,7 @@ describe('Dashboard save flow and note population', () => {
     await waitFor(() => expect(mockPut).toHaveBeenCalled());
     const expectedUrl = '/cities/42/data';
     expect(mockPut).toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ note: 'initial note', gridState: cityValue.grid, buildingLog: cityValue.buildingLog }));
+    // toast should appear at top of screen
+    expect(await screen.findByText('City data saved successfully!')).toBeTruthy();
   });
 });

@@ -24,7 +24,6 @@ describe('Button', () => {
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
     expect(button).toHaveStyle('opacity: 0.6');
-    expect(button).toHaveStyle('cursor: not-allowed');
   });
 
   it('handles click events', () => {

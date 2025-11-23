@@ -4,7 +4,7 @@
   box-sizing: border-box !important;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700');
 
 html,
 body,
@@ -16,7 +16,7 @@ body,
 
 body {
   margin: 0;
-  font-family: 'Poppins', Roboto, sans-serif;
+  font-family: 'Poppins' !important;
   background-color: #111d3a;
   color: #000000;
   font-size: 14px;
@@ -26,6 +26,16 @@ a {
   text-decoration: none;
 }
 
+input,
+input::placeholder,
+input:-webkit-input-placeholder,
+input::-webkit-input-placeholder,
+input::-moz-placeholder,
+input:-moz-placeholder,
+input:-ms-input-placeholder {
+  font-family: 'Poppins', sans-serif !important;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -33,7 +43,16 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0px 1000px white inset;
   background-color: transparent !important;
   -webkit-text-fill-color: #000 !important;
+  font-family: 'Poppins', sans-serif !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+#placeholder {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+div[pseudo="-internal-input-suggested"] {
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .m-b-15 {
@@ -45,8 +64,16 @@ input:-webkit-autofill:active {
   margin-bottom: 10px;
 }
 
+.max-w-400 {
+  max-width: 400px !important;
+}
+
+.max-w-500 {
+  max-width: 500px !important;
+}
+
 .max-w-600 {
-  max-width: 600px;
+  max-width: 600px !important;
 }
 
 .flex-1 {
@@ -84,3 +111,4 @@ input:-webkit-autofill:active {
 .cursor-move {
   cursor: move;
 }
+

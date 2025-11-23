@@ -25,7 +25,7 @@ vi.mock('../../context/AuthContext', () => ({
 }));
 
 // Mock CityContext to provide grid and buildingLog
-const cityValue = { grid: { cells: [] }, buildingLog: [{ id: 1, action: 'b' }], getTotals: () => ({ qualityIndex: 100 }) };
+const cityValue = { grid: { cells: [] }, buildingLog: [{ id: 1, action: 'b' }], getTotals: () => ({ qualityIndex: 100 }), removeBuildingFromCell: () => {} };
 vi.mock('../../components/organisms/CityContext', () => ({
   CityProvider: ({ children }: any) => <div>{children}</div>,
   useCity: () => cityValue,
@@ -53,5 +53,7 @@ describe('Dashboard save flow and note population', () => {
     await waitFor(() => expect(mockPut).toHaveBeenCalled());
     const expectedUrl = '/cities/42/data';
     expect(mockPut).toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ note: 'initial note', gridState: cityValue.grid, buildingLog: cityValue.buildingLog }));
+    // toast should appear at top of screen
+    expect(await screen.findByText('City data saved successfully!')).toBeTruthy();
   });
 });

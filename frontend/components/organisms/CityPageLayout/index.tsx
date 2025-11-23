@@ -19,14 +19,14 @@ export default function CityPageLayout({
   return (
     <MainTemplate>
       <GlobalNav />
-      <ColWrapper>
-        <Header />
-        <RowWrapper>
-          <CityProvider initialCityData={initialCityData} canEdit={canEdit}>
+      <CityProvider initialCityData={initialCityData} canEdit={canEdit}>
+        <ColWrapper>
+          <Header />
+          <RowWrapper>
             {children}
-          </CityProvider>
-        </RowWrapper>
-      </ColWrapper>
+          </RowWrapper>
+        </ColWrapper>
+      </CityProvider>
     </MainTemplate>
   );
 }

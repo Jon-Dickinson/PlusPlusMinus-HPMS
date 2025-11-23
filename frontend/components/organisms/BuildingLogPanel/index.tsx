@@ -1,13 +1,13 @@
 import React from 'react';
 import { useCity } from '../CityContext';
-import { LogBoxHeading, LogBox } from './styles';
+import { LogBox } from './styles';
 
 export default function BuildingLogPanel() {
   const { buildingLog } = useCity();
 
   return (
     <>
-      <LogBoxHeading>Building Log</LogBoxHeading>
+      
       <LogBox>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {buildingLog && buildingLog.length > 0 ? (

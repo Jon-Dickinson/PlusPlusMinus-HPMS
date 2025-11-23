@@ -28,7 +28,7 @@ export const ResourceColumn = styled.div`
 `;
 
 export const MainGridArea = styled.div`
-  margin-top: 72px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   width: 100%;

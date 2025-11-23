@@ -3,24 +3,17 @@ import styled from 'styled-components';
 export const GridContainer = styled.div`
   display: inline-flex;
   flex-wrap: wrap;
-  padding: 8px;
-  max-width: 964px;
-  min-height: 420px;
+  padding: 0;
+  max-width: 960px;
 `;
 
 export const CellContainer = styled.div<{ isOver: boolean }>`
-  /* Use vmin so it scales with both width and height of the screen */
-  width: 6vmin;
-  height: 6vmin;
-
-  /* Optional min/max limits so it doesn’t get too big or too small */
-  min-width: 50px;
-  min-height: 50px;
-  max-width: 90px;
-  max-height: 90px;
-
-  margin: 2px;
-  border: ${({ isOver }) => (isOver ? '1px solid #b6b9c5ff' : '1px solid #414E79')};
+  min-width: 60px;
+  min-height: 60px;
+  max-width: 60px;
+  max-height: 60px;
+  margin: 0;
+  border: ${({ isOver }) => (isOver ? '1px solid #ffffff' : '1px solid #414E79')};
   background-color: transparent;
   position: relative;
   overflow: visible;
@@ -37,7 +30,7 @@ export const BuildingItemContainer = styled.div<{ offset: number; buildingIndex:
   left: 50%;
   transform: translateX(-50%);
   z-index: ${({ buildingIndex }) => buildingIndex + 1};
-  opacity: ${({ isDragging }) => (isDragging ? 0.1 : 1)};
+  opacity: ${({ isDragging }) => (isDragging ? 0.3 : 1)};
 `;
 
 export const BuildingImage = styled.img<{ size: number }>`
@@ -59,4 +52,12 @@ export const CountIndicator = styled.div`
   left: 4px;
   font-size: 12px;
   color: #374151;
+`;
+
+export const PlaceholderBox = styled.div`
+  min-width: 62px;
+  min-height: 62px;
+  margin: 0;
+  background: rgba(255,255,255,0.04);
+  border-radius: 4px;
 `;

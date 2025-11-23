@@ -7,7 +7,7 @@ import { describe, it, vi, expect } from 'vitest';
 vi.mock('../../templates/MainTemplate', () => ({ default: ({ children }: any) => <div>{children}</div> }));
 vi.mock('../../components/molecules/GlobalNav', () => ({ default: () => <div /> }));
 vi.mock('../../components/molecules/Header', () => ({ default: () => <div /> }));
-vi.mock('../../components/organisms/CityContext', () => ({ CityProvider: ({ children }: any) => <div>{children}</div>, useCity: () => ({ grid: {}, buildingLog: [] }) }));
+vi.mock('../../components/organisms/CityContext', () => ({ CityProvider: ({ children }: any) => <div>{children}</div>, useCity: () => ({ grid: {}, buildingLog: [], removeBuildingFromCell: () => {} }) }));
 vi.mock('../../components/organisms/CityGrid', () => ({ default: () => <div data-testid="city-map" /> }));
 vi.mock('../../components/organisms/BuidlingSidebar/BuildingSidebar', () => ({ default: () => <div /> }));
 vi.mock('../../components/organisms/StatsPanel', () => ({ default: () => <div /> }));

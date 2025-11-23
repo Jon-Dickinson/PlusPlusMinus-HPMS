@@ -129,6 +129,12 @@ export async function updateCityData(req: Request, res: Response, next: NextFunc
   try {
     const cityId = Number(req.params.id);
     const userId = (req as any).user.id;
+    // Log payload for auditing/debugging — avoid storing tokens or sensitive data here
+    try {
+      console.debug('updateCityData called', { cityId, userId, payload: req.body });
+    } catch (e) {
+      // ignore logging errors
+    }
     const updatedCity = await CityService.updateCityData(cityId, userId, req.body);
     res.json(updatedCity);
   } catch (err) {
