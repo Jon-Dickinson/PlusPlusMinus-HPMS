@@ -1,4 +1,4 @@
-import { CityGridGenerator } from '../../prisma/seeders/city-assets/city-grid-generator.seeder.ts';
+import { CityGridGenerator } from '../../src/services/city-grid-generator';
 
 describe('CityGridGenerator.calculateQualityIndexFromGrid', () => {
   const generator = new CityGridGenerator();

@@ -1,5 +1,5 @@
 import { prisma } from '../db.js';
-import { CityGridGenerator } from '../../prisma/seeders/city-assets/city-grid-generator.seeder.js';
+import { CityGridGenerator } from './city-grid-generator.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { HttpError } from '../utils/http-error.js';

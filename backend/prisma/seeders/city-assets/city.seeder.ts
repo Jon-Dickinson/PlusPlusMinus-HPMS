@@ -9,7 +9,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { SEED_CONFIG } from '../config.js';
-import { CityGridGenerator } from './city-grid-generator.seeder.js';
+import { CityGridGenerator } from '../../../src/services/city-grid-generator';
 
 export class CitySeeder {
   private gridGenerator: CityGridGenerator;

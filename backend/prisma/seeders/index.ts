@@ -21,7 +21,10 @@ export { ViewerSeeder } from './user-assets/viewer.seeder.js';
 export { CategorySeeder } from './city-assets/category.seeder.js';
 export { BuildingSeeder as BuildingDataSeeder } from './city-assets/building-data.seeder.js';
 export { PermissionSeeder } from './city-assets/permission.seeder.js';
-export { CityGridGenerator } from './city-assets/city-grid-generator.seeder.js';
+// CityGridGenerator has been moved into `src/` to ensure runtime code compiles
+// cleanly under the project's TypeScript `rootDir`. Re-export from the src
+// location so seeders and other code can still import from this central index.
+export { CityGridGenerator } from '../../src/services/city-grid-generator';
 
 // Configuration
 export { SEED_CONFIG } from './config.js';

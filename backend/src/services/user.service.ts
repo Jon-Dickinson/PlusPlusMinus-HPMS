@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+import type { PrismaClient } from '@prisma/client';
 
 export function listMayors() {
   return prisma.user.findMany({
@@ -105,7 +106,7 @@ export async function update(id: number, data: any) {
 
 export async function remove(id: number) {
   // Use a transaction to handle all cascading deletes properly
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     // Get user with all relationships
     const user = await tx.user.findUnique({ 
       where: { id }, 

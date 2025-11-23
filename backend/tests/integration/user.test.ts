@@ -30,7 +30,7 @@ describe('User endpoints', () => {
     // verify city qualityIndex present and calculated
     const mayorFromDb = await prisma.user.findUnique({ where: { username: 'mayx' }, include: { city: true } });
     expect(mayorFromDb?.city).toBeTruthy();
-    const generator = new (await import('../../prisma/seeders/city-assets/city-grid-generator.seeder.ts')).CityGridGenerator();
+    const generator = new (await import('../../src/services/city-grid-generator')).CityGridGenerator();
     const rawState = mayorFromDb!.city!.gridState as any;
     let parsed = rawState;
     if (typeof rawState === 'string') parsed = JSON.parse(rawState);

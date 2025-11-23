@@ -2,7 +2,7 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import app from '../../src/server.js';
 import { prisma } from '../../src/db.js';
-import { CityGridGenerator } from '../../prisma/seeders/city-assets/city-grid-generator.seeder.ts';
+import { CityGridGenerator } from '../../src/services/city-grid-generator';
 
 describe('recomputeQualityIndexes migration', () => {
   it('creates an audit record when a city qualityIndex changes', async () => {
