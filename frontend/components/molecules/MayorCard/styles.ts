@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const Card = styled.button`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 3fr 1fr 1fr 100px;
   align-items: center;
   padding: 16px 24px;
   background: transparent;

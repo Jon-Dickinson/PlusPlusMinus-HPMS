@@ -25,8 +25,8 @@ export const MayorGrid = styled.div`
 export const HeadingRow = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: 3fr 1fr 1fr 100px;
+  gap: 2px;
   align-items: center;
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.05);

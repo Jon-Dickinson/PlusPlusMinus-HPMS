@@ -66,6 +66,20 @@ model City {
   mayorId      Int       @unique
   buildLogs    BuildLog[]
   buildings    Building[]
+  // Relation to quality index audit entries
+  qualityIndexAudits QualityIndexAudit[]
+}
+
+// Audit table for recording qualityIndex changes to Cities
+model QualityIndexAudit {
+  id        Int      @id @default(autoincrement())
+  cityId    Int
+  oldValue  Float
+  newValue  Float
+  reason    String?  // e.g. "recompute:generator-update"
+  createdAt DateTime @default(now())
+
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
 }
 
 model BuildLog {

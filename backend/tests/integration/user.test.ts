@@ -27,10 +27,24 @@ describe('User endpoints', () => {
     });
     expect(mayorRes.status).toBe(201);
 
+    // verify city qualityIndex present and calculated
+    const mayorFromDb = await prisma.user.findUnique({ where: { username: 'mayx' }, include: { city: true } });
+    expect(mayorFromDb?.city).toBeTruthy();
+    const generator = new (await import('../../prisma/seeders/city-assets/city-grid-generator.seeder.ts')).CityGridGenerator();
+    const rawState = mayorFromDb!.city!.gridState as any;
+    let parsed = rawState;
+    if (typeof rawState === 'string') parsed = JSON.parse(rawState);
+    const expected = generator.calculateQualityIndexFromGrid(parsed as number[][]);
+
     const usersRes = await request(app).get('/api/users').set('Authorization', `Bearer ${token}`);
     expect(usersRes.status).toBe(200);
     expect(Array.isArray(usersRes.body)).toBe(true);
     // Assert each user has role field
     expect(usersRes.body.some((u: any) => u.role === 'MAYOR')).toBe(true);
+    // Find the mayor entry and confirm city.qualityIndex is present and matches expected
+    const mayorEntry = usersRes.body.find((u: any) => u.username === 'mayx');
+    expect(mayorEntry).toBeTruthy();
+    expect(typeof mayorEntry.city?.qualityIndex).toBe('number');
+    expect(Math.round(Number(mayorEntry.city.qualityIndex))).toBe(Math.round(expected));
   });
 });

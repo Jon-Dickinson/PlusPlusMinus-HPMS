@@ -113,6 +113,16 @@ export class CityGridGenerator {
       qualityIndex
     };
   }
+
+  /**
+   * Public helper to calculate quality index for an existing grid structure.
+   * Accepts a gridState (number[][]) and returns the computed quality index
+   * using the same internal algorithm as generateCityGrid.
+   */
+  public calculateQualityIndexFromGrid(gridState: number[][]): number {
+    // Defer to the existing private calculation so behavior remains identical.
+    return this.calculateQualityIndex(gridState);
+  }
   
   private createEmptyGrid(): number[][] {
     return Array.from({ length: this.GRID_SIZE }, () => []);
@@ -259,7 +269,7 @@ export class CityGridGenerator {
     ) / 4;
     
     const percent = Math.floor(avgRatio * 100);
-    return Math.max(20, Math.min(100, percent)); // Minimum 20% for populated cities
+    return Math.min(100, percent);
   }
   
   private computeTotalsFromGrid(gridState: number[][]): Record<string, number> {

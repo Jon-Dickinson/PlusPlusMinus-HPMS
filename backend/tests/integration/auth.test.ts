@@ -2,6 +2,7 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import app from '../../src/server.js';
 import { prisma } from '../../src/db.js';
+import { CityGridGenerator } from '../../prisma/seeders/city-assets/city-grid-generator.seeder.ts';
 
 describe('Auth integration', () => {
   beforeEach(async () => {
@@ -30,9 +31,18 @@ describe('Auth integration', () => {
     expect(mayorRes.body?.user).toBeDefined();
     expect(mayorRes.body.user.role).toBe('MAYOR');
 
-    const mayorFromDb = await prisma.user.findUnique({ where: { username: 'mayor1' } });
+    const mayorFromDb = await prisma.user.findUnique({ where: { username: 'mayor1' }, include: { city: true } });
     expect(mayorFromDb).toBeTruthy();
     expect(mayorFromDb?.password).not.toBe('password123'); // hashed
+
+    // Verify city qualityIndex was generated and persisted using the generator
+    expect(mayorFromDb?.city).toBeTruthy();
+    const g = new CityGridGenerator();
+    const raw = mayorFromDb!.city!.gridState as any;
+    let parsed = raw;
+    if (typeof raw === 'string') parsed = JSON.parse(raw);
+    const expected = g.calculateQualityIndexFromGrid(parsed as number[][]);
+    expect(Number(mayorFromDb!.city!.qualityIndex)).toBe(Number(expected));
 
     // Register a viewer linked to this mayor
     const viewerPayload = {

@@ -11,6 +11,9 @@ beforeAll(async () => {
   await prisma.buildLog.deleteMany();
   await prisma.buildingResource.deleteMany();
   await prisma.building.deleteMany();
+  await (prisma as any).qualityIndexAudit?.deleteMany?.();
+  // Ensure we delete user-permission records before users to avoid FK constraint errors
+  await prisma.userPermission.deleteMany();
   await prisma.city.deleteMany();
   await prisma.user.deleteMany();
 });
