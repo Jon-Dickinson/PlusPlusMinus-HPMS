@@ -39,6 +39,11 @@ app.use('/api/buildings', buildingRoutes);
 app.use('/api/docs', docsRoutes);
 app.use('/api/hierarchy', hierarchyRoutes);
 
+// catch-all for undefined routes — return JSON instead of default HTML 404
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found', path: req.originalUrl });
+});
+
 // global error handler
 app.use(errorHandler);
 
