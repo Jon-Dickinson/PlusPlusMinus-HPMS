@@ -208,7 +208,9 @@ export async function getAllowedBuildings(userId: number) {
 export async function getEffectivePermissions(userId: number) {
   // load user and ensure hierarchy assignment exists
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new Error('User not found');
+  if (!user) throw new HttpError(404, 'User not found');
+
+  if (!user.hierarchyId) throw new HttpError(400, 'User has no hierarchy assignment');
 
   // gather ancestor hierarchy ids (walk up parent-chain)
   const ancestorIds: number[] = [];
