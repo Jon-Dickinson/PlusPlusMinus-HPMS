@@ -44,10 +44,11 @@ function DraggableBuildingClient({ building }: { building: any }) {
       aria-label={building.name}
       title={building.name}
       style={{
-        opacity: isDragging ? 0.6 : 1,
+        opacity: isDragging ? 0.6 : (building?.disabled ? 0.35 : 1),
         backgroundColor: 'transparent',
         marginBottom: 10,
       }}
+      aria-disabled={building?.disabled ? 'true' : undefined}
     >
       <DragHandle ref={drag} isDragging={isDragging}>
         <BuildingImage

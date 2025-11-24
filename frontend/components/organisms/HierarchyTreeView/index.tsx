@@ -124,8 +124,8 @@ const HierarchyNode: React.FC<HierarchyNodeProps> = ({
     }
   };
 
-  const toggleExpanded = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const toggleExpanded = (event: React.MouseEvent) => {
+    event.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 

@@ -153,3 +153,29 @@ export async function remove(id: number) {
     return tx.user.delete({ where: { id } });
   });
 }
+
+export async function updatePermissions(userId: number, permissions: Array<{ categoryId: number; canBuild: boolean }>) {
+  // Validate user exists
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error('User not found');
+
+  // Run each permission change in a transaction for safety
+  await prisma.$transaction(async (tx: any) => {
+    for (const p of permissions) {
+      if (p.canBuild) {
+        // Upsert a permission record for this user/category
+        await tx.userPermission.upsert({
+          where: { userId_categoryId: { userId, categoryId: p.categoryId } } as any,
+          update: { canBuild: true },
+          create: { userId, categoryId: p.categoryId, canBuild: true }
+        });
+      } else {
+        // Remove existing permission if present
+        await tx.userPermission.deleteMany({ where: { userId, categoryId: p.categoryId } });
+      }
+    }
+  });
+
+  // Return current permissions for the user
+  return prisma.userPermission.findMany({ where: { userId }, include: { category: true } });
+}

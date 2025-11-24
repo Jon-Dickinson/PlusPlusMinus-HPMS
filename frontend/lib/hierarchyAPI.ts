@@ -38,6 +38,14 @@ export class HierarchyAPI {
     const response = await axios.instance.get(`/hierarchy/buildings/allowed/${userId}`);
     return response.data;
   }
+
+  /**
+   * Get the effective permissions for a user (direct + ancestor permissions)
+   */
+  static async getEffectivePermissions(userId: number): Promise<any[]> {
+    const response = await axios.instance.get(`/hierarchy/users/${userId}/effective-permissions`);
+    return response.data;
+  }
 }
 
 /**

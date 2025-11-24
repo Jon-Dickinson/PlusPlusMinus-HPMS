@@ -37,7 +37,9 @@ export class SummaryReporter {
     });
 
     for (const hierarchy of hierarchies) {
-      const indent = '  '.repeat(hierarchy.level - 1);
+      // ensure non-negative repeat counts when top-level root has level 0
+      const indentLevel = Math.max(0, (hierarchy.level ?? 0) - 1);
+      const indent = '  '.repeat(indentLevel);
       const userCount = hierarchy.users.length;
       const mayorCount = hierarchy.users.filter(u => u.role === 'MAYOR').length;
       

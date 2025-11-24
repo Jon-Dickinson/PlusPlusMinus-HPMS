@@ -19,6 +19,9 @@ router.use(requireAuth);
 // Get subordinate users for a given user
 router.get('/users/subordinates/:userId', requireHierarchyReadAccess, HierarchyController.getUserSubordinates);
 
+// Get effective permissions for a user (considers direct + ancestor permissions)
+router.get('/users/:userId/effective-permissions', requireHierarchyReadAccess, HierarchyController.getEffectivePermissions);
+
 // Get allowed buildings for a user (only accessible by admin/owner/ancestor)
 router.get('/buildings/allowed/:userId', requireHierarchyReadAccess, HierarchyController.getAllowedBuildings);
 

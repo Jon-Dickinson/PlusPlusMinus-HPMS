@@ -24,6 +24,25 @@ async function main() {
   console.log('Starting database seed...');
 
   try {
+    // WARNING: We ensure the seed always starts from a clean hierarchy state
+    // to avoid leftover or duplicate hierarchy nodes from previous runs.
+    // This deletes users / cities / hierarchy levels so we build from scratch.
+    // This is intended for development/demo seed runs only.
+    console.log('Performing pre-seed cleanup: removing dependent rows so we can rebuild hierarchy...');
+
+    // Delete order matters due to foreign keys
+    await prisma.userPermission.deleteMany();
+    await prisma.buildingResource.deleteMany();
+    await prisma.building.deleteMany();
+    await prisma.buildLog.deleteMany();
+    await prisma.city.deleteMany();
+    await prisma.note.deleteMany();
+    await prisma.user.deleteMany();
+    // Remove any dangling hierarchy nodes
+    await prisma.hierarchyLevel.deleteMany();
+    // Building categories may be recreated later; clear them too
+    await prisma.buildingCategory.deleteMany();
+    console.log('Cleanup complete.');
     // Initialize all seeders
     const hierarchySeeder = new HierarchySeeder(prisma);
     const userSeeder = new UserSeeder(prisma);

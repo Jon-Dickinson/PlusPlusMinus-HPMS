@@ -50,7 +50,8 @@ export default function GlobalNav() {
           ) : null}
         </Authorized>
 
-        <Authorized predicate={(user) => !isMayor(user.role) && user.role !== 'VIEWER'}>
+        {/* Show the User List link for Admins and Mayors (Viewers don't get access) */}
+        <Authorized predicate={(user) => user.role !== 'VIEWER'}>
           <Link href="/user-list" aria-label="User List">
             <Icon src="/list.svg" alt="User List" active={isActive('/user-list')} />
           </Link>
