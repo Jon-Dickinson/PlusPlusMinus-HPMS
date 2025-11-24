@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+import { HttpError } from '../utils/http-error.js';
 
 export async function getHierarchyTree() {
   return await prisma.hierarchyLevel.findMany({
@@ -68,11 +69,11 @@ export async function getUserSubordinates(userId: number) {
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new HttpError(404, 'User not found');
   }
 
   if (!user.hierarchyId) {
-    throw new Error('User has no hierarchy assignment');
+    throw new HttpError(400, 'User has no hierarchy assignment');
   }
 
   // Get all subordinate hierarchy levels

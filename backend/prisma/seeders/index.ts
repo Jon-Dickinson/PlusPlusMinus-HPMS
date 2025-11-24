@@ -24,7 +24,10 @@ export { PermissionSeeder } from './city-assets/permission.seeder.js';
 // CityGridGenerator has been moved into `src/` to ensure runtime code compiles
 // cleanly under the project's TypeScript `rootDir`. Re-export from the src
 // location so seeders and other code can still import from this central index.
-export { CityGridGenerator } from '../../src/services/city-grid-generator';
+// When the seed scripts run via ts-node/esm we must import the TypeScript source
+// with an explicit `.ts` extension for correct ESM resolution. Runtime (compiled)
+// code will use the `.js` extension when required.
+export { CityGridGenerator } from '../../src/services/city-grid-generator.ts';
 
 // Configuration
 export { SEED_CONFIG } from './config.js';

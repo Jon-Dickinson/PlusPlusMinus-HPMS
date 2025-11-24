@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as HierarchyController from '../controllers/hierarchy.controller.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
+import requireHierarchyReadAccess from '../middleware/hierarchy-auth.middleware.js';
 
 const router = Router();
 
@@ -16,12 +17,9 @@ router.get('/tree', HierarchyController.getHierarchyTree);
 router.use(requireAuth);
 
 // Get subordinate users for a given user
-router.get('/users/subordinates/:userId', HierarchyController.getUserSubordinates);
+router.get('/users/subordinates/:userId', requireHierarchyReadAccess, HierarchyController.getUserSubordinates);
 
-// Get subordinate users for a given user
-router.get('/users/subordinates/:userId', HierarchyController.getUserSubordinates);
-
-// Get allowed buildings for a user
-router.get('/buildings/allowed/:userId', HierarchyController.getAllowedBuildings);
+// Get allowed buildings for a user (only accessible by admin/owner/ancestor)
+router.get('/buildings/allowed/:userId', requireHierarchyReadAccess, HierarchyController.getAllowedBuildings);
 
 export default router;
