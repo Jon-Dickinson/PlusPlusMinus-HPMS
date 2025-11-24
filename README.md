@@ -60,7 +60,12 @@ The system models city capability, resource distribution, and administrative ove
 - Fully normalized **Prisma schema** connecting:
   - `User` ↔ `City` ↔ `BuildLog` ↔ `Note`
   - `Building` ↔ `BuildingCategory` ↔ `BuildingResource`
-- Seeded data for testing with 20 hierarchical users (all use password `Password123!`):
+- Seeded data for testing (development/demo seed): approximately 85 hierarchical users (Admin + multiple National → City → Suburb mayors with one Viewer per mayor).
+
+All seeded accounts use the same default password and an email generated from the username:
+
+- Default password: `Password123!`
+- Email pattern: `username@example.com` (e.g., `admin@example.com`, `national1@example.com`, `city1A_mayor1@example.com`, `viewer1@example.com`)
 
 #### Admin Users
 | Role | Email | Access Level |
@@ -74,33 +79,50 @@ The system models city capability, resource distribution, and administrative ove
 | **National Mayor** | `national2@example.com` | National Capital - National2's District | All 8 building types |
 
 #### City Level Mayors (6 Building Types)
-| Role | Email | City Assignment | Building Access |
-|------|--------|-----------------|-----------------|
-| **City Mayor** | `citya1@example.com` | City A | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
-| **City Mayor** | `citya2@example.com` | City A | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
-| **City Mayor** | `cityb1@example.com` | City B | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
-| **City Mayor** | `cityb2@example.com` | City B | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+| Role | Email (examples from seed) | City Assignment | Building Access |
+|------|-----------------------------|-----------------|-----------------|
+| **City Mayor** | `city1a1@example.com` | City 1-1 | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+| **City Mayor** | `city1a2@example.com` | City 1-1 | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+| **City Mayor** | `city1b1@example.com` | City 1-2 | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
+| **City Mayor** | `city1b2@example.com` | City 1-2 | Commercial, Emergency, Energy, Utilities, Residential, Agriculture |
 
 #### Suburb Level Mayors (2 Building Types)
-| Role | Email | City Assignment | Building Access |
-|------|--------|-----------------|-----------------|
-| **Suburb Mayor** | `suburb_a1_mayor1@example.com` | Suburb A1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_a1_mayor2@example.com` | Suburb A1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_a2_mayor1@example.com` | Suburb A2 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_a2_mayor2@example.com` | Suburb A2 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b1_mayor1@example.com` | Suburb B1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b1_mayor2@example.com` | Suburb B1 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b2_mayor1@example.com` | Suburb B2 Township | Residential, Agriculture only |
-| **Suburb Mayor** | `suburb_b2_mayor2@example.com` | Suburb B2 Township | Residential, Agriculture only |
+| Role | Email (examples from seed) | City / Suburb Assignment | Building Access |
+|------|-----------------------------|--------------------------|-----------------|
+| **Suburb Mayor** | `suburb_1-1-1_mayor1@example.com` | Suburb 1-1-1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_1-1-1_mayor2@example.com` | Suburb 1-1-1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_1-1-2_mayor1@example.com` | Suburb 1-1-2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_1-1-2_mayor2@example.com` | Suburb 1-1-2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_2-1-1_mayor1@example.com` | Suburb 2-1-1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_2-1-1_mayor2@example.com` | Suburb 2-1-1 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_2-1-2_mayor1@example.com` | Suburb 2-1-2 Township | Residential, Agriculture only |
+| **Suburb Mayor** | `suburb_2-1-2_mayor2@example.com` | Suburb 2-1-2 Township | Residential, Agriculture only |
 
 #### Viewers (Read-Only Access)
-| Role | Email | Access Level |
-|------|--------|--------------|
-| **Viewer** | `viewer1@example.com` | Read-only access to all cities |
-| **Viewer** | `viewer2@example.com` | Read-only access to all cities |
-| **Viewer** | `viewer3@example.com` | Read-only access to all cities |
-| **Viewer** | `viewer4@example.com` | Read-only access to all cities |
-| **Viewer** | `viewer5@example.com` | Read-only access to all cities |
+| Role | Email pattern | Access Level |
+|------|----------------|--------------|
+| **Viewer** | `viewer<number>@example.com` | Read-only access to the mayor's assigned level (viewer is assigned to a mayor and follows their hierarchy node)
+
+---
+
+## Seeded hierarchy (visualized)
+The development seed produces a single system root owned by the Admin user — all other nodes attach beneath it so every Mayor/Viewer chain traces back to the root.
+
+Admin Root (Level 0)
+|-- National 1 (Level 1)
+|   |-- City 1-1 (Level 2)
+|   |   |-- Suburb 1-1-1 (Level 3)
+|   |   `-- Suburb 1-1-2 (Level 3)
+|   `-- City 1-2 (Level 2)
+|       |-- Suburb 1-2-1 (Level 3)
+|       `-- Suburb 1-2-2 (Level 3)
+`-- National 2 (Level 1)
+    |-- City 2-1 (Level 2)
+    |   |-- Suburb 2-1-1 (Level 3)
+    |   `-- Suburb 2-1-2 (Level 3)
+    `-- City 2-2 (Level 2)
+        |-- Suburb 2-2-1 (Level 3)
+        `-- Suburb 2-2-2 (Level 3)
 
 ### 4. Modular Architecture
 - **Frontend:** Next.js + Styled-Components for modern, component-driven design  

@@ -28,8 +28,8 @@ export default function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setLoading(true);
     setError(null);
     try {
@@ -75,7 +75,7 @@ export default function LoginForm() {
               <Input
                 disabled={loading}
                 value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
                 placeholder="Email"
               />
 
@@ -83,7 +83,7 @@ export default function LoginForm() {
                 disabled={loading}
                 type="password"
                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
                 placeholder="Password"
               />
 

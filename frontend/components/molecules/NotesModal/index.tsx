@@ -74,8 +74,8 @@ export default function NotesModal({ isOpen, onClose }: NotesModalProps) {
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay>
-      <ModalContent>
+    <ModalOverlay onClick={(event) => event.stopPropagation()}>
+      <ModalContent onClick={(event) => event.stopPropagation()}>
         <ModalTitle>Notes</ModalTitle>
         {loading ? (
           <div>Loading...</div>
@@ -84,7 +84,7 @@ export default function NotesModal({ isOpen, onClose }: NotesModalProps) {
             <NotesInput
               placeholder="Enter your notes here..."
               value={content}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
+              onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => { event.stopPropagation(); setContent(event.target.value); }}
             />
             {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
           </div>

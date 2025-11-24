@@ -51,7 +51,7 @@ const MayorViewContent: React.FC<MayorViewContentProps> = ({ initialCity }) => {
         </ResourceColumn>
 
         <Authorized allowed={['ADMIN']}>
-          <BuildingSidebar />
+          <BuildingSidebar subjectUserId={(initialCity as any)?.mayor?.id ?? null} />
         </Authorized>
 
         <MainGridArea>

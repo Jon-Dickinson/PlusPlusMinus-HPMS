@@ -33,13 +33,15 @@ export class MayorSeeder extends BaseUserSeeder {
   /**
    * Create a city mayor
    */
-  async createCityMayor(cityIndex: number, mayorIndex: number, hierarchyId: number): Promise<User> {
+  async createCityMayor(nationalIndex: number, cityIndex: number, mayorIndex: number, hierarchyId: number): Promise<User> {
     const cityLetter = this.getCityLetter(cityIndex);
     return await this.upsertUser({
-      username: `city${cityLetter}_mayor${mayorIndex}`,
-      firstName: `City${cityLetter}${mayorIndex}`,
+      // include national index so usernames are unique across different
+      // top-level national trees (e.g. city1A_mayor1 vs city2A_mayor1)
+      username: `city${nationalIndex}${cityLetter}_mayor${mayorIndex}`,
+      firstName: `City${nationalIndex}${cityLetter}${mayorIndex}`,
       lastName: 'Mayor',
-      email: this.generateEmail(`city${cityLetter.toLowerCase()}${mayorIndex}`),
+      email: this.generateEmail(`city${nationalIndex}${cityLetter.toLowerCase()}${mayorIndex}`),
       role: 'MAYOR',
       hierarchyId: hierarchyId
     });
@@ -68,31 +70,37 @@ export class MayorSeeder extends BaseUserSeeder {
     
     const mayors = [];
 
-    // Create National Mayors
-    for (let i = 1; i <= SEED_CONFIG.USER_COUNTS.NATIONAL_MAYORS; i++) {
-      const user = await this.createNationalMayor(i, hierarchyData.national.id);
-      mayors.push(user);
-      console.log(`Created national mayor: ${user.username}`);
-    }
+    // For each national subtree create a national mayor, then create mayors
+    // for each city and each suburb under that city.
+    let natIndex = 1;
+    for (const nat of hierarchyData.nationals) {
+      const natMayor = await this.createNationalMayor(natIndex, nat.id);
+      mayors.push(natMayor);
+      console.log(`Created national mayor: ${natMayor.username}`);
 
-    // Create City Mayors
-    for (let cityIdx = 0; cityIdx < hierarchyData.cities.length; cityIdx++) {
-      const city = hierarchyData.cities[cityIdx];
-      for (let i = 1; i <= SEED_CONFIG.USER_COUNTS.CITY_MAYORS_PER_CITY; i++) {
-        const user = await this.createCityMayor(cityIdx, i, city.id);
-        mayors.push(user);
-        console.log(`Created city mayor: ${user.username} for ${city.name}`);
-      }
-    }
+      // Create city mayors for cities under this national node
+      for (let cityIdx = 0; cityIdx < (nat.cities || []).length; cityIdx++) {
+        const city = nat.cities[cityIdx];
+        // create exactly one mayor per city node; if config requires more, use mayorIndex
+        for (let i = 1; i <= Math.max(1, SEED_CONFIG.USER_COUNTS.CITY_MAYORS_PER_CITY); i++) {
+          const user = await this.createCityMayor(natIndex, cityIdx, i, city.id);
+          mayors.push(user);
+          console.log(`Created city mayor: ${user.username} for ${city.name}`);
 
-    // Create Suburb Mayors
-    for (let suburbIdx = 0; suburbIdx < hierarchyData.suburbs.length; suburbIdx++) {
-      const suburb = hierarchyData.suburbs[suburbIdx];
-      for (let i = 1; i <= SEED_CONFIG.USER_COUNTS.SUBURB_MAYORS_PER_SUBURB; i++) {
-        const user = await this.createSuburbMayor(suburb, i, suburb.id);
-        mayors.push(user);
-        console.log(`Created suburb mayor: ${user.username} for ${suburb.name}`);
+          // For each suburb under this city, create suburb mayors
+          const suburbs = city.suburbs || [];
+          for (let sIdx = 0; sIdx < suburbs.length; sIdx++) {
+            const suburb = suburbs[sIdx];
+            for (let j = 1; j <= Math.max(1, SEED_CONFIG.USER_COUNTS.SUBURB_MAYORS_PER_SUBURB); j++) {
+              const subMayor = await this.createSuburbMayor(suburb, j, suburb.id);
+              mayors.push(subMayor);
+              console.log(`Created suburb mayor: ${subMayor.username} for ${suburb.name}`);
+            }
+          }
+        }
       }
+
+      natIndex++;
     }
 
     console.log(`Mayor Summary: Created ${mayors.length} mayor users`);

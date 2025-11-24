@@ -36,7 +36,10 @@ export class AdminSeeder extends BaseUserSeeder {
     console.log('Creating admin users...');
     
     const admins = [];
-    const admin = await this.createAdmin(hierarchyData.national.id);
+    // Attach admin to the top-level root node if provided; fall back for
+    // compatibility to the previous data shape.
+    const rootId = hierarchyData?.root?.id ?? hierarchyData?.nationals?.[0]?.id ?? hierarchyData?.national?.id;
+    const admin = await this.createAdmin(rootId);
     admins.push(admin);
 
     console.log(`Admin Summary: Created ${admins.length} admin users`);

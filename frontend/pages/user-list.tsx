@@ -81,6 +81,8 @@ export default function UserList() {
   const { user } = useAuth();
 
   const canNavigateAdmin = useAuthorized(['ADMIN']);
+  // Mayors should be able to view their own subordinates on the user list
+  const canViewUserList = canNavigateAdmin || user?.role === 'MAYOR';
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +122,7 @@ export default function UserList() {
     };
 
     (async () => {
-      if (!canNavigateAdmin) {
+      if (!canViewUserList) {
         // Not authorized to view the users list — avoid making the API call.
         if (mounted) {
           setUsers([]);
@@ -129,14 +131,27 @@ export default function UserList() {
         return;
       }
 
-      await fetchUsers();
-      if (mounted) setLoading(false);
+      // Admins fetch all users. Mayors fetch their subordinates only.
+      if (user?.role === 'MAYOR') {
+        try {
+          const subs = await HierarchyAPI.getUserSubordinates(user.id);
+          if (mounted) setUsers(subs || []);
+        } catch (err) {
+          console.error('Failed to load subordinate users', err);
+          if (mounted) setUsers([]);
+        } finally {
+          if (mounted) setLoading(false);
+        }
+      } else {
+        await fetchUsers();
+        if (mounted) setLoading(false);
+      }
     })();
 
     return () => {
       mounted = false;
     };
-  }, [initialized, canNavigateAdmin, user?.hierarchyId]);
+  }, [initialized, canNavigateAdmin, user?.hierarchyId, user?.role, canViewUserList, user?.id]);
 
   const mayors = users.filter((u) => u.role === 'MAYOR');
 

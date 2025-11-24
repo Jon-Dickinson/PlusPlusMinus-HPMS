@@ -27,13 +27,13 @@ export default function RegisterForm() {
   const [mayors, setMayors] = useState<Mayor[]>([]);
   const [mayorsLoading, setMayorsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target as HTMLInputElement | HTMLSelectElement;
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = event.target as HTMLInputElement | HTMLSelectElement;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const role = e.target.value as 'VIEWER' | 'MAYOR';
+  const handleRoleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const role = event.target.value as 'VIEWER' | 'MAYOR';
     setFormData((prev) => ({ ...prev, role, mayorId: role === 'VIEWER' ? prev.mayorId : '' }));
   };
 
@@ -60,8 +60,8 @@ export default function RegisterForm() {
     return () => { mounted = false; };
   }, [formData.role]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
     setError(null);
 

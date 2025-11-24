@@ -56,4 +56,39 @@ describe('Hierarchy authorization', () => {
     const res = await request(app).get(`/api/hierarchy/users/subordinates/${user.id}`).set('Authorization', `Bearer ${t}`);
     expect(res.status).toBe(200);
   });
+
+  it('national mayor sees only lower-level mayors and viewers assigned to them (not peers)', async () => {
+    const root = (await prisma.hierarchyLevel.findFirst({ where: { name: 'National' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 1 } }));
+    const city = (await prisma.hierarchyLevel.findFirst({ where: { name: 'City A' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 2 } }));
+    const suburb = (await prisma.hierarchyLevel.findFirst({ where: { name: 'Suburb A1' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 3 } }));
+
+    // Create a national mayor (the owner), subordinates at city & suburb levels,
+    // another national peer, and viewers tied to different mayors.
+    const natOwner = await prisma.user.create({ data: { firstName: 'N1', lastName: 'Nat', username: `natOwner-${Date.now()}`, email: `n1@${Date.now()}`, password: 'x', role: 'MAYOR', hierarchyId: root?.id } });
+    const cityMayor = await prisma.user.create({ data: { firstName: 'C1', lastName: 'City', username: `cityMayor-${Date.now()}`, email: `c1@${Date.now()}`, password: 'x', role: 'MAYOR', hierarchyId: city?.id } });
+    const suburbMayor = await prisma.user.create({ data: { firstName: 'S1', lastName: 'Sub', username: `subMayor-${Date.now()}`, email: `s1@${Date.now()}`, password: 'x', role: 'MAYOR', hierarchyId: suburb?.id } });
+
+    // Another national level peer (should NOT be visible to natOwner)
+    const natPeer = await prisma.user.create({ data: { firstName: 'N2', lastName: 'Peer', username: `natPeer-${Date.now()}`, email: `n2@${Date.now()}`, password: 'x', role: 'MAYOR', hierarchyId: root?.id } });
+
+    // Viewers assigned to the subordinate mayors
+    const viewerForCity = await prisma.user.create({ data: { firstName: 'V1', lastName: 'Viewer', username: `viewerCity-${Date.now()}`, email: `v1@${Date.now()}`, password: 'x', role: 'VIEWER', mayorId: cityMayor.id } });
+    const viewerForPeer = await prisma.user.create({ data: { firstName: 'V2', lastName: 'Viewer', username: `viewerPeer-${Date.now()}`, email: `v2@${Date.now()}`, password: 'x', role: 'VIEWER', mayorId: natPeer.id } });
+
+    const t = jwt.sign({ id: natOwner.id, role: natOwner.role }, SECRET);
+    const res = await request(app).get(`/api/hierarchy/users/subordinates/${natOwner.id}`).set('Authorization', `Bearer ${t}`);
+    expect(res.status).toBe(200);
+
+    // Should include city and suburb mayors
+    const ids = res.body.map((u: any) => u.id);
+    expect(ids.includes(cityMayor.id)).toBe(true);
+    expect(ids.includes(suburbMayor.id)).toBe(true);
+
+    // Should include viewers for subordinate mayors
+    expect(ids.includes(viewerForCity.id)).toBe(true);
+
+    // Should NOT include another national peer or viewers for that peer
+    expect(ids.includes(natPeer.id)).toBe(false);
+    expect(ids.includes(viewerForPeer.id)).toBe(false);
+  });
 });

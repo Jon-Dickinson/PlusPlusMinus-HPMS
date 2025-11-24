@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { MapPin, User, Trash2 } from 'lucide-react';
+import React, { useEffect, useState, Suspense } from 'react';
+import { MapPin, User, Trash2, Shield } from 'lucide-react';
 import { fetchMayor, Mayor } from './api';
 import { Card, Left, Meta, Muted, Center, QualityIndex, DeleteButton, Properties } from './styles';
+import PermissionsModal from '../PermissionsModal';
 
 interface MayorData {
   id: number;
@@ -70,10 +71,19 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
   const firstName = mayor?.firstName || '—';
   const lastName = mayor?.lastName || '—';
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = (event: React.MouseEvent) => {
+    event.stopPropagation();
     if (onDelete) onDelete(id);
   };
+
+  const [showPermissions, setShowPermissions] = useState(false);
+
+  const openPermissions = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setShowPermissions(true);
+  };
+
+  const closePermissions = () => setShowPermissions(false);
 
   return (
     <Card onClick={handleClick} aria-label={`Mayor ${firstName} ${lastName}`}>
@@ -94,10 +104,21 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
       </QualityIndex>
 
       <Properties>
-        <DeleteButton onClick={handleDelete}>
+        <DeleteButton onClick={openPermissions} title="Permissions">
+          <Shield size={16} />
+        </DeleteButton>
+        <DeleteButton onClick={handleDelete} title="Delete">
           <Trash2 size={16} />
         </DeleteButton>
       </Properties>
+
+      {/* Load the permissions modal when requested */}
+      {showPermissions && (
+        // lazy-loaded inline import to avoid bundling issues
+        <Suspense fallback={<div />}> 
+          <PermissionsModal isOpen={true} userId={Number(id)} onClose={closePermissions} />
+        </Suspense>
+      )}
     </Card>
   );
 }
