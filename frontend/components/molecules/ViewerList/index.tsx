@@ -18,7 +18,7 @@ interface User {
 
 interface ViewerListProps {
   viewers: User[];
-  onDeleteUser: (userId: number | string) => void;
+  onDeleteUser?: (userId: number | string) => void;
 }
 
 export default function ViewerList({ viewers, onDeleteUser }: ViewerListProps) {
@@ -32,9 +32,11 @@ export default function ViewerList({ viewers, onDeleteUser }: ViewerListProps) {
           <span>
             {viewer.firstName} {viewer.lastName} ({viewer.username})
           </span>
-          <ViewerDeleteButton onClick={() => onDeleteUser(viewer.id)}>
-            <Trash2 size={14} />
-          </ViewerDeleteButton>
+          {onDeleteUser && (
+            <ViewerDeleteButton title="Delete" onClick={() => onDeleteUser(viewer.id)}>
+              <Trash2 size={14} />
+            </ViewerDeleteButton>
+          )}
         </ViewerItem>
       ))}
     </ViewersList>

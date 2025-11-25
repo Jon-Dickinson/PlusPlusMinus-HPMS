@@ -23,14 +23,14 @@ interface User {
 
 export interface ViewerCardProps {
   viewer: User;
-  onDeleteUser: (userId: number | string) => void;
+  onDeleteUser?: (userId: number | string) => void;
 }
 
 export default function ViewerCard({ viewer, onDeleteUser }: ViewerCardProps) {
   // Viewers are read-only — no permissions modal or edit available
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-    onDeleteUser(viewer.id);
+    onDeleteUser && onDeleteUser(viewer.id);
   };
 
   return (
@@ -49,9 +49,11 @@ export default function ViewerCard({ viewer, onDeleteUser }: ViewerCardProps) {
 
       <ViewerActions>
         {/* viewers cannot edit permissions; remove the permissions button */}
-        <DeleteButton onClick={handleDelete}>
-          <Trash2 size={16} />
-        </DeleteButton>
+        {onDeleteUser && (
+          <DeleteButton onClick={handleDelete} title="Delete">
+            <Trash2 size={16} />
+          </DeleteButton>
+        )}
       </ViewerActions>
 
       {/* no permissions modal for viewers */}

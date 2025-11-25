@@ -38,7 +38,7 @@ export interface MayorCardProps {
   id: number | string;
   mayorData?: MayorData;
   onClick?: (id: number | string) => void;
-  onDelete?: (id: number | string) => void;
+  onDelete?: (id: number | string) => void | undefined;
 }
 
 export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCardProps) {
@@ -112,9 +112,11 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
         <PermissionButton onClick={(e) => openPermissions(undefined, e)} title="Permissions">
           <Shield size={16} color="#2FBF4A" />
         </PermissionButton>
-        <DeleteButton onClick={handleDelete} title="Delete">
-          <Trash2 size={16} />
-        </DeleteButton>
+        {onDelete && (
+          <DeleteButton onClick={handleDelete} title="Delete">
+            <Trash2 size={16} />
+          </DeleteButton>
+        )}
       </Properties>
 
       {renderModal}

@@ -85,6 +85,8 @@ export default function UserListView() {
   };
 
   const renderActiveTab = () => {
+    // When logged in as a MAYOR viewing the user-list page, hide delete buttons
+    const showDeleteButtons = !(user?.role === 'MAYOR' && router.pathname === '/user-list');
     switch (activeTab) {
       case 'users':
         return (
@@ -94,7 +96,7 @@ export default function UserListView() {
             users={displayUsers}
             canNavigateAdmin={canNavigateAdmin}
             onMayorClick={(id: number | string) => router.push(`/mayor-view/${id}`)}
-            onDeleteUser={handleDeleteUser}
+            onDeleteUser={showDeleteButtons ? handleDeleteUser : undefined}
           />
         );
       case 'hierarchy':

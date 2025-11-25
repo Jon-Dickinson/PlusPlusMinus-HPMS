@@ -39,7 +39,7 @@ interface UserGridProps {
   users: User[];
   canNavigateAdmin: boolean;
   onMayorClick: (id: number | string) => void;
-  onDeleteUser: (userId: number | string) => void;
+  onDeleteUser?: (userId: number | string) => void;
 }
 
 export default function UserGrid({
