@@ -303,5 +303,8 @@ UI: http://localhost:4000/api/docs
 
 JSON: http://localhost:4000/api/docs/json
 
+Swagger Docs (prod):
+https://passionate-contentment-production.up.railway.app/api/docs/
+
 ### Neon
 https://console.neon.tech/app/projects/calm-dream-36516261/auth?tab=configuration
