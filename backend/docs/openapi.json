@@ -6,8 +6,8 @@
     "description": "Hierarchical Permission Management System API for City Builder with role-based building access"
   },
   "servers": [
-    { "url": "https://passionate-contentment-production.up.railway.app", "description": "Production (Railway)" },
-    { "url": "http://localhost:4000", "description": "Local Development" }
+    { "url": "https://passionate-contentment-production.up.railway.app/api", "description": "Production (Railway) - API base" },
+    { "url": "http://localhost:4000/api", "description": "Local Development - API base" }
   ],
   "security": [{ "bearerAuth": [] }],
   "tags": [
@@ -157,31 +157,28 @@
         "responses": { "201": { "description": "Created" } }
       }
     },
-    "/buildings/cities/{cityId}/{id}": {
-      "patch": {
-        "summary": "Update city placement",
+    "/buildings/categories": {
+      "get": {
+        "summary": "List all building categories",
         "tags": ["Buildings"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } },
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/CityPlacementCreate" } }
+        "responses": {
+          "200": {
+            "description": "List of categories",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/BuildingCategory" } } } }
           }
-        },
-        "responses": { "200": { "description": "Updated" } }
-      },
-      "delete": {
-        "summary": "Delete city placement",
+        }
+      }
+    },
+    "/buildings/type/{type}": {
+      "get": {
+        "summary": "Get buildings by type",
         "tags": ["Buildings"],
-        "security": [{ "bearerAuth": [] }],
         "parameters": [
-          { "name": "cityId", "in": "path", "required": true, "schema": { "type": "integer" } },
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+          { "name": "type", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
-        "responses": { "204": { "description": "Deleted" } }
+        "responses": {
+          "200": { "description": "Buildings list", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Building" } } } } }
+        }
       }
     },
     "/hierarchy/tree": {
@@ -232,6 +229,24 @@
                 }
               }
             }
+          },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/hierarchy/users/{userId}/effective-permissions": {
+      "get": {
+        "summary": "Get effective building permissions for a user",
+        "tags": ["Hierarchy", "Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of effective permission entries by category",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/EffectivePermission" } } } }
           },
           "401": { "description": "Unauthorized" },
           "404": { "description": "User not found" }
@@ -293,6 +308,28 @@
         }
       }
     },
+    "/users/mayors": {
+      "get": {
+        "summary": "List authenticated mayors",
+        "description": "Authenticated endpoint to list mayors with brief profile and city info (used by frontend)",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of mayors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MayorSummary" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
     "/users/{id}": {
       "get": {
         "summary": "Get user by ID",
@@ -317,6 +354,33 @@
           },
           "401": { "description": "Unauthorized" },
           "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/users/{id}/permissions": {
+      "put": {
+        "summary": "Update a user's building permissions (admin or ancestor)",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UserPermissionsUpdateRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated permission rows",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/UserPermission" } } }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
         }
       }
     },
@@ -711,6 +775,14 @@
         }
       }
     },
+    "BuildingCategory": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "description": { "type": "string", "nullable": true }
+      }
+    },
     "BuildingDetails": {
       "type": "object",
       "properties": {
@@ -749,6 +821,39 @@
         }
       }
     },
+    "EffectivePermission": {
+      "type": "object",
+      "properties": {
+        "categoryId": { "type": "integer" },
+        "categoryName": { "type": "string" },
+        "description": { "type": "string", "nullable": true },
+        "effectiveCanBuild": { "type": "boolean" },
+        "directCanBuild": { "type": "boolean" }
+      }
+    },
+    "UserPermission": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "userId": { "type": "integer" },
+        "categoryId": { "type": "integer" },
+        "canBuild": { "type": "boolean" },
+        "category": { "type": "object", "properties": { "id": { "type": "integer" }, "name": { "type": "string" }, "description": { "type": "string", "nullable": true } } }
+      }
+    },
+    "UserPermissionsUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["categoryId", "canBuild"],
+            "properties": { "categoryId": { "type": "integer" }, "canBuild": { "type": "boolean" } }
+          }
+        }
+      }
+    },
     "City": {
       "type": "object",
       "properties": {
@@ -763,6 +868,18 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       }
+    },
+    "MayorSummary": {
+      "allOf": [
+        { "$ref": "#/components/schemas/HierarchyUser" },
+        {
+          "type": "object",
+          "properties": {
+            "hasNotes": { "type": "boolean" },
+            "city": { "$ref": "#/components/schemas/City" }
+          }
+        }
+      ]
     },
     "CityCreate": {
       "type": "object",
