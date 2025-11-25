@@ -95,8 +95,12 @@ export class HierarchySeeder {
             }
           }
 
-          cityObj.suburbs.push(suburb);
-          console.log(`Created Suburb level: ${suburb.name} (under ${cityObj.name})`);
+          if (suburb) {
+            cityObj.suburbs.push(suburb);
+            console.log(`Created Suburb level: ${suburb.name} (under ${cityObj.name})`);
+          } else {
+            console.warn(`Failed to create or find suburb: ${suburbName}`);
+          }
         }
 
         natObj.cities.push(cityObj);

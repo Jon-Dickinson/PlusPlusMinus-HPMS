@@ -1,12 +1,43 @@
 import { prisma } from '../db.js';
 import { HttpError } from '../utils/http-error.js';
+/* -------------------------------------------------------------
+ *  GET FULL HIERARCHY TREE (ROOT → CHILDREN → USERS)
+ * ------------------------------------------------------------- */
 export async function getHierarchyTree() {
-    return await prisma.hierarchyLevel.findMany({
+    return prisma.hierarchyLevel.findMany({
+        where: { parentId: null },
         include: {
+            users: {
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    username: true,
+                    role: true
+                }
+            },
             children: {
                 include: {
+                    users: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            username: true,
+                            role: true
+                        }
+                    },
                     children: {
                         include: {
+                            users: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true,
+                                    username: true,
+                                    role: true
+                                }
+                            },
                             children: {
                                 include: {
                                     users: {
@@ -19,71 +50,32 @@ export async function getHierarchyTree() {
                                         }
                                     }
                                 }
-                            },
-                            users: {
-                                select: {
-                                    id: true,
-                                    firstName: true,
-                                    lastName: true,
-                                    username: true,
-                                    role: true
-                                }
                             }
-                        }
-                    },
-                    users: {
-                        select: {
-                            id: true,
-                            firstName: true,
-                            lastName: true,
-                            username: true,
-                            role: true
                         }
                     }
                 }
-            },
-            users: {
-                select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    username: true,
-                    role: true
-                }
             }
-        },
-        where: {
-            parentId: null // Start with root level
         }
     });
 }
+/* -------------------------------------------------------------
+ *  GET ALL SUBORDINATES OF A USER
+ * ------------------------------------------------------------- */
 export async function getUserSubordinates(userId) {
-    // Get user's hierarchy level
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        include: {
-            hierarchy: true
-        }
+        include: { hierarchy: true },
     });
-    if (!user) {
+    if (!user)
         throw new HttpError(404, 'User not found');
-    }
-    if (!user.hierarchyId) {
+    if (!user.hierarchyId)
         throw new HttpError(400, 'User has no hierarchy assignment');
-    }
-    // Get all subordinate hierarchy levels
+    // Get descendant hierarchy levels
     const subordinateLevels = await getSubordinateLevels(user.hierarchyId);
-    const subordinateLevelIds = subordinateLevels.map(level => level.id);
-    // Get all users in subordinate levels (exclude the same level — we want true
-    // subordinates). Additionally include viewers who are assigned to mayors in
-    // those subordinate levels so that e.g. a national mayor can see viewers
-    // under their subordinate city/suburb mayors.
+    const subordinateLevelIds = subordinateLevels.map(l => l.id);
+    // Users assigned directly to subordinate hierarchy levels
     const subordinateUsers = await prisma.user.findMany({
-        where: {
-            hierarchyId: {
-                in: subordinateLevelIds
-            }
-        },
+        where: { hierarchyId: { in: subordinateLevelIds } },
         select: {
             id: true,
             firstName: true,
@@ -100,22 +92,17 @@ export async function getUserSubordinates(userId) {
                 }
             },
             hierarchy: {
-                select: {
-                    id: true,
-                    name: true,
-                    level: true
-                }
+                select: { id: true, name: true, level: true }
             }
         }
     });
-    // Also include viewers whose mayorId is one of the subordinate users
+    // Viewers assigned to those subordinate mayors
     const subordinateUserIds = subordinateUsers.map(u => u.id);
-    let subordinateViewers = [];
-    if (subordinateUserIds.length > 0) {
-        subordinateViewers = await prisma.user.findMany({
+    const subordinateViewers = subordinateUserIds.length
+        ? await prisma.user.findMany({
             where: {
                 role: 'VIEWER',
-                mayorId: { in: subordinateUserIds }
+                mayorId: { in: subordinateUserIds },
             },
             select: {
                 id: true,
@@ -128,109 +115,118 @@ export async function getUserSubordinates(userId) {
                     select: { id: true, name: true, country: true, qualityIndex: true }
                 },
                 hierarchy: {
-                    select: {
-                        id: true,
-                        name: true,
-                        level: true
-                    }
+                    select: { id: true, name: true, level: true }
                 }
             }
-        });
+        })
+        : [];
+    // Merge without duplicates
+    const output = [...subordinateUsers];
+    const seen = new Set(output.map(u => u.id));
+    for (const viewer of subordinateViewers) {
+        if (!seen.has(viewer.id))
+            output.push(viewer);
     }
-    // Merge unique users (subordinateUsers first, then viewers). Avoid duplicates
-    const all = [...subordinateUsers];
-    const existingIds = new Set(all.map(u => u.id));
-    for (const v of subordinateViewers) {
-        if (!existingIds.has(v.id)) {
-            all.push(v);
-        }
+    return output;
+}
+/* -------------------------------------------------------------
+ *  RECURSIVE: GET ALL DESCENDANT HIERARCHY LEVELS
+ * ------------------------------------------------------------- */
+async function getSubordinateLevels(hierarchyId) {
+    const children = await prisma.hierarchyLevel.findMany({
+        where: { parentId: hierarchyId },
+        select: { id: true },
+    });
+    let all = [...children];
+    for (const child of children) {
+        const sub = await getSubordinateLevels(child.id);
+        all = all.concat(sub);
     }
     return all;
 }
-async function getSubordinateLevels(hierarchyId) {
-    const children = await prisma.hierarchyLevel.findMany({
-        where: {
-            parentId: hierarchyId
-        }
-    });
-    let allSubordinates = [...children];
-    // Recursively get children of children
-    for (const child of children) {
-        const grandChildren = await getSubordinateLevels(child.id);
-        allSubordinates = allSubordinates.concat(grandChildren);
-    }
-    return allSubordinates;
-}
+/* -------------------------------------------------------------
+ *  GET ALLOWED BUILDINGS FOR USER
+ * ------------------------------------------------------------- */
 export async function getAllowedBuildings(userId) {
-    // Get user's building permissions
-    const userPermissions = await prisma.userPermission.findMany({
-        where: {
-            userId: userId,
-            canBuild: true
-        },
+    const permissions = await prisma.userPermission.findMany({
+        where: { userId, canBuild: true },
         include: {
             category: {
-                include: {
-                    buildings: true
-                }
+                include: { buildings: true }
             }
         }
     });
-    // Return allowed building categories and their buildings
-    return userPermissions.map((permission) => ({
-        categoryId: permission.categoryId,
-        categoryName: permission.category.name,
-        description: permission.category.description,
-        buildings: permission.category.buildings.map((building) => ({
-            id: building.id,
-            name: building.name,
-            level: building.level,
-            sizeX: building.sizeX,
-            sizeY: building.sizeY,
-            powerUsage: building.powerUsage,
-            powerOutput: building.powerOutput,
-            waterUsage: building.waterUsage,
-            waterOutput: building.waterOutput
+    return permissions.map(p => ({
+        categoryId: p.categoryId,
+        categoryName: p.category.name,
+        description: p.category.description,
+        buildings: p.category.buildings.map(b => ({
+            id: b.id,
+            name: b.name,
+            level: b.level,
+            sizeX: b.sizeX,
+            sizeY: b.sizeY,
+            powerUsage: b.powerUsage,
+            powerOutput: b.powerOutput,
+            waterUsage: b.waterUsage,
+            waterOutput: b.waterOutput,
         }))
     }));
 }
-/**
- * Compute effective permissions for a user by combining their explicit
- * userPermission rows as well as any permissions held by users on ancestor
- * hierarchy levels. Effective rule used: canBuild is true if any source
- * (the user or any ancestor user) has canBuild=true for that category.
- */
+/* -------------------------------------------------------------
+ *  GET EFFECTIVE PERMISSIONS (DIRECT + ANCESTOR)
+ * ------------------------------------------------------------- */
 export async function getEffectivePermissions(userId) {
-    // load user and ensure hierarchy assignment exists
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { hierarchyId: true }
+    });
     if (!user)
         throw new HttpError(404, 'User not found');
     if (!user.hierarchyId)
         throw new HttpError(400, 'User has no hierarchy assignment');
-    // gather ancestor hierarchy ids (walk up parent-chain)
+    /* ---------------------------------------------------------
+     * Find ancestors (walk up the parent chain)
+     * --------------------------------------------------------- */
     const ancestorIds = [];
-    let currentHierarchyId = user.hierarchyId ?? null;
-    while (currentHierarchyId) {
-        const h = await prisma.hierarchyLevel.findUnique({ where: { id: currentHierarchyId }, select: { parentId: true } });
-        if (!h || !h.parentId)
+    let current = user.hierarchyId;
+    while (current) {
+        const h = await prisma.hierarchyLevel.findUnique({
+            where: { id: current },
+            select: { parentId: true }
+        });
+        if (!h?.parentId)
             break;
         ancestorIds.push(h.parentId);
-        currentHierarchyId = h.parentId;
+        current = h.parentId;
     }
-    // find users assigned to ancestor levels
-    const ancestorUsers = await prisma.user.findMany({ where: { hierarchyId: { in: ancestorIds } }, select: { id: true } });
+    // Users on ancestor levels
+    const ancestorUsers = await prisma.user.findMany({
+        where: { hierarchyId: { in: ancestorIds } },
+        select: { id: true },
+    });
     const ancestorUserIds = ancestorUsers.map(u => u.id);
-    // fetch all categories so categories without any permission rows are still
-    // presented in the effective permission list (with directCanBuild=false)
-    const categories = await prisma.buildingCategory.findMany({ select: { id: true, name: true, description: true } });
-    // fetch permissions for the target user and any ancestor users
-    const allUserIds = [userId, ...ancestorUserIds];
-    const permissions = await prisma.userPermission.findMany({ where: { userId: { in: allUserIds } }, include: { category: true } });
-    // Build a map categoryId -> aggregated info. Start from all categories
-    // so that categories with no permission records still appear with direct=false
-    const map = new Map();
+    /* ---------------------------------------------------------
+     * Load all categories so the result always includes them
+     * --------------------------------------------------------- */
+    const categories = await prisma.buildingCategory.findMany({
+        select: { id: true, name: true, description: true },
+    });
+    /* ---------------------------------------------------------
+     * Fetch all permissions affecting this user
+     * --------------------------------------------------------- */
+    const userIdsToCheck = [userId, ...ancestorUserIds];
+    const permissions = await prisma.userPermission.findMany({
+        where: { userId: { in: userIdsToCheck } },
+        include: { category: true },
+    });
+    /* ---------------------------------------------------------
+     * Build output map
+     * --------------------------------------------------------- */
+    const result = new Map();
+    // Initialize map with all categories
     for (const c of categories) {
-        map.set(c.id, {
+        result.set(c.id, {
             categoryId: c.id,
             categoryName: c.name,
             description: c.description ?? undefined,
@@ -238,26 +234,24 @@ export async function getEffectivePermissions(userId) {
             directCanBuild: false,
         });
     }
+    // Apply permission rows
     for (const p of permissions) {
-        const existing = map.get(p.categoryId);
         const isDirect = p.userId === userId;
-        if (!existing) {
-            // If a permission references a category not found in categories list,
-            // create a fallback entry.
-            map.set(p.categoryId, {
+        const entry = result.get(p.categoryId);
+        if (!entry) {
+            // Category missing? Unexpected but safe fallback.
+            result.set(p.categoryId, {
                 categoryId: p.categoryId,
                 categoryName: p.category?.name ?? `Category ${p.categoryId}`,
                 description: p.category?.description ?? undefined,
                 effectiveCanBuild: !!p.canBuild,
                 directCanBuild: isDirect ? !!p.canBuild : false,
             });
+            continue;
         }
-        else {
-            // OR the canBuild flags
-            existing.effectiveCanBuild = existing.effectiveCanBuild || !!p.canBuild;
-            if (isDirect)
-                existing.directCanBuild = !!p.canBuild;
-        }
+        entry.effectiveCanBuild ||= !!p.canBuild;
+        if (isDirect)
+            entry.directCanBuild = !!p.canBuild;
     }
-    return Array.from(map.values());
+    return [...result.values()];
 }

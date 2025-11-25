@@ -3,7 +3,7 @@
 import { PrismaClient } from '@prisma/client';
 
 // Declare the PrismaClient instance globally or locally based on environment
-// This prevents multiple instances in devessssssssssssssssssssslopment, which can cause connection issues.
+// This prevents multiple instances in development, which can cause connection issues.
 // We use a global variable to ensure a singleton pattern.
 
 // Type augmentation to add prisma to the global object in development

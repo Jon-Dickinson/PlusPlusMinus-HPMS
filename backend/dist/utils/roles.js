@@ -1,34 +1,57 @@
-// middleware factory to require one or more roles
+export const ALL_ROLES = ['ADMIN', 'MAYOR', 'VIEWER'];
+/* ======================================================================
+ * Internal helper — Strong ID parsing
+ * ====================================================================== */
+function parseId(value) {
+    if (typeof value !== 'string' && typeof value !== 'number')
+        return null;
+    const id = Number(value);
+    return Number.isNaN(id) ? null : id;
+}
+/* ======================================================================
+ * requireRoles(...roles)
+ * Require one or more roles to access a route
+ * ====================================================================== */
 export function requireRoles(...allowed) {
     return (req, res, next) => {
         const user = req.user;
-        if (!user)
+        if (!user) {
             return res.status(401).json({ message: 'Unauthorized' });
-        if (!allowed.includes(user.role))
+        }
+        if (!allowed.includes(user.role)) {
             return res.status(403).json({ message: 'Forbidden' });
+        }
         next();
     };
 }
-/**
- * Middleware factory that allows access to users who have one of the allowed roles
- * OR are the owner identified by a param or body field (e.g. userId).
+/* ======================================================================
+ * requireRoleOrOwner(paramName, ...roles)
  *
- * Usage: requireRoleOrOwner('userId', 'ADMIN')  -> allow ADMIN or owner matching req.params.userId
- */
+ * Allows:
+ *   - Any user with an allowed role
+ *   - OR the "owner", matched by req.params[paramName] or req.body[paramName]
+ *
+ * Usage:
+ *   requireRoleOrOwner('userId', 'ADMIN')
+ * ====================================================================== */
 export function requireRoleOrOwner(paramName, ...allowed) {
     return (req, res, next) => {
         const user = req.user;
-        if (!user)
+        if (!user) {
             return res.status(401).json({ message: 'Unauthorized' });
-        // allow by role
-        if (allowed.includes(user.role))
+        }
+        // Allow if user has one of the required roles
+        if (allowed.includes(user.role)) {
             return next();
-        // allow if owner (check params first, then body)
-        const ownerIdRaw = req.params?.[paramName] ?? req.body?.[paramName];
-        const ownerId = ownerIdRaw ? Number(ownerIdRaw) : NaN;
-        if (!Number.isNaN(ownerId) && ownerId === user.id)
+        }
+        // Allow if user is the "owner"
+        const rawOwnerId = req.params?.[paramName] ??
+            req.body?.[paramName] ??
+            null;
+        const ownerId = parseId(rawOwnerId);
+        if (ownerId !== null && ownerId === user.id) {
             return next();
+        }
         return res.status(403).json({ message: 'Forbidden' });
     };
 }
-export const ALL_ROLES = ['ADMIN', 'MAYOR', 'VIEWER'];

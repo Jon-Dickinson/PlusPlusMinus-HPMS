@@ -1,4 +1,14 @@
 import * as UserService from '../services/user.service.js';
+/* ======================================================================
+ * Utility — Safe ID parsing
+ * ====================================================================== */
+function parseId(value) {
+    const id = Number(value);
+    return Number.isNaN(id) ? null : id;
+}
+/* ======================================================================
+ * GET /api/users
+ * ====================================================================== */
 export async function getAllUsers(req, res, next) {
     try {
         const users = await UserService.getAll();
@@ -8,18 +18,31 @@ export async function getAllUsers(req, res, next) {
         next(err);
     }
 }
-export async function listMayors(_req, res) {
-    const data = await UserService.listMayors();
-    // augment hasNotes for UI
-    const result = data.map((m) => ({
-        ...m,
-        hasNotes: (m.notes?.length ?? 0) > 0,
-    }));
-    res.json(result);
+/* ======================================================================
+ * GET /api/users/mayors (public)
+ * ====================================================================== */
+export async function listMayors(_req, res, next) {
+    try {
+        const data = await UserService.listMayors();
+        // Enrich response for frontend: mark mayors who have notes
+        const result = data.map((m) => ({
+            ...m,
+            hasNotes: (m.notes?.length ?? 0) > 0,
+        }));
+        res.json(result);
+    }
+    catch (err) {
+        next(err);
+    }
 }
+/* ======================================================================
+ * GET /api/users/:id
+ * ====================================================================== */
 export async function getUserById(req, res, next) {
     try {
-        const id = Number(req.params.id);
+        const id = parseId(req.params.id);
+        if (!id)
+            return res.status(400).json({ message: 'Invalid user ID' });
         const user = await UserService.getById(id);
         if (!user)
             return res.status(404).json({ message: 'User not found' });
@@ -29,6 +52,10 @@ export async function getUserById(req, res, next) {
         next(err);
     }
 }
+/* ======================================================================
+ * POST /api/users
+ * ADMIN ONLY
+ * ====================================================================== */
 export async function createUser(req, res, next) {
     try {
         const user = await UserService.create(req.body);
@@ -38,9 +65,14 @@ export async function createUser(req, res, next) {
         next(err);
     }
 }
+/* ======================================================================
+ * PUT /api/users/:id
+ * ====================================================================== */
 export async function updateUser(req, res, next) {
     try {
-        const id = Number(req.params.id);
+        const id = parseId(req.params.id);
+        if (!id)
+            return res.status(400).json({ message: 'Invalid user ID' });
         const updated = await UserService.update(id, req.body);
         res.json(updated);
     }
@@ -48,9 +80,15 @@ export async function updateUser(req, res, next) {
         next(err);
     }
 }
+/* ======================================================================
+ * DELETE /api/users/:id
+ * ADMIN ONLY
+ * ====================================================================== */
 export async function deleteUser(req, res, next) {
     try {
-        const id = Number(req.params.id);
+        const id = parseId(req.params.id);
+        if (!id)
+            return res.status(400).json({ message: 'Invalid user ID' });
         await UserService.remove(id);
         res.status(204).send();
     }
@@ -58,11 +96,26 @@ export async function deleteUser(req, res, next) {
         next(err);
     }
 }
+/* ======================================================================
+ * PUT /api/users/:id/permissions
+ * Requires: requireHierarchyWriteAccess
+ * ====================================================================== */
 export async function updateUserPermissions(req, res, next) {
     try {
-        const id = Number(req.params.id);
-        const payload = req.body;
-        const updated = await UserService.updatePermissions(id, payload.permissions || []);
+        const id = parseId(req.params.id);
+        if (!id)
+            return res.status(400).json({ message: 'Invalid user ID' });
+        // Normalize the permissions payload
+        const permissions = Array.isArray(req.body?.permissions)
+            ? req.body.permissions
+            : [];
+        const sanitizedPermissions = permissions
+            .filter((p) => p && typeof p.categoryId === 'number')
+            .map((p) => ({
+            categoryId: p.categoryId,
+            canBuild: !!p.canBuild,
+        }));
+        const updated = await UserService.updatePermissions(id, sanitizedPermissions);
         res.json(updated);
     }
     catch (err) {

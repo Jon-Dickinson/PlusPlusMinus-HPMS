@@ -1,56 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
 import * as CityService from '../services/city.service.js';
-import { getCityByUserId as serviceGetCityByUserId, saveCity as serviceSaveCity } from '../services/city.service.js';
 import { saveCitySchema } from '../validators/city.validator.js';
+
+/* ======================================================================
+ * Utility: safely parse IDs
+ * ====================================================================== */
+function parseId(value: string): number | null {
+  const id = Number(value);
+  return Number.isNaN(id) ? null : id;
+}
+
+/* ======================================================================
+ * City List & Basic CRUD
+ * ====================================================================== */
+
 export async function listCities(req: Request, res: Response, next: NextFunction) {
   try {
     const data = await CityService.listCities();
     res.json(data);
-  } catch (err) {
-    next(err);
-  }
-}
-export async function getCity(req: Request, res: Response) {
-  const userId = Number(req.params.userId);
-  const city = await serviceGetCityByUserId(userId);
-  if (!city) return res.status(404).json({ error: 'City not found' });
-  res.json(city);
-}
-
-export async function saveCitySnapshot(req: Request, res: Response) {
-  const userId = Number(req.params.userId);
-  const parsed = saveCitySchema.parse(req.body);
-  const updated = await serviceSaveCity(userId, parsed);
-  res.json(updated);
-}
-export async function getCityById(req: Request, res: Response, next: NextFunction) {
-  try {
-    const id = Number(req.params.id);
-    const city = await CityService.getById(id);
-    if (!city) return res.status(404).json({ message: 'City not found' });
-    res.json(city);
-  } catch (err) {
-    next(err);
-  }
-}
-
-export async function getCityByUserId(req: Request, res: Response, next: NextFunction) {
-  try {
-    const userId = Number(req.params.userId);
-    const city = await CityService.getByMayorId(userId);
-    if (!city) return res.status(404).json({ message: 'City not found' });
-    res.json(city);
-  } catch (err) {
-    next(err);
-  }
-}
-
-export async function saveCityByUserId(req: Request, res: Response, next: NextFunction) {
-  try {
-    const userId = Number(req.params.userId);
-    // auth/permissions are enforced by middleware (requireRoleOrOwner)
-    const updated = await CityService.saveByMayorId(userId, req.body);
-    res.json(updated);
   } catch (err) {
     next(err);
   }
@@ -65,9 +32,25 @@ export async function createCity(req: Request, res: Response, next: NextFunction
   }
 }
 
+export async function getCityById(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ message: 'Invalid city ID' });
+
+    const city = await CityService.getById(id);
+    if (!city) return res.status(404).json({ message: 'City not found' });
+
+    res.json(city);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function updateCity(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ message: 'Invalid city ID' });
+
     const updated = await CityService.update(id, req.body);
     res.json(updated);
   } catch (err) {
@@ -77,7 +60,9 @@ export async function updateCity(req: Request, res: Response, next: NextFunction
 
 export async function deleteCity(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ message: 'Invalid city ID' });
+
     await CityService.remove(id);
     res.status(204).send();
   } catch (err) {
@@ -85,9 +70,70 @@ export async function deleteCity(req: Request, res: Response, next: NextFunction
   }
 }
 
+/* ======================================================================
+ * Retrieve & Modify a Mayor's City
+ * ====================================================================== */
+
+export async function getCityByUserId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = parseId(req.params.userId);
+    if (!userId) return res.status(400).json({ message: 'Invalid user ID' });
+
+    const city = await CityService.getByMayorId(userId);
+    if (!city) return res.status(404).json({ message: 'City not found' });
+
+    res.json(city);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function saveCityByUserId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = parseId(req.params.userId);
+    if (!userId) return res.status(400).json({ message: 'Invalid user ID' });
+
+    // Permissions are enforced by middleware
+    const updated = await CityService.saveByMayorId(userId, req.body);
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/* ======================================================================
+ * Alternative “snapshot” endpoints (legacy API)
+ * ====================================================================== */
+
+export async function getCity(req: Request, res: Response) {
+  const userId = parseId(req.params.userId);
+  if (!userId) return res.status(400).json({ error: 'Invalid user ID' });
+
+  const city = await CityService.getCityByUserId(userId);
+  if (!city) return res.status(404).json({ error: 'City not found' });
+
+  res.json(city);
+}
+
+export async function saveCitySnapshot(req: Request, res: Response) {
+  const userId = parseId(req.params.userId);
+  if (!userId) return res.status(400).json({ error: 'Invalid user ID' });
+
+  const parsed = saveCitySchema.parse(req.body);
+  const updated = await CityService.saveCity(userId, parsed);
+
+  res.json(updated);
+}
+
+/* ======================================================================
+ * City Logs
+ * ====================================================================== */
+
 export async function getBuildLogs(req: Request, res: Response, next: NextFunction) {
   try {
-    const cityId = Number(req.params.id);
+    const cityId = parseId(req.params.id);
+    if (!cityId) return res.status(400).json({ message: 'Invalid city ID' });
+
     const logs = await CityService.getBuildLogs(cityId);
     res.json(logs);
   } catch (err) {
@@ -97,7 +143,9 @@ export async function getBuildLogs(req: Request, res: Response, next: NextFuncti
 
 export async function addBuildLog(req: Request, res: Response, next: NextFunction) {
   try {
-    const cityId = Number(req.params.id);
+    const cityId = parseId(req.params.id);
+    if (!cityId) return res.status(400).json({ message: 'Invalid city ID' });
+
     const log = await CityService.addBuildLog(cityId, req.body);
     res.status(201).json(log);
   } catch (err) {
@@ -105,9 +153,15 @@ export async function addBuildLog(req: Request, res: Response, next: NextFunctio
   }
 }
 
+/* ======================================================================
+ * Notes for a City (owned by mayor)
+ * ====================================================================== */
+
 export async function getNotes(req: Request, res: Response, next: NextFunction) {
   try {
-    const cityId = Number(req.params.id);
+    const cityId = parseId(req.params.id);
+    if (!cityId) return res.status(400).json({ message: 'Invalid city ID' });
+
     const notes = await CityService.getNotes(cityId);
     res.json(notes);
   } catch (err) {
@@ -117,7 +171,9 @@ export async function getNotes(req: Request, res: Response, next: NextFunction) 
 
 export async function addNote(req: Request, res: Response, next: NextFunction) {
   try {
-    const cityId = Number(req.params.id);
+    const cityId = parseId(req.params.id);
+    if (!cityId) return res.status(400).json({ message: 'Invalid city ID' });
+
     const note = await CityService.addNote(cityId, req.body);
     res.status(201).json(note);
   } catch (err) {
@@ -125,18 +181,25 @@ export async function addNote(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+/* ======================================================================
+ * Grid + BuildingLog + QualityIndex bundle
+ * ====================================================================== */
+
 export async function updateCityData(req: Request, res: Response, next: NextFunction) {
   try {
-    const cityId = Number(req.params.id);
+    const cityId = parseId(req.params.id);
+    if (!cityId) return res.status(400).json({ message: 'Invalid city ID' });
+
     const userId = (req as any).user.id;
-    // Log payload for auditing/debugging — avoid storing tokens or sensitive data here
+
     try {
-      console.debug('updateCityData called', { cityId, userId, payload: req.body });
-    } catch (e) {
-      // ignore logging errors
+      console.debug('updateCityData', { cityId, userId, payload: req.body });
+    } catch {
+      /* ignore logging failures */
     }
-    const updatedCity = await CityService.updateCityData(cityId, userId, req.body);
-    res.json(updatedCity);
+
+    const updated = await CityService.updateCityData(cityId, userId, req.body);
+    res.json(updated);
   } catch (err) {
     next(err);
   }
@@ -144,7 +207,9 @@ export async function updateCityData(req: Request, res: Response, next: NextFunc
 
 export async function getCityData(req: Request, res: Response, next: NextFunction) {
   try {
-    const cityId = Number(req.params.id);
+    const cityId = parseId(req.params.id);
+    if (!cityId) return res.status(400).json({ message: 'Invalid city ID' });
+
     const data = await CityService.getCityData(cityId);
     res.json(data);
   } catch (err) {

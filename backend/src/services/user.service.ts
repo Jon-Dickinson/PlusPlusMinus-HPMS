@@ -1,13 +1,16 @@
 import { prisma } from '../db.js';
-import type { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
+/* ---------------------------------------------------------
+ * listMayors()
+ * --------------------------------------------------------- */
 export function listMayors() {
   return prisma.user.findMany({
     where: { role: 'MAYOR' },
     select: {
-      id: true, 
-      firstName: true, 
-      lastName: true, 
+      id: true,
+      firstName: true,
+      lastName: true,
       username: true,
       email: true,
       role: true,
@@ -17,29 +20,33 @@ export function listMayors() {
           id: true,
           name: true,
           level: true,
-          parent: {
-            select: { name: true }
-          }
-        }
+          parent: { select: { name: true } },
+        },
       },
-      city: { 
-        select: { 
+      city: {
+        select: {
           id: true,
-          name: true, 
-          country: true, 
+          name: true,
+          country: true,
           qualityIndex: true,
           gridState: true,
           buildingLog: true,
           createdAt: true,
-          updatedAt: true
-        } 
+          updatedAt: true,
+        },
       },
-      notes: { select: { id: true }, take: 1 },
+      notes: {
+        select: { id: true },
+        take: 1,
+      },
     },
     orderBy: { id: 'asc' },
   });
 }
 
+/* ---------------------------------------------------------
+ * getAll()
+ * --------------------------------------------------------- */
 export async function getAll() {
   return prisma.user.findMany({
     select: {
@@ -53,100 +60,98 @@ export async function getAll() {
       mayorId: true,
       createdAt: true,
       updatedAt: true,
-      // Only include city for MAYORs
-      city: { 
-        select: { 
+      city: {
+        select: {
           id: true,
-          name: true, 
-          country: true, 
-          qualityIndex: true
-        } 
+          name: true,
+          country: true,
+          qualityIndex: true,
+        },
       },
       hierarchy: {
         select: {
           id: true,
           name: true,
-          level: true
-        }
-      }
-      // Removed viewers and mayor includes to reduce null fields in response
-    }
+          level: true,
+        },
+      },
+    },
   });
 }
 
+/* ---------------------------------------------------------
+ * getById()
+ * --------------------------------------------------------- */
 export async function getById(id: number) {
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
       city: true,
-      notes: {
-        orderBy: {
-          createdAt: 'desc',
-        },
-      },
+      notes: { orderBy: { createdAt: 'desc' } },
     },
   });
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
-  const { password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+  const { password, ...safeUser } = user;
+  return safeUser;
 }
 
-export async function create(data: any) {
-  // Note: password hashing should be handled by auth service for registrations; this create is intended for admin user creation
+/* ---------------------------------------------------------
+ * create()
+ * --------------------------------------------------------- */
+export async function create(data: Prisma.UserCreateInput) {
   return prisma.user.create({ data });
 }
 
-export async function update(id: number, data: any) {
-  return prisma.user.update({ where: { id }, data });
+/* ---------------------------------------------------------
+ * update()
+ * --------------------------------------------------------- */
+export async function update(id: number, data: Prisma.UserUpdateInput) {
+  return prisma.user.update({
+    where: { id },
+    data,
+  });
 }
 
+/* ---------------------------------------------------------
+ * remove()
+ * --------------------------------------------------------- */
 export async function remove(id: number) {
-  // Use a transaction to handle all cascading deletes properly
-  return prisma.$transaction(async (tx: any) => {
-    // Get user with all relationships
-    const user = await tx.user.findUnique({ 
-      where: { id }, 
-      include: { 
-        city: true, 
-        notes: true, 
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id },
+      include: {
+        city: true,
+        notes: true,
         permissions: true,
-        viewers: true
-      } 
+        viewers: true,
+      },
     });
-    
-    if (!user) {
-      throw new Error('User not found');
-    }
 
-    // 1. Delete user permissions first
+    if (!user) throw new Error('User not found');
+
+    // 1. Remove permissions
     await tx.userPermission.deleteMany({ where: { userId: id } });
 
-    // 2. Delete user notes
+    // 2. Remove notes
     await tx.note.deleteMany({ where: { userId: id } });
 
-    // 3. If user has viewers, reassign them or handle appropriately
-    if (user.viewers && user.viewers.length > 0) {
-      // Remove the mayor assignment from viewers (set mayorId to null)
+    // 3. Detach viewers (VIEWER.mayorId → null)
+    if (user.viewers.length > 0) {
       await tx.user.updateMany({
         where: { mayorId: id },
-        data: { mayorId: null }
+        data: { mayorId: null },
       });
     }
 
-    // 4. If the user is a MAYOR and has a city, delete city and related data
+    // 4. Delete city + dependent entities if MAYOR
     if (user.role === 'MAYOR' && user.city) {
-      // Delete city buildings first
-      await tx.building.deleteMany({ where: { cityId: user.city.id } });
-      
-      // Delete city build logs
-      await tx.buildLog.deleteMany({ where: { cityId: user.city.id } });
-      
-      // Delete the city
-      await tx.city.delete({ where: { id: user.city.id } });
+      const cityId = user.city.id;
+
+      await tx.building.deleteMany({ where: { cityId } });
+      await tx.buildLog.deleteMany({ where: { cityId } });
+      await tx.city.delete({ where: { id: cityId } });
     }
 
     // 5. Finally delete the user
@@ -154,28 +159,45 @@ export async function remove(id: number) {
   });
 }
 
-export async function updatePermissions(userId: number, permissions: Array<{ categoryId: number; canBuild: boolean }>) {
-  // Validate user exists
+/* ---------------------------------------------------------
+ * updatePermissions()
+ * --------------------------------------------------------- */
+export async function updatePermissions(
+  userId: number,
+  permissions: Array<{ categoryId: number; canBuild: boolean }>
+) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
 
-  // Run each permission change in a transaction for safety
-  await prisma.$transaction(async (tx: any) => {
+  await prisma.$transaction(async (tx) => {
     for (const p of permissions) {
       if (p.canBuild) {
-        // Upsert a permission record for this user/category
+        // Upsert user permission
         await tx.userPermission.upsert({
-          where: { userId_categoryId: { userId, categoryId: p.categoryId } } as any,
+          where: {
+            userId_categoryId: {
+              userId,
+              categoryId: p.categoryId,
+            },
+          },
           update: { canBuild: true },
-          create: { userId, categoryId: p.categoryId, canBuild: true }
+          create: {
+            userId,
+            categoryId: p.categoryId,
+            canBuild: true,
+          },
         });
       } else {
-        // Remove existing permission if present
-        await tx.userPermission.deleteMany({ where: { userId, categoryId: p.categoryId } });
+        // Remove permission row
+        await tx.userPermission.deleteMany({
+          where: { userId, categoryId: p.categoryId },
+        });
       }
     }
   });
 
-  // Return current permissions for the user
-  return prisma.userPermission.findMany({ where: { userId }, include: { category: true } });
+  return prisma.userPermission.findMany({
+    where: { userId },
+    include: { category: true },
+  });
 }

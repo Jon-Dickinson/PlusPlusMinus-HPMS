@@ -1,8 +1,10 @@
 /**
  * Runtime CityGridGenerator
- * This file is a copy of the seeder generator implementation so runtime code
- * can import it from `src/` without leaving the TypeScript `rootDir`.
+ * Clean + strongly typed refactor of the original implementation.
  */
+// --------------------------------------
+// CONSTANTS
+// --------------------------------------
 const BUILDINGS = [
     { id: 1, name: 'Commercial Complex', category: 'commercial', resources: { power: 30, water: 15, employment: 50 } },
     { id: 2, name: 'Emergency Services', category: 'emergency', resources: { power: 20, water: 10, employment: 15, serviceCoverage: 80 } },
@@ -18,126 +20,142 @@ const HIERARCHY_PERMISSIONS = {
     CITY_LEVEL: ['commercial', 'emergency', 'energy', 'utilities', 'residential', 'agriculture'],
     SUBURB_LEVEL: ['residential', 'agriculture'],
 };
+// --------------------------------------
+// MAIN CLASS
+// --------------------------------------
 export class CityGridGenerator {
     GRID_SIZE = 100;
     generateCityGrid(hierarchyLevel) {
-        const allowedBuildings = this.getAllowedBuildings(hierarchyLevel);
+        const allowed = this.getAllowedBuildings(hierarchyLevel);
         const gridState = this.createEmptyGrid();
         const buildingLog = [];
-        const buildingCounts = this.calculateBuildingCounts(hierarchyLevel);
-        this.placeBuildingsInGrid(gridState, allowedBuildings, buildingCounts, buildingLog);
-        const qualityIndex = this.calculateQualityIndex(gridState);
-        return { gridState, buildingLog: buildingLog.reverse(), qualityIndex };
+        const buildingCounts = this.getBuildingCounts(hierarchyLevel);
+        this.fillGrid(gridState, allowed, buildingCounts, buildingLog);
+        return {
+            gridState,
+            buildingLog: buildingLog.reverse(),
+            qualityIndex: this.calculateQualityIndex(gridState),
+        };
     }
     calculateQualityIndexFromGrid(gridState) {
         return this.calculateQualityIndex(gridState);
     }
+    // --------------------------------------
+    // GRID HELPERS
+    // --------------------------------------
     createEmptyGrid() {
         return Array.from({ length: this.GRID_SIZE }, () => []);
     }
     getAllowedBuildings(hierarchyLevel) {
-        let allowedCategories;
         switch (hierarchyLevel) {
             case 1:
                 return BUILDINGS;
             case 2:
-                allowedCategories = HIERARCHY_PERMISSIONS.CITY_LEVEL;
-                break;
+                return BUILDINGS.filter(b => HIERARCHY_PERMISSIONS.CITY_LEVEL.includes(b.category));
             case 3:
-                allowedCategories = HIERARCHY_PERMISSIONS.SUBURB_LEVEL;
-                break;
+                return BUILDINGS.filter(b => HIERARCHY_PERMISSIONS.SUBURB_LEVEL.includes(b.category));
             default:
-                allowedCategories = HIERARCHY_PERMISSIONS.SUBURB_LEVEL;
+                return BUILDINGS.filter(b => HIERARCHY_PERMISSIONS.SUBURB_LEVEL.includes(b.category));
         }
-        return BUILDINGS.filter(b => allowedCategories.includes(b.category));
     }
-    calculateBuildingCounts(hierarchyLevel) {
+    getBuildingCounts(hierarchyLevel) {
         switch (hierarchyLevel) {
             case 1:
-                return { residential: 8, commercial: 4, industrial: 3, energy: 2, utilities: 2, emergency: 2, government: 2, agriculture: 3 };
+                return {
+                    residential: 8,
+                    commercial: 4,
+                    industrial: 3,
+                    energy: 2,
+                    utilities: 2,
+                    emergency: 2,
+                    government: 2,
+                    agriculture: 3,
+                };
             case 2:
-                return { residential: 5, commercial: 3, energy: 1, utilities: 1, emergency: 1, agriculture: 4 };
+                return {
+                    residential: 5,
+                    commercial: 3,
+                    energy: 1,
+                    utilities: 1,
+                    emergency: 1,
+                    agriculture: 4,
+                };
             case 3:
                 return { residential: 3, agriculture: 2 };
             default:
                 return { residential: 2, agriculture: 1 };
         }
     }
-    placeBuildingsInGrid(gridState, allowedBuildings, buildingCounts, buildingLog) {
-        const availableCells = Array.from({ length: this.GRID_SIZE }, (_, i) => i);
-        this.shuffleArray(availableCells);
-        let cellIndex = 0;
-        for (const [category, count] of Object.entries(buildingCounts)) {
-            const categoryBuildings = allowedBuildings.filter(b => b.category === category);
-            for (let i = 0; i < count && cellIndex < availableCells.length; i++) {
-                if (categoryBuildings.length === 0)
-                    continue;
-                const building = categoryBuildings[Math.floor(Math.random() * categoryBuildings.length)];
-                const targetCell = availableCells[cellIndex];
-                const instanceCount = Math.random() < 0.3 ? 2 : 1;
-                for (let j = 0; j < instanceCount; j++) {
-                    gridState[targetCell].push(building.id);
-                    buildingLog.push(building.name.split(' ')[0]);
+    fillGrid(grid, allowedBuildings, counts, log) {
+        const shuffledCells = this.generateShuffledCellOrder();
+        let index = 0;
+        for (const [category, count] of Object.entries(counts)) {
+            const possible = allowedBuildings.filter(b => b.category === category);
+            if (possible.length === 0)
+                continue;
+            for (let i = 0; i < count && index < shuffledCells.length; i++) {
+                const building = possible[Math.floor(Math.random() * possible.length)];
+                const cell = shuffledCells[index++];
+                const instances = Math.random() < 0.3 ? 2 : 1;
+                for (let j = 0; j < instances; j++) {
+                    grid[cell].push(building.id);
+                    log.push(building.name.split(' ')[0]);
                 }
-                cellIndex++;
             }
         }
     }
-    shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
+    generateShuffledCellOrder() {
+        const arr = [...Array(this.GRID_SIZE).keys()];
+        for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+            [arr[i], arr[j]] = [arr[j], arr[i]];
         }
+        return arr;
     }
+    // --------------------------------------
+    // QUALITY INDEX
+    // --------------------------------------
     calculateQualityIndex(gridState) {
-        const resourceTotals = this.computeTotalsFromGrid(gridState);
-        const houses = resourceTotals.population || 0;
-        const buildingCount = gridState.reduce((acc, cell) => acc + cell.length, 0);
-        if (buildingCount === 0)
+        const totals = this.computeResourceTotals(gridState);
+        const houses = totals.population || 0;
+        const totalBuildings = gridState.reduce((acc, cell) => acc + cell.length, 0);
+        if (totalBuildings === 0)
             return 15;
-        const powerUsage = resourceTotals.power || 0;
-        const powerOutput = resourceTotals.powerOutput || 0;
-        const waterUsage = resourceTotals.water || 0;
-        const waterOutput = resourceTotals.waterOutput || 0;
-        const serviceCoverage = resourceTotals.serviceCoverage || 0;
-        const foodProduction = resourceTotals.foodProduction || 0;
-        const employed = resourceTotals.employment || 0;
-        const powerRatio = this.calculateResourceRatio(powerOutput, powerUsage);
-        const waterRatio = this.calculateResourceRatio(waterOutput, waterUsage);
-        const serviceRatio = this.calculateResourceRatio(serviceCoverage, houses);
-        const foodRatio = this.calculateResourceRatio(foodProduction, houses);
-        const adjustedRatios = this.applyEmploymentPenalty(powerRatio, waterRatio, serviceRatio, foodRatio, employed, houses);
-        const avgRatio = (adjustedRatios.powerRatio + adjustedRatios.waterRatio + adjustedRatios.serviceRatio + adjustedRatios.foodRatio) / 4;
-        const percent = Math.floor(avgRatio * 100);
-        return Math.min(100, percent);
+        const power = this.calculateResourceRatio(totals.powerOutput, totals.power);
+        const water = this.calculateResourceRatio(totals.waterOutput, totals.water);
+        const service = this.calculateResourceRatio(totals.serviceCoverage, houses);
+        const food = this.calculateResourceRatio(totals.foodProduction, houses);
+        const adjusted = this.applyEmploymentPenalty(power, water, service, food, totals.employment, houses);
+        const avg = (adjusted.power + adjusted.water + adjusted.service + adjusted.food) / 4;
+        return Math.min(100, Math.floor(avg * 100));
     }
-    computeTotalsFromGrid(gridState) {
-        const allBuildingIds = gridState.reduce((acc, cell) => acc.concat(cell), []);
-        return allBuildingIds.reduce((totals, buildingId) => {
-            const building = BUILDINGS.find(b => b.id === buildingId);
+    computeResourceTotals(gridState) {
+        const ids = gridState.flat();
+        return ids.reduce((totals, id) => {
+            const building = BUILDINGS.find(b => b.id === id);
             if (!building)
                 return totals;
-            for (const [resource, value] of Object.entries(building.resources)) {
-                totals[resource] = (totals[resource] || 0) + value;
+            for (const [key, value] of Object.entries(building.resources)) {
+                totals[key] = (totals[key] ?? 0) + (value ?? 0);
             }
             return totals;
         }, {});
     }
-    calculateResourceRatio(supply, demand) {
+    calculateResourceRatio(supply = 0, demand = 0) {
         if (demand <= 0)
             return 1;
         return Math.min(1, supply / demand);
     }
-    applyEmploymentPenalty(powerRatio, waterRatio, serviceRatio, foodRatio, employed, houses) {
+    applyEmploymentPenalty(powerRatio, waterRatio, serviceRatio, foodRatio, employed = 0, houses = 0) {
         if (employed <= houses || employed <= 0) {
-            return { powerRatio, waterRatio, serviceRatio, foodRatio };
+            return { power: powerRatio, water: waterRatio, service: serviceRatio, food: foodRatio };
         }
         const penalty = houses / employed;
         return {
-            powerRatio: powerRatio * penalty,
-            waterRatio: waterRatio * penalty,
-            serviceRatio: serviceRatio * penalty,
-            foodRatio: foodRatio * penalty,
+            power: powerRatio * penalty,
+            water: waterRatio * penalty,
+            service: serviceRatio * penalty,
+            food: foodRatio * penalty,
         };
     }
 }

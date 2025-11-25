@@ -1,11 +1,29 @@
 import { prisma } from '../db.js';
+/* -------------------------------------------
+ * Get all notes for a user (descending order)
+ * ------------------------------------------- */
 export async function getNotesForUser(userId) {
-    return prisma.note.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+    return prisma.note.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+    });
 }
+/* -------------------------------------------
+ * Save (Create or Update) a note
+ * ------------------------------------------- */
 export async function saveNoteForUser(userId, data) {
-    // if id provided, update, else create
     if (data.id) {
-        return prisma.note.update({ where: { id: data.id }, data: { content: data.content } });
+        // Update existing note
+        return prisma.note.update({
+            where: { id: data.id },
+            data: { content: data.content },
+        });
     }
-    return prisma.note.create({ data: { userId, content: data.content } });
+    // Create new note
+    return prisma.note.create({
+        data: {
+            userId,
+            content: data.content,
+        },
+    });
 }
