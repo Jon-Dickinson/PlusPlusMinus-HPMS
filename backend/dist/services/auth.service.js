@@ -4,50 +4,59 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { HttpError } from '../utils/http-error.js';
 const SECRET = process.env.JWT_SECRET || 'dev-secret';
+/** -----------------------------
+ *  REGISTER SERVICE
+ * ----------------------------- */
 export async function register(data) {
-    const existingUsername = await prisma.user.findUnique({ where: { username: data.username } });
+    // --- Uniqueness checks ---
+    const [existingUsername, existingEmail] = await Promise.all([
+        prisma.user.findUnique({ where: { username: data.username } }),
+        prisma.user.findUnique({ where: { email: data.email } }),
+    ]);
     if (existingUsername)
         throw new HttpError(409, 'Username already exists');
-    const existingEmail = await prisma.user.findUnique({ where: { email: data.email } });
     if (existingEmail)
         throw new HttpError(409, 'Email already exists');
-    const hashed = await bcrypt.hash(data.password, 10);
+    // --- Password hashing ---
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    // --- Create base user ---
     const user = await prisma.user.create({
         data: {
             firstName: data.firstName,
             lastName: data.lastName,
             username: data.username,
             email: data.email,
-            password: hashed,
+            password: hashedPassword,
             role: data.role,
-            hierarchyId: undefined, // Set to undefined for backward compatibility
         },
     });
-    // If registering a VIEWER and a mayorId was supplied, attempt to link the viewer to that mayor.
+    /** -------------------------
+     *  VIEWER REGISTRATION FLOW
+     * -------------------------*/
     if (data.role === 'VIEWER' && data.mayorId) {
-        // Verify mayor exists and is of role MAYOR
-        const mayor = await prisma.user.findUnique({ where: { id: data.mayorId } });
+        const mayor = await prisma.user.findUnique({
+            where: { id: data.mayorId },
+            select: { id: true, role: true },
+        });
         if (!mayor)
-            throw new Error('Selected mayor not found');
+            throw new HttpError(400, 'Selected mayor does not exist');
         if (mayor.role !== 'MAYOR')
             throw new HttpError(400, 'Selected user is not a MAYOR');
-        try {
-            await prisma.user.update({ where: { id: user.id }, data: { mayorId: data.mayorId } });
-        }
-        catch (e) {
-            // Convert DB errors into a clearer message
-            throw new Error('Failed to link viewer to mayor');
-        }
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { mayorId: mayor.id },
+        });
     }
+    /** -------------------------
+     *  MAYOR REGISTRATION FLOW
+     * -------------------------*/
     if (data.role === 'MAYOR') {
-        if (!data.cityName || !data.country)
-            throw new HttpError(400, 'cityName and country required for MAYOR');
-        // Use the same CityGridGenerator used by the seeders to produce a realistic
-        // grid state and qualityIndex for newly created cities so they match seeded
-        // cities and display consistent values in the UI.
+        if (!data.cityName || !data.country) {
+            throw new HttpError(400, 'cityName and country are required for MAYOR registration');
+        }
+        // Use CityGridGenerator to keep seeded and dynamic cities identical
         const generator = new CityGridGenerator();
-        // Default to city level generation (2). This produces a medium-sized city.
-        const cityGrid = generator.generateCityGrid(2);
+        const cityGrid = generator.generateCityGrid(2); // Level 2 = medium-sized city
         await prisma.city.create({
             data: {
                 name: data.cityName,
@@ -59,9 +68,23 @@ export async function register(data) {
             },
         });
     }
+    /** -------------------------
+     *  TOKEN GENERATION
+     * -------------------------*/
     const token = jwt.sign({ id: user.id, role: user.role }, SECRET, { expiresIn: '7d' });
-    return { token, user: { id: user.id, role: user.role } };
+    return {
+        token,
+        user: {
+            id: user.id,
+            role: user.role,
+            username: user.username,
+            email: user.email,
+        },
+    };
 }
+/** -----------------------------
+ *  LOGIN SERVICE
+ * ----------------------------- */
 export async function login({ username, email, password }) {
     if (!password)
         throw new HttpError(400, 'Password is required');
@@ -73,19 +96,19 @@ export async function login({ username, email, password }) {
         include: {
             city: true,
             hierarchy: true,
-            notes: {
-                orderBy: {
-                    createdAt: 'desc',
-                },
-            },
+            notes: { orderBy: { createdAt: 'desc' } },
         },
     });
     if (!user)
         throw new HttpError(401, 'Invalid credentials');
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok)
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid)
         throw new HttpError(401, 'Invalid credentials');
     const token = jwt.sign({ id: user.id, role: user.role }, SECRET, { expiresIn: '7d' });
-    const { password: _, ...userWithoutPassword } = user;
-    return { token, user: userWithoutPassword };
+    // Remove password field
+    const { password: _, ...safeUser } = user;
+    return {
+        token,
+        user: safeUser,
+    };
 }

@@ -1,4 +1,7 @@
 import { prisma } from '../db.js';
+/* ---------------------------------------------------------
+ * listMayors()
+ * --------------------------------------------------------- */
 export function listMayors() {
     return prisma.user.findMany({
         where: { role: 'MAYOR' },
@@ -15,10 +18,8 @@ export function listMayors() {
                     id: true,
                     name: true,
                     level: true,
-                    parent: {
-                        select: { name: true }
-                    }
-                }
+                    parent: { select: { name: true } },
+                },
             },
             city: {
                 select: {
@@ -29,14 +30,20 @@ export function listMayors() {
                     gridState: true,
                     buildingLog: true,
                     createdAt: true,
-                    updatedAt: true
-                }
+                    updatedAt: true,
+                },
             },
-            notes: { select: { id: true }, take: 1 },
+            notes: {
+                select: { id: true },
+                take: 1,
+            },
         },
         orderBy: { id: 'asc' },
     });
 }
+/* ---------------------------------------------------------
+ * getAll()
+ * --------------------------------------------------------- */
 export async function getAll() {
     return prisma.user.findMany({
         select: {
@@ -50,114 +57,129 @@ export async function getAll() {
             mayorId: true,
             createdAt: true,
             updatedAt: true,
-            // Only include city for MAYORs
             city: {
                 select: {
                     id: true,
                     name: true,
                     country: true,
-                    qualityIndex: true
-                }
+                    qualityIndex: true,
+                },
             },
             hierarchy: {
                 select: {
                     id: true,
                     name: true,
-                    level: true
-                }
-            }
-            // Removed viewers and mayor includes to reduce null fields in response
-        }
+                    level: true,
+                },
+            },
+        },
     });
 }
+/* ---------------------------------------------------------
+ * getById()
+ * --------------------------------------------------------- */
 export async function getById(id) {
     const user = await prisma.user.findUnique({
         where: { id },
         include: {
             city: true,
-            notes: {
-                orderBy: {
-                    createdAt: 'desc',
-                },
-            },
+            notes: { orderBy: { createdAt: 'desc' } },
         },
     });
-    if (!user) {
+    if (!user)
         return null;
-    }
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    const { password, ...safeUser } = user;
+    return safeUser;
 }
+/* ---------------------------------------------------------
+ * create()
+ * --------------------------------------------------------- */
 export async function create(data) {
-    // Note: password hashing should be handled by auth service for registrations; this create is intended for admin user creation
     return prisma.user.create({ data });
 }
+/* ---------------------------------------------------------
+ * update()
+ * --------------------------------------------------------- */
 export async function update(id, data) {
-    return prisma.user.update({ where: { id }, data });
+    return prisma.user.update({
+        where: { id },
+        data,
+    });
 }
+/* ---------------------------------------------------------
+ * remove()
+ * --------------------------------------------------------- */
 export async function remove(id) {
-    // Use a transaction to handle all cascading deletes properly
     return prisma.$transaction(async (tx) => {
-        // Get user with all relationships
         const user = await tx.user.findUnique({
             where: { id },
             include: {
                 city: true,
                 notes: true,
                 permissions: true,
-                viewers: true
-            }
+                viewers: true,
+            },
         });
-        if (!user) {
+        if (!user)
             throw new Error('User not found');
-        }
-        // 1. Delete user permissions first
+        // 1. Remove permissions
         await tx.userPermission.deleteMany({ where: { userId: id } });
-        // 2. Delete user notes
+        // 2. Remove notes
         await tx.note.deleteMany({ where: { userId: id } });
-        // 3. If user has viewers, reassign them or handle appropriately
-        if (user.viewers && user.viewers.length > 0) {
-            // Remove the mayor assignment from viewers (set mayorId to null)
+        // 3. Detach viewers (VIEWER.mayorId → null)
+        if (user.viewers.length > 0) {
             await tx.user.updateMany({
                 where: { mayorId: id },
-                data: { mayorId: null }
+                data: { mayorId: null },
             });
         }
-        // 4. If the user is a MAYOR and has a city, delete city and related data
+        // 4. Delete city + dependent entities if MAYOR
         if (user.role === 'MAYOR' && user.city) {
-            // Delete city buildings first
-            await tx.building.deleteMany({ where: { cityId: user.city.id } });
-            // Delete city build logs
-            await tx.buildLog.deleteMany({ where: { cityId: user.city.id } });
-            // Delete the city
-            await tx.city.delete({ where: { id: user.city.id } });
+            const cityId = user.city.id;
+            await tx.building.deleteMany({ where: { cityId } });
+            await tx.buildLog.deleteMany({ where: { cityId } });
+            await tx.city.delete({ where: { id: cityId } });
         }
         // 5. Finally delete the user
         return tx.user.delete({ where: { id } });
     });
 }
+/* ---------------------------------------------------------
+ * updatePermissions()
+ * --------------------------------------------------------- */
 export async function updatePermissions(userId, permissions) {
-    // Validate user exists
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user)
         throw new Error('User not found');
-    // Run each permission change in a transaction for safety
     await prisma.$transaction(async (tx) => {
         for (const p of permissions) {
             if (p.canBuild) {
-                // Upsert a permission record for this user/category
+                // Upsert user permission
                 await tx.userPermission.upsert({
-                    where: { userId_categoryId: { userId, categoryId: p.categoryId } },
+                    where: {
+                        userId_categoryId: {
+                            userId,
+                            categoryId: p.categoryId,
+                        },
+                    },
                     update: { canBuild: true },
-                    create: { userId, categoryId: p.categoryId, canBuild: true }
+                    create: {
+                        userId,
+                        categoryId: p.categoryId,
+                        canBuild: true,
+                    },
                 });
             }
             else {
-                // Remove existing permission if present
-                await tx.userPermission.deleteMany({ where: { userId, categoryId: p.categoryId } });
+                // Remove permission row
+                await tx.userPermission.deleteMany({
+                    where: { userId, categoryId: p.categoryId },
+                });
             }
         }
     });
-    // Return current permissions for the user
-    return prisma.userPermission.findMany({ where: { userId }, include: { category: true } });
+    return prisma.userPermission.findMany({
+        where: { userId },
+        include: { category: true },
+    });
 }

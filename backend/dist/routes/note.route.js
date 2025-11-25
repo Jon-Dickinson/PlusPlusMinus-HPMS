@@ -1,12 +1,22 @@
-import express from 'express';
+import { Router } from 'express';
 import * as NoteController from '../controllers/note.controller.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRoleOrOwner } from '../utils/roles.js';
-const router = express.Router();
-const noteSchema = z.object({ id: z.number().optional(), content: z.string().min(1) });
+import { z } from 'zod';
+const router = Router();
+/* ---------------------------------------------------------
+ * Validation Schema
+ * --------------------------------------------------------- */
+const noteSchema = z.object({
+    id: z.number().optional(),
+    content: z.string().min(1),
+});
+/* ---------------------------------------------------------
+ * Routes
+ * --------------------------------------------------------- */
+// Public: Fetch notes for a given user
 router.get('/:userId', NoteController.getNotes);
-// require auth and allow ADMIN or the owner (userId)
+// Auth-required: Save/update a note for a given user
 router.put('/:userId', authMiddleware, requireRoleOrOwner('userId', 'ADMIN'), validate(noteSchema), NoteController.saveNote);
 export default router;

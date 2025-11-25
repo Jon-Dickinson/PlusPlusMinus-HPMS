@@ -1,34 +1,102 @@
-import express from 'express';
+import { Router } from 'express';
 import * as CityController from '../controllers/city.controller.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRoleOrOwner } from '../utils/roles.js';
-import { cityCreateSchema, cityUpdateSchema, updateCityDataSchema } from '../validators/city.validator.js';
+import {
+  cityCreateSchema,
+  cityUpdateSchema,
+  updateCityDataSchema,
+} from '../validators/city.validator.js';
+
 import { z } from 'zod';
 
-const router = express.Router();
+const router = Router();
 
-const logSchema = z.object({ action: z.string(), value: z.number().optional() });
-const noteSchema = z.object({ content: z.string().min(1) });
+/* ------------------------------------------------------------------
+ *  Inline Schemas (for build logs & notes)
+ * ------------------------------------------------------------------ */
+const logSchema = z.object({
+  action: z.string(),
+  value: z.number().optional(),
+});
 
-// City-level operations
+const noteSchema = z.object({
+  content: z.string().min(1),
+});
+
+/* ==================================================================
+ *  CITY CRUD ROUTES
+ * ================================================================== */
+
+// List all cities
 router.get('/', CityController.listCities);
-router.get('/:id', CityController.getCityById);
+
+// Create a new city
 router.post('/', validate(cityCreateSchema), CityController.createCity);
+
+// Get a single city
+router.get('/:id', CityController.getCityById);
+
+// Update city metadata
 router.put('/:id', validate(cityUpdateSchema), CityController.updateCity);
-router.put('/:id/data', authMiddleware, validate(updateCityDataSchema), CityController.updateCityData);
-router.get('/:id/data', CityController.getCityData);
+
+// Delete city
 router.delete('/:id', CityController.deleteCity);
 
-// City subroutes (notes & logs)
-router.get('/:id/logs', CityController.getBuildLogs);
-router.post('/:id/logs', validate(logSchema), CityController.addBuildLog);
-router.get('/:id/notes', authMiddleware, CityController.getNotes);
-router.post('/:id/notes', authMiddleware, validate(noteSchema), CityController.addNote);
+/* ==================================================================
+ *  CITY DATA (GRID + LOGS + QUALITY INDEX)
+ * ================================================================== */
 
-// User-based city endpoints (frontend expects /api/city/:userId)
+// Get city data (gridState + buildingLog + latest note)
+router.get('/:id/data', CityController.getCityData);
+
+// Update city data — requires auth
+router.put(
+  '/:id/data',
+  authMiddleware,
+  validate(updateCityDataSchema),
+  CityController.updateCityData
+);
+
+/* ==================================================================
+ *  CITY BUILD LOGS
+ * ================================================================== */
+
+// Retrieve build logs
+router.get('/:id/logs', CityController.getBuildLogs);
+
+// Append new build log entry
+router.post('/:id/logs', validate(logSchema), CityController.addBuildLog);
+
+/* ==================================================================
+ *  CITY NOTES (Owned by MAYOR)
+ * ================================================================== */
+
+// List notes for this city's mayor
+router.get('/:id/notes', authMiddleware, CityController.getNotes);
+
+// Add a new note
+router.post(
+  '/:id/notes',
+  authMiddleware,
+  validate(noteSchema),
+  CityController.addNote
+);
+
+/* ==================================================================
+ *  USER-BASED CITY ENDPOINTS (frontend depends on these)
+ * ================================================================== */
+
+// Get city by user ID
 router.get('/user/:userId', CityController.getCityByUserId);
-// require auth and allow ADMIN or the owner (userId) to save
-router.put('/user/:userId/save', authMiddleware, requireRoleOrOwner('userId', 'ADMIN'), CityController.saveCityByUserId);
+
+// Save city by user ID (ADMIN or owner only)
+router.put(
+  '/user/:userId/save',
+  authMiddleware,
+  requireRoleOrOwner('userId', 'ADMIN'),
+  CityController.saveCityByUserId
+);
 
 export default router;
