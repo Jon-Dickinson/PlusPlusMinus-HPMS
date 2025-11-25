@@ -67,3 +67,10 @@ export const DeleteButton = styled.button`
     background: rgba(239, 68, 68, 0.1);
   }
 `;
+
+export const PermissionButton = styled(DeleteButton)`
+  color: #2FBF4A;
+  &:hover {
+    background: rgba(47, 191, 74, 0.12);
+  }
+`;

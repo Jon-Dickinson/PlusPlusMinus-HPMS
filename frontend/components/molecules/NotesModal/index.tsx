@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from '../../../lib/axios';
 import { useAuth } from '../../../context/AuthContext';
 import {
@@ -73,7 +74,7 @@ export default function NotesModal({ isOpen, onClose }: NotesModalProps) {
 
   if (!isOpen) return null;
 
-  return (
+  const modal = (
     <ModalOverlay onClick={(event) => event.stopPropagation()}>
       <ModalContent onClick={(event) => event.stopPropagation()}>
         <ModalTitle>Notes</ModalTitle>
@@ -95,6 +96,12 @@ export default function NotesModal({ isOpen, onClose }: NotesModalProps) {
           <DeleteButton onClick={handleSave} disabled={loading || !content.trim()}>{loading ? 'Saving...' : 'Save'}</DeleteButton>
         </ModalButtons>
       </ModalContent>
-    </ModalOverlay>
-  );
+      </ModalOverlay>
+    );
+
+    if (typeof document !== 'undefined') {
+      return createPortal(modal, document.body);
+    }
+
+    return null;
 }

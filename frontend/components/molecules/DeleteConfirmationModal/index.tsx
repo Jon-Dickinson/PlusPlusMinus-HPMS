@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import {
   ModalOverlay,
   ModalContent,
@@ -28,7 +29,7 @@ export default function DeleteConfirmationModal({
 }: DeleteConfirmationModalProps) {
   if (!isOpen || !deleteTarget) return null;
 
-  return (
+  const modal = (
     <ModalOverlay>
       <ModalContent>
         <ModalTitle>Confirm Delete</ModalTitle>
@@ -44,4 +45,10 @@ export default function DeleteConfirmationModal({
       </ModalContent>
     </ModalOverlay>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modal, document.body);
+  }
+
+  return null;
 }

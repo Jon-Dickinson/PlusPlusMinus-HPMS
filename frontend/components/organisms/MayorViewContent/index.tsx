@@ -37,7 +37,7 @@ const MayorViewContent: React.FC<MayorViewContentProps> = ({ initialCity }) => {
                 ) : null}
               </Message>
               <Message>
-                {initialCity.name}, {initialCity.country}
+                 City: {initialCity.name}, {initialCity.country}
               </Message>
             </>
           )}

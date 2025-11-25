@@ -11,6 +11,7 @@ import {
   HeaderTitle,
   Message,
 } from './styles';
+import Spinner from '../../atoms/Spinner';
 
 interface User {
   id: number;
@@ -63,7 +64,12 @@ export default function UserGrid({
 
       <MayorGrid>
         {loading ? (
-          <Message>Loading users...</Message>
+          <Message aria-live="polite">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+              <Spinner size={20} />
+              <div>Loading users…</div>
+            </div>
+          </Message>
         ) : mayors.length === 0 ? (
           <Message>No mayors found.</Message>
         ) : (

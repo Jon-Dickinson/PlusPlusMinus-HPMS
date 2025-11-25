@@ -5,6 +5,9 @@ export const DataGrid = styled.div`
   flex-direction: column;
   align-items: flex-start;
   padding: 0 20px;
+  /* ensure DataGrid can grow to fill parent's height so internal scroll works */
+  width: 100%;
+  height: 100%;
 `;
 
 export const GridHeader = styled.div`
@@ -19,7 +22,11 @@ export const MayorGrid = styled.div`
   display: flex;
   width: 100%;
   flex-direction: column;
-  overflow: hidden;
+  /* Make the list of mayor/viewer rows a scrollable region while keeping
+     the header (GridHeader) always visible above. */
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 export const HeadingRow = styled.div`
@@ -31,6 +38,10 @@ export const HeadingRow = styled.div`
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  /* Keep header fully visible above the scrollable row list */
+  position: sticky;
+  top: 0;
+  z-index: 5;
 `;
 
 export const HeadingLabel = styled.div`

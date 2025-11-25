@@ -1,5 +1,5 @@
-import React, { useState, Suspense } from 'react';
-import { Trash2, Shield } from 'lucide-react';
+import React from 'react';
+import { Trash2 } from 'lucide-react';
 import {
   ViewerCardStyled,
   ViewerLocation,
@@ -8,6 +8,7 @@ import {
   ViewerActions,
   Muted,
   DeleteButton,
+  PermissionButton,
 } from './styles';
 
 interface User {
@@ -19,7 +20,6 @@ interface User {
   mayorId?: number;
 }
 
-import PermissionsModal from '../PermissionsModal';
 
 export interface ViewerCardProps {
   viewer: User;
@@ -27,14 +27,7 @@ export interface ViewerCardProps {
 }
 
 export default function ViewerCard({ viewer, onDeleteUser }: ViewerCardProps) {
-  const [showPermissions, setShowPermissions] = useState(false);
-
-  const openPermissions = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    setShowPermissions(true);
-  };
-
-  const closePermissions = () => setShowPermissions(false);
+  // Viewers are read-only — no permissions modal or edit available
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
     onDeleteUser(viewer.id);
@@ -55,19 +48,13 @@ export default function ViewerCard({ viewer, onDeleteUser }: ViewerCardProps) {
       </ViewerQualityIndex>
 
       <ViewerActions>
-        <DeleteButton onClick={openPermissions} title="Permissions">
-          <Shield size={16} />
-        </DeleteButton>
+        {/* viewers cannot edit permissions; remove the permissions button */}
         <DeleteButton onClick={handleDelete}>
           <Trash2 size={16} />
         </DeleteButton>
       </ViewerActions>
 
-      {showPermissions && (
-        <Suspense fallback={<div />}>
-          <PermissionsModal isOpen={true} userId={viewer.id} onClose={closePermissions} />
-        </Suspense>
-      )}
+      {/* no permissions modal for viewers */}
     </ViewerCardStyled>
   );
 }

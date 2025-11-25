@@ -6,10 +6,12 @@ export const PermissionsList = styled.div`
   margin-top: 12px;
 `;
 
-export const PermissionRow = styled.div`
+export const PermissionRow = styled.div<{ dimmed?: boolean }>`
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
+  /* The modal must always render items at full opacity per UX spec */
+  opacity: 1;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 `;
 
@@ -19,16 +21,7 @@ export const CategoryName = styled.div`
   font-weight: 600;
 `;
 
-export const CategoryDescription = styled.div`
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-`;
-
-export const PermissionActions = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-`;
+// no category description column in the simplified modal UI
 
 export const CheckboxLabel = styled.label`
   display: flex;
@@ -37,11 +30,4 @@ export const CheckboxLabel = styled.label`
   cursor: pointer;
 `;
 
-export const DirectLabel = styled.span`
-  font-size: 13px;
-`;
-
-export const EffectiveText = styled.div<{ effective: boolean }>`
-  font-size: 12px;
-  color: ${p => (p.effective ? '#A3FFAB' : 'rgba(255,255,255,0.5)')};
-`;
+// removed Direct/Effective visual labels — modal simplified to single column

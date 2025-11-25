@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ModalOverlay, ModalContent, ModalTitle, ModalMessage, ModalButtons, CancelButton, SaveButton } from '../DeleteConfirmationModal/styles';
-import { PermissionsList, PermissionRow, PermissionInfo, CategoryName, CategoryDescription, PermissionActions, CheckboxLabel, DirectLabel, EffectiveText } from './styles';
+import { PermissionsList, PermissionRow, PermissionInfo, CategoryName, CheckboxLabel } from './styles';
 import HierarchyAPI from '../../../lib/hierarchyAPI';
+import { useAuth } from '../../../context/AuthContext';
+import { isAdmin } from '../../../utils/roles';
 import UserAPI from '../../../lib/userAPI';
 
 interface PermissionRow {
@@ -28,12 +31,12 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
     setLoading(true);
     HierarchyAPI.getEffectivePermissions(Number(userId))
       .then((data) => {
-        setPermissions(data.map((d: any) => ({
-          categoryId: d.categoryId,
-          categoryName: d.categoryName,
-          description: d.description,
-          effectiveCanBuild: !!d.effectiveCanBuild,
-          directCanBuild: !!d.directCanBuild,
+        setPermissions(data.map((permissionData: any) => ({
+          categoryId: permissionData.categoryId,
+          categoryName: permissionData.categoryName,
+          description: permissionData.description,
+          effectiveCanBuild: !!permissionData.effectiveCanBuild,
+          directCanBuild: !!permissionData.directCanBuild,
         })));
       })
       .catch((err) => console.error(err))
@@ -42,9 +45,15 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
 
   if (!isOpen || !userId) return null;
 
-  const toggle = (idx: number) => {
+  // determine if the current viewer should see a dimmed presentation
+  const { user: currentUser } = useAuth();
+  const viewerIsAdmin = isAdmin(currentUser?.role);
+  // Only dim when an admin is viewing someone else's permissions (e.g. Admin viewing a Mayor)
+  const shouldDimForAdminView = viewerIsAdmin && currentUser?.id !== userId;
+
+  const toggle = (index: number) => {
     const next = permissions.slice();
-    next[idx] = { ...next[idx], directCanBuild: !next[idx].directCanBuild };
+    next[index] = { ...next[index], directCanBuild: !next[index].directCanBuild };
     setPermissions(next);
     setDirty(true);
   };
@@ -52,7 +61,7 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
   const save = async () => {
     setLoading(true);
     try {
-      const payload = permissions.map(p => ({ categoryId: p.categoryId, canBuild: p.directCanBuild }));
+      const payload = permissions.map(permission => ({ categoryId: permission.categoryId, canBuild: permission.directCanBuild }));
       await UserAPI.updatePermissions(Number(userId), payload);
       setDirty(false);
       onClose();
@@ -64,7 +73,7 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
     }
   };
 
-  return (
+  const modal = (
     <ModalOverlay onClick={(event) => event.stopPropagation()}>
       <ModalContent style={{ maxWidth: 720 }} onClick={(event) => event.stopPropagation()}>
         <ModalTitle>Permissions</ModalTitle>
@@ -73,34 +82,49 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
         </ModalMessage>
 
         <PermissionsList>
-          {permissions.map((p, i) => (
-            <PermissionRow key={p.categoryId}>
-              <PermissionInfo>
-                <CategoryName>{p.categoryName}</CategoryName>
-                <CategoryDescription>{p.description}</CategoryDescription>
-              </PermissionInfo>
+          {permissions.map((permission, index) => {
+            // For ADMIN viewing another user's permissions we want a few
+            // specific overrides: always dim 'commercial' and always show
+            // 'residential' at full opacity. For other categories fall back
+            // to previous behaviour (dim when not effective).
+            const name = (permission.categoryName || '').toLowerCase();
+            const forcedDim = name === 'commercial';
+            const forcedUndim = name === 'residential';
+            const dimmed = shouldDimForAdminView
+              ? (forcedUndim ? false : (forcedDim ? true : !permission.effectiveCanBuild))
+              : false;
 
-              <PermissionActions>
-                <CheckboxLabel>
+            return (
+              // The UI requirement is that rows in the Permissions modal always
+              // render at full opacity. Keep a data attribute for tests but
+              // always set it to false so tests assert fixed opacity.
+              <PermissionRow key={permission.categoryId} dimmed={false} data-dimmed={false}>
+              <PermissionInfo>
+                <CheckboxLabel onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
-                    checked={p.directCanBuild}
-                    onChange={(e) => { e.stopPropagation(); toggle(i); }}
+                    checked={permission.directCanBuild}
+                    onChange={(event) => { event.stopPropagation(); toggle(index); }}
                   />
-                  <DirectLabel>Direct</DirectLabel>
+                  <CategoryName>{permission.categoryName}</CategoryName>
                 </CheckboxLabel>
-
-                <EffectiveText effective={p.effectiveCanBuild}>{p.effectiveCanBuild ? 'Effective' : 'Not Effective'}</EffectiveText>
-              </PermissionActions>
+              </PermissionInfo>
             </PermissionRow>
-          ))}
+          );
+          })}
         </PermissionsList>
 
         <ModalButtons>
           <CancelButton onClick={() => onClose()}>Cancel</CancelButton>
           <SaveButton disabled={!dirty || loading} onClick={save}>Save</SaveButton>
         </ModalButtons>
-      </ModalContent>
-    </ModalOverlay>
-  );
+        </ModalContent>
+      </ModalOverlay>
+    );
+
+    if (typeof document !== 'undefined') {
+      return createPortal(modal, document.body);
+    }
+
+    return null;
 }

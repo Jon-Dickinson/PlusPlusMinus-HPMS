@@ -44,24 +44,34 @@ const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
     (async () => {
       try {
         // If we're showing the sidebar for a subject user (admin viewing a mayor),
-        // request allowed buildings for that subject. Otherwise request for the
-        // current logged-in user.
-        const targetId = subjectUserId ?? user?.id;
-        if (!targetId) {
+        // request allowed buildings for the current logged-in user so the admin
+        // can see the full list of building types, then annotate which categories
+        // are disabled for the subject user. This ensures we show all types and
+        // dim the ones the mayor cannot use.
+        const listTargetId = subjectUserId ? (user?.id ?? subjectUserId) : user?.id;
+        if (!listTargetId) {
           // Nothing to fetch for permissions (shouldn't happen in normal flows)
           setAllowedBuildings([]);
           return;
         }
-        const fetched = await HierarchyAPI.getAllowedBuildings(targetId);
+        const fetched = await HierarchyAPI.getAllowedBuildings(Number(listTargetId));
         if (!active) return;
         // If viewing a subject user (Admin -> Mayor), also fetch their effective
         // permissions so we can mark which categories are enabled/disabled.
         let effectiveMap: Record<number, boolean> = {};
-        if (subjectUserId) {
+        // Only compute effective permissions for the subject when
+        // the current viewer is an Admin and the subject is different
+        const viewerIsAdmin = user?.role && user.role.toUpperCase() === 'ADMIN';
+        const isAdminViewingOther = !!subjectUserId && viewerIsAdmin && user?.id !== subjectUserId;
+        if (isAdminViewingOther) {
           try {
+            // For annotating the sidebar we want to base the disabled state on
+            // the subject user's *direct* permissions (not the aggregated
+            // effective permissions). The UI should grey-out items the subject
+            // cannot directly build.
             const eff = await HierarchyAPI.getEffectivePermissions(Number(subjectUserId));
             effectiveMap = (eff || []).reduce((acc: Record<number, boolean>, r: any) => {
-              acc[r.categoryId] = !!r.effectiveCanBuild; return acc;
+              acc[r.categoryId] = !!r.directCanBuild; return acc;
             }, {});
           } catch (err) {
             console.error('Failed to load effective permissions for subject user', err);
@@ -70,7 +80,10 @@ const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
         // If we have effectiveMap, annotate category/buildings with disabled flag
         const annotated = (fetched || []).map((cat: any) => ({
           ...cat,
-          disabledForSubject: subjectUserId ? !effectiveMap[cat.categoryId] : false,
+          // Only mark categories disabled if an admin is viewing a different
+          // subject's sidebar. Disabled state is based on the subject's
+          // direct permissions (true => allowed; false => disabled/dim).
+          disabledForSubject: isAdminViewingOther ? !effectiveMap[cat.categoryId] : false,
         }));
         setAllowedBuildings(annotated);
       } catch (err) {
