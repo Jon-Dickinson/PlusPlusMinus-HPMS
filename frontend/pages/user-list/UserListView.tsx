@@ -9,9 +9,9 @@ import DeleteConfirmationModal from '../../components/molecules/DeleteConfirmati
 import HierarchyTreeView from '../../components/organisms/HierarchyTreeView';
 import axios from '../../lib/axios';
 import useAuthorized from '../../hooks/useAuthorized';
-import useUserList from './useUserList';
-import buildOrderedUsers from './buildOrderedUsers';
-import { ColWrapper, ContentWrapper, LeftPanel, TabContainer, Tab } from './styles';
+import useUserList from '../../hooks/useUserList';
+import buildOrderedUsers from '../../utils/buildOrderedUsers';
+import { ColWrapper, ContentWrapper, LeftPanel, TabContainer, Tab } from '../../components/pages/user-list/styles';
 
 export default function UserListView() {
   const router = useRouter();

@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import axios from '../../lib/axios';
-import { useAuth } from '../../context/AuthContext';
-import { HierarchyAPI, useHierarchy } from '../../lib/hierarchyAPI';
-import type { User } from './user-list.types';
+import axios from '../lib/axios';
+import { useAuth } from '../context/AuthContext';
+import { HierarchyAPI, useHierarchy } from '../lib/hierarchyAPI';
+import type { User } from '../types/user';
 
 export default function useUserList() {
   const { user, initialized } = useAuth();
