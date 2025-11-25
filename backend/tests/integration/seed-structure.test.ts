@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { HierarchySeeder } from '../../../prisma/seeders/hierarchy.seeder.js';
-import { UserSeeder } from '../../../prisma/seeders/user-assets/user.seeder.js';
+import { HierarchySeeder } from '../../prisma/seeders/hierarchy.seeder';
+import { UserSeeder } from '../../prisma/seeders/user-assets/user.seeder';
 
 const prisma = new PrismaClient();
 

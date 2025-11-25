@@ -16,7 +16,7 @@ vi.mock('../../../lib/hierarchyAPI', () => ({
 // Stub the draggable building to avoid pulling in react-dnd in unit tests
 vi.mock('../DraggableBuilding', () => ({
   __esModule: true,
-  default: ({ building }: any) => <div aria-label={building.name} aria-disabled={building.disabled ? 'true' : null} />,
+  default: ({ building }: any) => <div aria-label={building.name} aria-disabled={building.disabled ? 'true' : undefined} />,
 }));
 
 vi.mock('../../../context/AuthContext', () => ({ useAuth: () => ({ user: { id: 99, role: 'ADMIN' } }) }));

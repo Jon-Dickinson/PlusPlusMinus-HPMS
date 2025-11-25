@@ -37,6 +37,7 @@
     "**/*.test.ts",
     "prisma.config.ts",
     "prisma",
+    "scripts",
     "tests",
     "**/*.spec.ts",
     "**/*.test.ts",

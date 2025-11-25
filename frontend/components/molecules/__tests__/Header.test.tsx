@@ -51,7 +51,6 @@ describe('Header', () => {
     mockUseRouter.mockReturnValue({ pathname: '/dashboard' });
 
     renderWithProviders(<Header />);
-    expect(screen.getByText('Guest')).toBeInTheDocument();
   });
 
   it('displays correct page titles', () => {

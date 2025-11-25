@@ -1,3 +1,5 @@
+/// <reference types="vitest" />
+import { describe, expect, it } from 'vitest';
 import { CityGridGenerator } from '../../src/services/city-grid-generator';
 
 describe('CityGridGenerator.calculateQualityIndexFromGrid', () => {
