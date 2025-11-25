@@ -1,6 +1,6 @@
-import { HierarchyLevel, BasicUser } from '../../types/hierarchy';
+import { HierarchyLevel, BasicUser } from '../types/hierarchy';
 
-import type { User } from './user-list.types';
+import type { User } from '../types/user';
 
 export default function buildOrderedUsers(tree: HierarchyLevel[], allUsers: User[]) {
   const ordered: User[] = [];
