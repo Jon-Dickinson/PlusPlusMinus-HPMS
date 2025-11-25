@@ -13,7 +13,7 @@ export const MapPanel = styled.div`
 export const Message = styled.div`
   position: relative;
   display: inline-flex;
-  font-size: 16px;
+  font-size: 15px;
   color: #ffffff;
 `;
 
@@ -38,10 +38,10 @@ export const GridHeader = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-left: 10px;
+  padding-left: 20px;
 
   h2 {
-    font-size: 18px;
+    font-size: 16px;
     margin: 0;
     color: #ffffff;
     font-weight: 500;

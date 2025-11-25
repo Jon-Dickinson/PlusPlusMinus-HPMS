@@ -73,6 +73,14 @@ export const DeleteButton = styled.div`
   }
 `;
 
+export const PermissionButton = styled(DeleteButton)`
+  color: #2FBF4A;
+  &:hover {
+    /* slightly green background instead of red */
+    background: rgba(47, 191, 74, 0.12);
+  }
+`;
+
 export const Properties = styled.div`
   display: flex;
   align-items: center;

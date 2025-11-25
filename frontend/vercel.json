@@ -5,6 +5,7 @@
   "installCommand": "npm install",
   "env": {
     "NODE_ENV": "production",
-    "NEXT_PUBLIC_API_URL": "https://passionate-contentment-production.up.railway.app"
+    "NEXT_PUBLIC_API_URL": "https://passionate-contentment-production.up.railway.app",
+    "NEXT_PUBLIC_ERROR_REPORT_URL": ""
   }
 }

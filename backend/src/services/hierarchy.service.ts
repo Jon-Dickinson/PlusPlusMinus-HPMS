@@ -97,6 +97,14 @@ export async function getUserSubordinates(userId: number) {
       username: true,
       email: true,
       role: true,
+      city: {
+        select: {
+          id: true,
+          name: true,
+          country: true,
+          qualityIndex: true,
+        }
+      },
       hierarchy: {
         select: {
           id: true,
@@ -123,6 +131,9 @@ export async function getUserSubordinates(userId: number) {
         username: true,
         email: true,
         role: true,
+        city: {
+          select: { id: true, name: true, country: true, qualityIndex: true }
+        },
         hierarchy: {
           select: {
             id: true,
