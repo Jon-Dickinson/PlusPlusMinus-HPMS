@@ -57,7 +57,7 @@ describe('Seed structure constraints', () => {
     expect(mayors.length).toBeGreaterThan(0);
 
     for (const mayor of mayors) {
-      const hl = await prisma.hierarchyLevel.findUnique({ where: { id: mayor.hierarchyId } });
+      const hl = await prisma.hierarchyLevel.findUnique({ where: { id: mayor.hierarchyId ?? undefined } });
       expect(hl).toBeTruthy();
       if (hl!.level === 2) {
         // City mayor -> parent must be level 1

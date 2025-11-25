@@ -9,10 +9,7 @@ export async function requireHierarchyReadAccess(req, res, next) {
     // Admin always has access — bypass all checks immediately.
     // Use optional chaining so absence of req.user still falls through to 401.
     if (req.user?.role === 'ADMIN') {
-        // Debug logging for validation — remove/disable in production.
-        console.log('[HierarchyAuth] user:', req.user);
-        console.log('[HierarchyAuth] target userId:', req.params.userId);
-        console.log('[HierarchyAuth] access granted as admin');
+        // Admins bypass hierarchy checks.
         return next();
     }
     const caller = req.user;
@@ -49,9 +46,7 @@ export async function requireHierarchyWriteAccess(req, res, next) {
     // This allows mayors who are ancestors to manage subordinate users.
     // Admin bypass first
     if (req.user?.role === 'ADMIN') {
-        console.log('[HierarchyAuth] user:', req.user);
-        console.log('[HierarchyAuth] target userId:', req.params.id || req.params.userId);
-        console.log('[HierarchyAuth] write access granted as admin');
+        // Admins bypass hierarchy checks for write access as well.
         return next();
     }
     const caller = req.user;

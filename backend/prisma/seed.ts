@@ -30,19 +30,46 @@ async function main() {
     // This is intended for development/demo seed runs only.
     console.log('Performing pre-seed cleanup: removing dependent rows so we can rebuild hierarchy...');
 
-    // Delete order matters due to foreign keys
-    await prisma.userPermission.deleteMany();
-    await prisma.buildingResource.deleteMany();
-    await prisma.building.deleteMany();
-    await prisma.buildLog.deleteMany();
-    await prisma.city.deleteMany();
-    await prisma.note.deleteMany();
-    await prisma.user.deleteMany();
+    // Helper to attempt deleteMany and gracefully handle missing model/table
+    async function safeDelete(op: () => Promise<any>, modelName: string) {
+      try {
+        await op();
+      } catch (err: any) {
+        // P2021 = model/table not found in DB (e.g., not migrated yet) — skip
+        if (err?.code === 'P2021') {
+          console.warn(`Skipping cleanup for ${modelName} - table/model does not exist in DB`);
+          return;
+        }
+        throw err;
+      }
+    }
+
+    // Delete order matters due to foreign keys — use safeDelete to avoid aborting when a
+    // model/table doesn't exist (useful for new/clean DBs or partial schemas).
+    await safeDelete(() => prisma.userPermission.deleteMany(), 'UserPermission');
+    await safeDelete(() => prisma.buildingResource.deleteMany(), 'BuildingResource');
+    await safeDelete(() => prisma.building.deleteMany(), 'Building');
+    await safeDelete(() => prisma.buildLog.deleteMany(), 'BuildLog');
+    await safeDelete(() => prisma.city.deleteMany(), 'City');
+    await safeDelete(() => prisma.note.deleteMany(), 'Note');
+    await safeDelete(() => prisma.user.deleteMany(), 'User');
     // Remove any dangling hierarchy nodes
-    await prisma.hierarchyLevel.deleteMany();
+    await safeDelete(() => prisma.hierarchyLevel.deleteMany(), 'HierarchyLevel');
     // Building categories may be recreated later; clear them too
-    await prisma.buildingCategory.deleteMany();
+    await safeDelete(() => prisma.buildingCategory.deleteMany(), 'BuildingCategory');
     console.log('Cleanup complete.');
+    // Quick schema presence check: ensure critical base tables exist before seeding.
+    // If the DB hasn't been migrated (no tables), bail early with an actionable message.
+    try {
+      await prisma.hierarchyLevel.findFirst({ select: { id: true } });
+    } catch (err: any) {
+      if (err?.code === 'P2021') {
+        console.error('\nDatabase schema appears to be missing required tables (e.g. HierarchyLevel).');
+        console.error('Run `npx prisma migrate dev` (recommended) or `npx prisma db push` to create tables, then re-run `npm run seed`.');
+        throw err;
+      }
+      throw err;
+    }
     // Initialize all seeders
     const hierarchySeeder = new HierarchySeeder(prisma);
     const userSeeder = new UserSeeder(prisma);
