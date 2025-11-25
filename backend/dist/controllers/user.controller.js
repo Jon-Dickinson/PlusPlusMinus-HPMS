@@ -58,3 +58,14 @@ export async function deleteUser(req, res, next) {
         next(err);
     }
 }
+export async function updateUserPermissions(req, res, next) {
+    try {
+        const id = Number(req.params.id);
+        const payload = req.body;
+        const updated = await UserService.updatePermissions(id, payload.permissions || []);
+        res.json(updated);
+    }
+    catch (err) {
+        next(err);
+    }
+}

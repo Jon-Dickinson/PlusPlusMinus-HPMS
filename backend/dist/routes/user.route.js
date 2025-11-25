@@ -4,6 +4,7 @@ import { requireRoles } from '../utils/roles.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { userCreateSchema, userUpdateSchema } from '../validators/user.validator.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import { requireHierarchyWriteAccess } from '../middleware/hierarchy-auth.middleware.js';
 const router = express.Router();
 router.use(authMiddleware);
 // User management
@@ -12,5 +13,6 @@ router.get('/', requireRoles('ADMIN'), UserController.getAllUsers);
 router.get('/:id', UserController.getUserById);
 router.post('/', validate(userCreateSchema), requireRoles('ADMIN'), UserController.createUser);
 router.put('/:id', validate(userUpdateSchema), requireRoles('ADMIN'), UserController.updateUser);
+router.put('/:id/permissions', requireHierarchyWriteAccess, UserController.updateUserPermissions);
 router.delete('/:id', requireRoles('ADMIN'), UserController.deleteUser);
 export default router;

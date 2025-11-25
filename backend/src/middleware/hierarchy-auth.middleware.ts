@@ -8,11 +8,18 @@ import { prisma } from '../db.js';
  * - requester is an ancestor in the hierarchy of the target user
  */
 export async function requireHierarchyReadAccess(req: Request, res: Response, next: NextFunction) {
+  // Admin always has access — bypass all checks immediately.
+  // Use optional chaining so absence of req.user still falls through to 401.
+  if ((req as any).user?.role === 'ADMIN') {
+    // Debug logging for validation — remove/disable in production.
+    console.log('[HierarchyAuth] user:', (req as any).user);
+    console.log('[HierarchyAuth] target userId:', req.params.userId);
+    console.log('[HierarchyAuth] access granted as admin');
+    return next();
+  }
+
   const caller = (req as any).user;
   if (!caller) return res.status(401).json({ error: 'Unauthorized' });
-
-  // Admins can always proceed
-  if (caller.role === 'ADMIN') return next();
 
   const targetUserId = Number(req.params.userId);
   if (!targetUserId) return res.status(400).json({ error: 'Invalid user id' });
@@ -27,8 +34,11 @@ export async function requireHierarchyReadAccess(req: Request, res: Response, ne
   ]);
 
   if (!callerUser) return res.status(401).json({ error: 'Caller user not found' });
+
+  // If Prisma did not find the target user -> 404
   if (!targetUser) return res.status(404).json({ error: 'Target user not found' });
 
+  // If either user lacks a hierarchy assignment, the request is forbidden for non-admins
   if (!callerUser.hierarchyId || !targetUser.hierarchyId) {
     return res.status(403).json({ error: 'Hierarchy assignment missing' });
   }
@@ -43,10 +53,16 @@ export async function requireHierarchyReadAccess(req: Request, res: Response, ne
 export async function requireHierarchyWriteAccess(req: Request, res: Response, next: NextFunction) {
   // For write access we'll follow the same rules as read: ADMIN OR owner OR ancestor
   // This allows mayors who are ancestors to manage subordinate users.
+  // Admin bypass first
+  if ((req as any).user?.role === 'ADMIN') {
+    console.log('[HierarchyAuth] user:', (req as any).user);
+    console.log('[HierarchyAuth] target userId:', req.params.id || req.params.userId);
+    console.log('[HierarchyAuth] write access granted as admin');
+    return next();
+  }
+
   const caller = (req as any).user;
   if (!caller) return res.status(401).json({ error: 'Unauthorized' });
-
-  if (caller.role === 'ADMIN') return next();
 
   const targetUserId = Number(req.params.id || req.params.userId);
   if (!targetUserId) return res.status(400).json({ error: 'Invalid user id' });
