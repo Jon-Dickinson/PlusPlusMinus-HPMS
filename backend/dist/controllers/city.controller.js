@@ -91,20 +91,20 @@ export async function saveCityByUserId(req, res, next) {
             return res.status(400).json({ message: 'Invalid user ID' });
         // Permissions are enforced by middleware
         const updated = await CityService.saveByMayorId(userId, req.body);
-
-        // Non-blocking audit write
+        // Create an audit record describing the save action. Don't let audit failures
+        // block the main operation — log and continue.
         (async () => {
             try {
                 const caller = req.user ?? null;
                 const payload = {
-                    callerId: (_a = caller === null || caller === void 0 ? void 0 : caller.id) !== null && _a !== void 0 ? _a : null,
-                    callerRole: (_b = caller === null || caller === void 0 ? void 0 : caller.role) !== null && _b !== void 0 ? _b : null,
+                    callerId: caller?.id ?? null,
+                    callerRole: caller?.role ?? null,
                     targetUserId: userId,
                     endpoint: req.originalUrl,
                     action: 'SAVE_CITY',
                     decision: 'SUCCESS',
-                    input: JSON.stringify({ buildingLogLength: Array.isArray(req.body === null || req.body === void 0 ? void 0 : req.body.buildingLog) ? req.body.buildingLog.length : undefined }),
-                    result: JSON.stringify({ cityId: (updated === null || updated === void 0 ? void 0 : updated.id) }),
+                    input: JSON.stringify({ buildingLogLength: Array.isArray(req.body?.buildingLog) ? req.body.buildingLog.length : undefined }),
+                    result: JSON.stringify({ cityId: updated?.id }),
                     requestId: req.headers['x-request-id'] ?? null,
                 };
                 await AuditService.createAudit(payload);
@@ -113,7 +113,6 @@ export async function saveCityByUserId(req, res, next) {
                 console.error('Failed to create audit for saveCityByUserId', e);
             }
         })();
-
         res.json(updated);
     }
     catch (err) {
@@ -210,14 +209,14 @@ export async function updateCityData(req, res, next) {
             /* ignore logging failures */
         }
         const updated = await CityService.updateCityData(cityId, userId, req.body);
-
+        // create a non-blocking audit entry for the update
         (async () => {
             try {
                 const caller = req.user ?? null;
                 await AuditService.createAudit({
-                    callerId: (_a = caller === null || caller === void 0 ? void 0 : caller.id) !== null && _a !== void 0 ? _a : null,
-                    callerRole: (_b = caller === null || caller === void 0 ? void 0 : caller.role) !== null && _b !== void 0 ? _b : null,
-                    targetUserId: (_c = caller === null || caller === void 0 ? void 0 : caller.id) !== null && _c !== void 0 ? _c : null,
+                    callerId: caller?.id ?? null,
+                    callerRole: caller?.role ?? null,
+                    targetUserId: caller?.id ?? null,
                     endpoint: req.originalUrl,
                     action: 'UPDATE_CITY_DATA',
                     decision: 'SUCCESS',
@@ -230,7 +229,6 @@ export async function updateCityData(req, res, next) {
                 console.error('Failed to create audit for updateCityData', e);
             }
         })();
-
         res.json(updated);
     }
     catch (err) {

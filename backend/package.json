@@ -12,6 +12,7 @@
     "test:integration": "vitest --config vitest.config.integration.ts",
     "test:performance": "cross-env RUN_PERF=1 vitest --config vitest.config.performance.ts",
     "migrate": "dotenv -e .env -- npx prisma migrate dev",
+    "deploy:reset-db": "node tools/deploy-reset-db.cjs",
     "seed": "npx prisma db seed",
     "docs": "typedoc",
     "format": "prettier --write \"**/*.{js,ts,json,md}\""
