@@ -5,8 +5,8 @@ import { describe, it, vi, expect } from 'vitest';
 
 // Mock templates and nested components
 vi.mock('../../templates/MainTemplate', () => ({ default: ({ children }: any) => <div>{children}</div> }));
-vi.mock('../../components/molecules/GlobalNav', () => ({ default: () => <div /> }));
-vi.mock('../../components/molecules/Header', () => ({ default: () => <div /> }));
+// Provide a minimal next/router implementation so components using useRouter work in tests
+vi.mock('next/router', () => ({ useRouter: () => ({ pathname: '/dashboard', asPath: '/dashboard', push: () => {}, replace: () => {} }) }));
 vi.mock('../../components/organisms/CityGrid', () => ({ default: () => <div /> }));
 vi.mock('../../components/organisms/BuidlingSidebar/BuildingSidebar', () => ({ default: () => <div /> }));
 vi.mock('../../components/organisms/StatsPanel', () => ({ default: () => <div /> }));
@@ -33,7 +33,7 @@ vi.mock('../../components/organisms/CityContext', () => ({
 
 // Mock axios.put and get
 const mockPut = vi.fn().mockResolvedValue({ data: {} });
-const mockGet = vi.fn().mockResolvedValue({ data: [] });
+const mockGet = vi.fn().mockResolvedValue({ data: [{ id: 9, content: 'initial note' }] });
 vi.mock('../../lib/axios', () => ({ default: { instance: { put: (...args: any[]) => mockPut(...args), get: (...args: any[]) => mockGet(...args) }, setAuthToken: () => {} } }));
 
 import Dashboard from '../../pages/dashboard';
@@ -42,12 +42,18 @@ describe('Dashboard save flow and note population', () => {
   it('populates note from user.notes and calls axios.put on Save', async () => {
     render(<Dashboard />);
 
-    // Wait for note textarea to be filled from user.notes
+    // Open notes modal and wait for note textarea to be filled from user.notes
+    const notesBtn = await screen.findByLabelText('Notes');
+    fireEvent.click(notesBtn);
     const textarea = await screen.findByPlaceholderText('Enter your notes here...');
     await waitFor(() => expect((textarea as HTMLTextAreaElement).value).toBe('initial note'));
 
     // Click save button and assert axios.put called with city id and payload
-    const saveBtn = screen.getByText('Save City Data');
+    // Close modal so Save refers to header save and not modal save
+    const closeBtn = screen.getByText('Close');
+    fireEvent.click(closeBtn);
+
+    const saveBtn = screen.getByText('Save');
     fireEvent.click(saveBtn);
 
     await waitFor(() => expect(mockPut).toHaveBeenCalled());

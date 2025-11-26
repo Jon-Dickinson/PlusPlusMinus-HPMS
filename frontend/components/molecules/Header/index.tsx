@@ -104,7 +104,7 @@ export default function Header() {
             </Heading>
             <RoleBadgeContainer>
               <RoleBadge role={user.role || 'USER'}>
-                {(user.role || 'USER').toLowerCase()}
+                {(user.role || 'USER').toString().toUpperCase()}
               </RoleBadge>
               {user.role === 'MAYOR' && user.hierarchy?.level && (
                 <StatusIndicator>
