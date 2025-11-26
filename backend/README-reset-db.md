@@ -45,9 +45,7 @@ GitHub Actions workflow
 This repository includes a manual GitHub Actions workflow that runs the same reset/migrate/seed flow with safeguards and optional backup. The workflow requires a confirmation code and repository-level secrets with the database connection string for the target environment.
 
 Required secrets
-	- PROD_DATABASE_URL — connection string for production DB (if you use production)
-	- STAGING_DATABASE_URL — connection string for staging
-	- TEST_DATABASE_URL — connection string for test
+ 
 
 How to run
 	1. Open Actions → Deploy — Reset DB → Run workflow
