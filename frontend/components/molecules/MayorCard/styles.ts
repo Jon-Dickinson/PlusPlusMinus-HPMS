@@ -81,6 +81,13 @@ export const PermissionButton = styled(DeleteButton)`
   }
 `;
 
+export const AuditButton = styled(DeleteButton)`
+  color: #60A5FA; /* blue */
+  &:hover {
+    background: rgba(96, 165, 250, 0.12);
+  }
+`;
+
 export const Properties = styled.div`
   display: flex;
   align-items: center;

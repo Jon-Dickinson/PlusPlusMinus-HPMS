@@ -162,3 +162,28 @@ model BuildingResource {
 
   building   Building @relation(fields: [buildingId], references: [id])
 }
+
+// Audit log for permission queries — used to trace permission checks / queries
+model PermissionQueryAudit {
+  id             Int      @id @default(autoincrement())
+  callerId       Int?     // user id who requested the permission check
+  callerRole     String?  // role snapshot for caller
+  targetUserId   Int?     // user being checked (if applicable)
+  targetRole     String?  // role snapshot for target user
+  categoryId     Int?     // building category id (if applicable)
+  endpoint       String   // endpoint path or action name
+  action         String   // e.g. EFFECTIVE_PERMISSIONS, ALLOWED_BUILDINGS, SUBORDINATES
+  input          Json?    // sanitized input / params (avoid PII)
+  decision       String   // ALLOWED | DENIED | NOT_APPLICABLE
+  reason         String?  // optional short reason/cause
+  result         Json?    // small result summary (optional)
+  durationMs     Int?     // timing for query
+  ip             String?  // optional caller ip
+  userAgent      String?  // optional user agent
+  requestId      String?  // correlates with request logs
+  createdAt      DateTime @default(now())
+
+  @@index([callerId])
+  @@index([targetUserId])
+  @@index([endpoint, createdAt])
+}

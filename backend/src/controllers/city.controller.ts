@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as CityService from '../services/city.service.js';
+import * as AuditService from '../services/audit.service.js';
 import { saveCitySchema } from '../validators/city.validator.js';
 
 /* ======================================================================
@@ -95,6 +96,30 @@ export async function saveCityByUserId(req: Request, res: Response, next: NextFu
 
     // Permissions are enforced by middleware
     const updated = await CityService.saveByMayorId(userId, req.body);
+
+    // Create an audit record describing the save action. Don't let audit failures
+    // block the main operation — log and continue.
+    (async () => {
+      try {
+        const caller = (req as any).user ?? null;
+        const payload: any = {
+          callerId: caller?.id ?? null,
+          callerRole: caller?.role ?? null,
+          targetUserId: userId,
+          endpoint: req.originalUrl,
+          action: 'SAVE_CITY',
+          decision: 'SUCCESS',
+          input: JSON.stringify({ buildingLogLength: Array.isArray(req.body?.buildingLog) ? req.body.buildingLog.length : undefined }),
+          result: JSON.stringify({ cityId: updated?.id }),
+          requestId: req.headers['x-request-id'] ?? null,
+        };
+
+        await AuditService.createAudit(payload);
+      } catch (e) {
+        console.error('Failed to create audit for saveCityByUserId', e);
+      }
+    })();
+
     res.json(updated);
   } catch (err) {
     next(err);
@@ -199,6 +224,27 @@ export async function updateCityData(req: Request, res: Response, next: NextFunc
     }
 
     const updated = await CityService.updateCityData(cityId, userId, req.body);
+
+    // create a non-blocking audit entry for the update
+    (async () => {
+      try {
+        const caller = (req as any).user ?? null;
+        await AuditService.createAudit({
+          callerId: caller?.id ?? null,
+          callerRole: caller?.role ?? null,
+          targetUserId: caller?.id ?? null,
+          endpoint: req.originalUrl,
+          action: 'UPDATE_CITY_DATA',
+          decision: 'SUCCESS',
+          input: JSON.stringify({ changes: Object.keys(req.body || {}) }),
+          result: JSON.stringify({ changed: Object.keys(req.body || {}) }),
+          requestId: req.headers['x-request-id'] ?? null,
+        });
+      } catch (e) {
+        console.error('Failed to create audit for updateCityData', e);
+      }
+    })();
+
     res.json(updated);
   } catch (err) {
     next(err);

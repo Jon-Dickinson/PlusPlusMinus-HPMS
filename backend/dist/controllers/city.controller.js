@@ -1,4 +1,5 @@
 import * as CityService from '../services/city.service.js';
+import * as AuditService from '../services/audit.service.js';
 import { saveCitySchema } from '../validators/city.validator.js';
 /* ======================================================================
  * Utility: safely parse IDs
@@ -90,6 +91,29 @@ export async function saveCityByUserId(req, res, next) {
             return res.status(400).json({ message: 'Invalid user ID' });
         // Permissions are enforced by middleware
         const updated = await CityService.saveByMayorId(userId, req.body);
+
+        // Non-blocking audit write
+        (async () => {
+            try {
+                const caller = req.user ?? null;
+                const payload = {
+                    callerId: (_a = caller === null || caller === void 0 ? void 0 : caller.id) !== null && _a !== void 0 ? _a : null,
+                    callerRole: (_b = caller === null || caller === void 0 ? void 0 : caller.role) !== null && _b !== void 0 ? _b : null,
+                    targetUserId: userId,
+                    endpoint: req.originalUrl,
+                    action: 'SAVE_CITY',
+                    decision: 'SUCCESS',
+                    input: JSON.stringify({ buildingLogLength: Array.isArray(req.body === null || req.body === void 0 ? void 0 : req.body.buildingLog) ? req.body.buildingLog.length : undefined }),
+                    result: JSON.stringify({ cityId: (updated === null || updated === void 0 ? void 0 : updated.id) }),
+                    requestId: req.headers['x-request-id'] ?? null,
+                };
+                await AuditService.createAudit(payload);
+            }
+            catch (e) {
+                console.error('Failed to create audit for saveCityByUserId', e);
+            }
+        })();
+
         res.json(updated);
     }
     catch (err) {
@@ -186,6 +210,27 @@ export async function updateCityData(req, res, next) {
             /* ignore logging failures */
         }
         const updated = await CityService.updateCityData(cityId, userId, req.body);
+
+        (async () => {
+            try {
+                const caller = req.user ?? null;
+                await AuditService.createAudit({
+                    callerId: (_a = caller === null || caller === void 0 ? void 0 : caller.id) !== null && _a !== void 0 ? _a : null,
+                    callerRole: (_b = caller === null || caller === void 0 ? void 0 : caller.role) !== null && _b !== void 0 ? _b : null,
+                    targetUserId: (_c = caller === null || caller === void 0 ? void 0 : caller.id) !== null && _c !== void 0 ? _c : null,
+                    endpoint: req.originalUrl,
+                    action: 'UPDATE_CITY_DATA',
+                    decision: 'SUCCESS',
+                    input: JSON.stringify({ changes: Object.keys(req.body || {}) }),
+                    result: JSON.stringify({ changed: Object.keys(req.body || {}) }),
+                    requestId: req.headers['x-request-id'] ?? null,
+                });
+            }
+            catch (e) {
+                console.error('Failed to create audit for updateCityData', e);
+            }
+        })();
+
         res.json(updated);
     }
     catch (err) {

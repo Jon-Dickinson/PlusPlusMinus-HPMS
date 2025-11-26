@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense } from 'react';
-import { MapPin, User, Trash2, Shield } from 'lucide-react';
+import { MapPin, User, Trash2, Shield, FileText } from 'lucide-react';
 import { fetchMayor, Mayor } from './api';
 import {
   Card,
@@ -11,8 +11,12 @@ import {
   DeleteButton,
   Properties,
   PermissionButton,
+  AuditButton,
 } from './styles';
 import usePermissionsModal from '../../../hooks/usePermissionsModal';
+import useAuditModal from '../../../hooks/useAuditModal';
+import { useAuth } from '../../../context/AuthContext';
+import { isAdmin } from '../../../utils/roles';
 
 interface MayorData {
   id: number;
@@ -87,6 +91,10 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
   };
 
   const { open: openPermissions, renderModal } = usePermissionsModal(Number(id));
+  const { open: openAudit, renderModal: renderAuditModal } = useAuditModal(Number(id));
+
+  const { user: currentUser } = useAuth();
+  const viewerIsAdmin = isAdmin(currentUser?.role);
 
   return (
     <Card onClick={handleClick} aria-label={`Mayor ${firstName} ${lastName}`}>
@@ -112,6 +120,11 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
         <PermissionButton onClick={(e) => openPermissions(undefined, e)} title="Permissions">
           <Shield size={16} color="#2FBF4A" />
         </PermissionButton>
+        {viewerIsAdmin && (
+          <AuditButton onClick={(e) => openAudit(undefined, e)} title="Audit logs">
+            <FileText size={16} />
+          </AuditButton>
+        )}
         {onDelete && (
           <DeleteButton onClick={handleDelete} title="Delete">
             <Trash2 size={16} />
@@ -120,6 +133,7 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
       </Properties>
 
       {renderModal}
+      {renderAuditModal}
     </Card>
   );
 }

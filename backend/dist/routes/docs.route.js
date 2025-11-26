@@ -18,6 +18,7 @@ function loadSwaggerDoc() {
             }
         }
         catch (e) {
+            // ignore and try next one
             continue;
         }
     }

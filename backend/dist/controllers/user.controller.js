@@ -1,4 +1,5 @@
 import * as UserService from '../services/user.service.js';
+import * as AuditService from '../services/audit.service.js';
 /* ======================================================================
  * Utility — Safe ID parsing
  * ====================================================================== */
@@ -117,6 +118,37 @@ export async function updateUserPermissions(req, res, next) {
         }));
         const updated = await UserService.updatePermissions(id, sanitizedPermissions);
         res.json(updated);
+    }
+    catch (err) {
+        next(err);
+    }
+}
+/* ======================================================================
+ * GET /api/users/:id/audits
+ * Admin-only endpoint that returns paginated audit entries for a user
+ * ====================================================================== */
+export async function getUserAudits(req, res, next) {
+    try {
+        const id = Number(req.params.id);
+        if (Number.isNaN(id))
+            return res.status(400).json({ message: 'Invalid user ID' });
+        // parse query params
+        const limit = Math.max(1, Math.min(200, Number(req.query.limit ?? 25)));
+        const offset = Math.max(0, Number(req.query.offset ?? 0));
+        const action = typeof req.query.action === 'string' ? req.query.action : undefined;
+        const decision = typeof req.query.decision === 'string' ? req.query.decision : undefined;
+        const startDate = typeof req.query.startDate === 'string' ? req.query.startDate : undefined;
+        const endDate = typeof req.query.endDate === 'string' ? req.query.endDate : undefined;
+        const { total, items } = await AuditService.queryAudits({
+            targetUserId: id,
+            action,
+            decision,
+            startDate,
+            endDate,
+            limit,
+            offset,
+        });
+        res.json({ total, items });
     }
     catch (err) {
         next(err);

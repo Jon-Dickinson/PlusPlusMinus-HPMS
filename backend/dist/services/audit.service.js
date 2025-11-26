@@ -1,0 +1,47 @@
+import { prisma } from '../db.js';
+export async function queryAudits(opts) {
+    const { targetUserId, action, decision, startDate, endDate, limit = 25, offset = 0 } = opts;
+    const where = {};
+    if (typeof targetUserId !== 'undefined')
+        where.targetUserId = targetUserId;
+    if (action)
+        where.action = action;
+    if (decision)
+        where.decision = decision;
+    if (startDate || endDate)
+        where.createdAt = {};
+    if (startDate)
+        where.createdAt.gte = new Date(startDate);
+    if (endDate)
+        where.createdAt.lte = new Date(endDate);
+    // Avoid opening a DB transaction for read-only queries — run in parallel
+    const [items, total] = await Promise.all([
+        prisma.permissionQueryAudit.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            skip: offset,
+            take: limit,
+            select: {
+                id: true,
+                callerId: true,
+                callerRole: true,
+                targetUserId: true,
+                targetRole: true,
+                categoryId: true,
+                endpoint: true,
+                action: true,
+                decision: true,
+                reason: true,
+                durationMs: true,
+                requestId: true,
+                createdAt: true,
+            },
+        }),
+        prisma.permissionQueryAudit.count({ where }),
+    ]);
+    return { total, items };
+}
+export async function createAudit(payload) {
+    // Simple creation helper. Payload should be sanitized by caller.
+    return prisma.permissionQueryAudit.create({ data: payload });
+}

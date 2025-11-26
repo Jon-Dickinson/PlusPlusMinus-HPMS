@@ -43,6 +43,9 @@ router.post(
  * INDIVIDUAL USER ROUTES
  * ================================================================== */
 
+// Admin: list audits for a given user
+router.get('/:id/audits', requireRoles('ADMIN'), UserController.getUserAudits);
+
 // Get a single user (self or admin or ancestor — allowed via controller logic)
 router.get('/:id', UserController.getUserById);
 

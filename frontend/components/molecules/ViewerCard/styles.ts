@@ -74,3 +74,8 @@ export const PermissionButton = styled(DeleteButton)`
     background: rgba(47, 191, 74, 0.12);
   }
 `;
+
+export const AuditButton = styled(DeleteButton)`
+  color: #60A5FA;
+  &:hover { background: rgba(96, 165, 250, 0.12); }
+`;

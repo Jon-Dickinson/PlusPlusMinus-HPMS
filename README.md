@@ -294,10 +294,21 @@ Supports inheritance across hierarchy levels.
 
 **Backend:**
 ```bash
+cd backend
 npx prisma migrate dev
 npx prisma studio
 npx prisma db seed
 ```
+
+**Frontend:**
+```bash
+cd frontend
+npm run dev
+npx vitest
+```
+
+
+
 Swagger Docs (local):
 UI: http://localhost:4000/api/docs
 
