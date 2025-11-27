@@ -61,3 +61,69 @@ Security & safety
 	- The run is manual and requires you to type the confirmation code.
 	- The workflow will use secrets for the target DATABASE_URL — ensure they are stored in GitHub repository secrets and are correct.
 	- Always snapshot/backup before performing destructive changes in production.
+
+	Important: adding a model to schema.prisma does not automatically change the production DB
+	-------------------------------------------------------------------------------
+
+	If you (or a PR) added a model to `prisma/schema.prisma` (for example `PermissionQueryAudit`) but did not create + commit a corresponding migration, production will not have the table and API calls that rely on it will return 500s (Prisma error: table does not exist).
+
+	Safe remediation steps (recommended order):
+
+	1) Backup production DB (pg_dump or provider snapshot). Do NOT skip this step.
+		Example: `pg_dump --format=custom --file=backup.before.permission_audit.dump "$DATABASE_URL"`
+
+	2) Deploy the committed migration(s) to the production database. From the backend container (or a secure machine with DB access):
+
+	```powershell
+	cd backend
+	# ensure DATABASE_URL points to production DB (use the secret or env var managed by your host)
+	npx prisma migrate deploy
+	```
+
+	3) Redeploy the API (if your platform doesn't automatically roll or reload after schema updates).
+
+	4) Verify the new table exists and audit endpoint returns 200:
+
+	```powershell
+	# quickly check via psql or a small query
+	npx prisma db execute --sql "select count(*) from \"PermissionQueryAudit\";"
+	```
+
+	If a committed migration for the model doesn't exist yet
+	-------------------------------------------------------
+
+	If the model was added directly to `schema.prisma` but there's no migration committed, create one locally, commit it, and follow the steps above:
+
+	```powershell
+	cd backend
+	npx prisma migrate dev --name add_permission_query_audit
+	# commit the migration folder and push your change
+
+	# then run migration deploy on production as shown earlier
+	```
+
+	If you want me to create the migration file in the repo now, I already added one that matches `PermissionQueryAudit` and it can be deployed to production with `npx prisma migrate deploy`.
+
+	New: safer apply-migrations tooling
+	----------------------------------
+
+	Two helpers are now included to make applying migrations safer and more auditable:
+
+	1) Local/remote script: `backend/tools/apply-migration.cjs`
+		- Creates an optional `pg_dump` backup, runs `npx prisma migrate deploy`, and performs a small verification query.
+		- Requires `FORCE=1` in the environment or `--force` option. Example:
+
+	```powershell
+	# dry-run (shows commands, does not execute)
+	node backend/tools/apply-migration.cjs --dry-run --backup=./tmp/pre-migration.dump
+
+	# real run (make sure DATABASE_URL points to production and you have a backup)
+	FORCE=1 node backend/tools/apply-migration.cjs --backup=./tmp/pre-migration.dump
+	```
+
+	2) GitHub Actions workflow: `.github/workflows/apply-migrations-manual.yml`
+		- Manual workflow that requires typing the confirmation code `APPLY-MIGRATION` to proceed.
+		- Creates a `pg_dump` backup artifact, uploads it to the workflow run, runs `npx prisma migrate deploy`, and runs a quick verification query.
+		- To run: Actions → Manual: Apply DB Migrations (Safe) → Choose environment → Type `APPLY-MIGRATION` → Run. Ensure the repo has a `DATABASE_URL` secret for the target DB.
+
+	Both of these are meant to be used carefully in production. Always ensure you have a working backup before applying migrations.
