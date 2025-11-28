@@ -35,7 +35,9 @@ export default function MayorViewPage() {
   if (loading) {
     return (
       <CityPageLayout>
-        <LoadingOrError loading message="Loading city…" />
+        <LoadingOrError>
+          <Spinner size={40} />
+        </LoadingOrError>
       </CityPageLayout>
     );
   }
@@ -43,14 +45,16 @@ export default function MayorViewPage() {
   if (!city) {
     return (
       <CityPageLayout>
-        <LoadingOrError error message="City not found" />
+        <LoadingOrError>
+          <Message>City not found</Message>
+        </LoadingOrError>
       </CityPageLayout>
     );
   }
 
   return (
-    <CityPageLayout>
-      <MayorViewContent city={city} canEdit={canEdit} />
+    <CityPageLayout initialCityData={city} canEdit={canEdit}>
+      <MayorViewContent initialCity={city} />
     </CityPageLayout>
   );
 }

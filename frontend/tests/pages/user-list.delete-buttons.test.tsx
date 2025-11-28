@@ -44,7 +44,7 @@ describe('UserList delete buttons visibility', () => {
       }),
     }));
 
-    const { default: UserListView } = await import('../../pages/user-list/UserListView');
+    const { default: UserListView } = await import('../../pages/user-list');
 
     renderWithProviders(<UserListView />);
 
@@ -88,7 +88,7 @@ describe('UserList delete buttons visibility', () => {
       }),
     }));
 
-    const { default: UserListView } = await import('../../pages/user-list/UserListView');
+    const { default: UserListView } = await import('../../pages/user-list');
 
     renderWithProviders(<UserListView />);
 
