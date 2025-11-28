@@ -4,13 +4,10 @@ import buildings from '../../data/buildings.json';
 import api from '../../lib/axios';
 import parse from 'html-react-parser';
 import CityPageLayout from '../../components/organisms/CityPageLayout';
-
 import {
   SidebarList,
   ImageButton,
   AnalysisPlaceholder,
-  RowWrapper,
-  ColWrapper,
   ResourceColumn,
   MainGridArea,
   GridContainer,
@@ -28,7 +25,9 @@ import {
   DefaultContainer,
   DefaultTitle,
   DefaultText,
-} from './styles';
+} from '../../components/pages/building-analysis/styles';
+
+
 
 export default function BuildingAnalysis() {
   const router = useRouter();
@@ -54,7 +53,7 @@ export default function BuildingAnalysis() {
     if (buildingId && typeof buildingId === 'string') {
       fetchBuildingData(buildingId);
     } else {
-      setSelected(null); // Clear selection if no ID
+      setSelected(null);
     }
   }, [router.query]);
 
@@ -96,10 +95,7 @@ export default function BuildingAnalysis() {
                     <ResourcesContainer>
                       <ResourcesTitle>Resources:</ResourcesTitle>
                       <ResourcesList>
-                        {/* Support two shapes returned by the API:
-                            1) An object map: { water: 10, powerOutput: 5 }
-                            2) An array of resource objects: [{ type: 'Water', amount: 10 }, ...]
-                        */}
+                      
                         {Array.isArray(selected.resources)
                           ? selected.resources.map((r: any, idx: number) => (
                               <ResourceItem key={r.id ?? r.type ?? idx}>

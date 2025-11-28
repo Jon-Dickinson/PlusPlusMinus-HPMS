@@ -7,9 +7,8 @@ import { City } from '../../../types/city';
 import CityPageLayout from '../../../components/organisms/CityPageLayout';
 import MayorViewContent from '../../../components/organisms/MayorViewContent';
 import LoadingOrError from '../../../components/molecules/LoadingOrError';
-import {
-  Message,
-} from './styles';
+import { Message } from '../../../components/pages/mayor-view/styles';
+
 
 export default function MayorViewPage() {
   const router = useRouter();
