@@ -1,7 +1,18 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import axios from '../lib/axios';
 
-type City = {
+/* -------------------------------------------------------
+ * TYPES
+ * -----------------------------------------------------*/
+
+export interface City {
   id: number;
   name: string;
   country: string;
@@ -10,20 +21,20 @@ type City = {
   buildingLog: any;
 }
 
-type Note = {
+export interface Note {
   id: number;
   content: string;
   createdAt: string;
   updatedAt: string;
 }
 
-type HierarchyInfo = {
+export interface HierarchyInfo {
   id: number;
   name: string;
   level: number;
 }
 
-type User = {
+export interface User {
   id: number;
   email: string;
   username: string;
@@ -35,91 +46,170 @@ type User = {
   hierarchy?: HierarchyInfo | null;
   city?: City | null;
   notes?: Note[];
-};
+  updatedAt?: string;
+}
 
-type AuthContextValue = {
+export interface AuthContextValue {
   user: User | null;
   token: string | null;
   initialized: boolean;
   login: (email: string, password: string) => Promise<User | null>;
   logout: () => void;
   setUser: (user: User | null) => void;
+}
+
+/* -------------------------------------------------------
+ * LOCAL STORAGE HELPERS
+ * -----------------------------------------------------*/
+
+const LS = {
+  getToken: () => localStorage.getItem('token'),
+  getUser: (): User | null => {
+    const raw = localStorage.getItem('user');
+    try {
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  },
+  setToken: (token: string) => localStorage.setItem('token', token),
+  setUser: (user: User) =>
+    localStorage.setItem('user', JSON.stringify(user)),
+  clear: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  },
 };
+
+/* -------------------------------------------------------
+ * CONTEXT INITIALIZATION
+ * -----------------------------------------------------*/
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+/* -------------------------------------------------------
+ * PROVIDER
+ * -----------------------------------------------------*/
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUserState] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
+  /* ---------------------------------------------------
+   * INITIALIZE AUTH FROM LOCAL STORAGE
+   * -------------------------------------------------*/
   useEffect(() => {
-    const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    if (typeof window === 'undefined') return;
+
+    const storedToken = LS.getToken();
+    const storedUser = LS.getUser();
 
     if (storedToken) {
       setToken(storedToken);
       axios.setAuthToken(storedToken);
     }
+
     if (storedUser) {
-      try {
-        setUserState(JSON.parse(storedUser));
-      } catch (e) {
-        // if decoding fails, silently ignore
-        setUserState(null);
-      }
+      setUserState(storedUser);
     }
+
     setInitialized(true);
   }, []);
 
-  async function login(email: string, password: string): Promise<User | null> {
-    const res = await axios.instance.post('/auth/login', { email, password });
-    const data = res.data;
-    const token = data.token;
-    const user = data.user;
+  /* ---------------------------------------------------
+   * LOGIN FUNCTION
+   * -------------------------------------------------*/
+  const login = useCallback(
+    async (email: string, password: string): Promise<User | null> => {
+      try {
+        const res = await axios.instance.post('/auth/login', {
+          email,
+          password,
+        });
 
-    if (token && user) {
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setToken(token);
-      setUserState(user);
-      axios.setAuthToken(token);
-      return user;
-    }
-    return null;
-  }
+        const { token, user } = res.data;
 
-  function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+        if (!token || !user) return null;
+
+        // persist
+        LS.setToken(token);
+        LS.setUser(user);
+
+        // update global state
+        setToken(token);
+        setUserState(user);
+        axios.setAuthToken(token);
+
+        return user;
+      } catch (e) {
+        console.error('Login failed:', e);
+        return null;
+      }
+    },
+    []
+  );
+
+  /* ---------------------------------------------------
+   * LOGOUT FUNCTION
+   * -------------------------------------------------*/
+  const logout = useCallback(() => {
+    LS.clear();
     setToken(null);
     setUserState(null);
     axios.setAuthToken(null);
-  }
+  }, []);
 
-  function setUser(newUser: User | null) {
-    const oldUser = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    // Prevent re-render if user data is the same
-    if (JSON.stringify(newUser) === JSON.stringify(oldUser)) {
+  /* ---------------------------------------------------
+   * SAFE SET USER
+   * (Prevents unnecessary rerenders)
+   * -------------------------------------------------*/
+  const setUser = useCallback((newUser: User | null) => {
+    const existing = LS.getUser();
+
+    // Shallow compare essential fields to avoid re-renders
+    if (
+      existing &&
+      newUser &&
+      existing.id === newUser.id &&
+      existing.updatedAt === (newUser as any)?.updatedAt
+    ) {
       return;
     }
 
-    if (newUser) {
-      localStorage.setItem('user', JSON.stringify(newUser));
-    } else {
-      localStorage.removeItem('user');
-    }
-    setUserState(newUser);
-  }
+    if (newUser) LS.setUser(newUser);
+    else localStorage.removeItem('user');
 
-  return (
-    <AuthContext.Provider value={{ user: user, token, initialized, login, logout, setUser }}>{children}</AuthContext.Provider>
+    setUserState(newUser);
+  }, []);
+
+  /* ---------------------------------------------------
+   * MEMOIZED CONTEXT VALUE
+   * -------------------------------------------------*/
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user,
+      token,
+      initialized,
+      login,
+      logout,
+      setUser,
+    }),
+    [user, token, initialized, login, logout, setUser]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
+/* -------------------------------------------------------
+ * HOOK
+ * -----------------------------------------------------*/
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx)
+    throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 }

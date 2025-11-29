@@ -1,23 +1,62 @@
-import React, { Suspense, useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import AuditLogModal from '../components/molecules/AuditLogModal';
 
 export default function useAuditModal(initialUserId?: number | null) {
-  const [show, setShow] = useState(false);
-  const [userId, setUserId] = useState<number | null | undefined>(initialUserId ?? null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const open = useCallback((id?: number | string, e?: React.MouseEvent) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    if (id !== undefined) setUserId(Number(id));
-    setShow(true);
+  // Normalize to null
+  const [userId, setUserId] = useState<number | null>(
+    initialUserId ?? null
+  );
+
+  /**
+   * OPEN MODAL
+   */
+  const open = useCallback(
+    (id?: number | string, e?: React.MouseEvent) => {
+      e?.stopPropagation?.();
+
+      if (id !== undefined && id !== null) {
+        const numericId = Number(id);
+        if (!Number.isNaN(numericId)) {
+          setUserId(numericId);
+        }
+      }
+
+      setIsOpen(true);
+    },
+    []
+  );
+
+  /**
+   * CLOSE MODAL
+   */
+  const close = useCallback(() => {
+    setIsOpen(false);
   }, []);
 
-  const close = useCallback(() => setShow(false), []);
+  /**
+   * RENDER MODAL (memoized)
+   */
+  const renderModal = useMemo(() => {
+    if (!isOpen || userId == null) return null;
 
-  const renderModal = show && userId ? (
-    <Suspense fallback={<div />}>
-      <AuditLogModal isOpen={true} userId={Number(userId)} onClose={close} />
-    </Suspense>
-  ) : null;
+    return (
+      <Suspense fallback={<div />}>
+        <AuditLogModal
+          isOpen={true}
+          userId={userId}
+          onClose={close}
+        />
+      </Suspense>
+    );
+  }, [isOpen, userId, close]);
 
-  return { show, userId, open, close, renderModal };
+  return {
+    show: isOpen,
+    userId,
+    open,
+    close,
+    renderModal,
+  };
 }

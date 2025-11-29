@@ -12,6 +12,17 @@ vi.mock('../../components/organisms/LoginForm', () => ({
   default: () => <div data-testid="login-form">LoginForm</div>,
 }));
 
+// DEBUG: log resolved module during test runs to diagnose intermittent failure
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const resolved = require('../../components/organisms/LoginForm');
+  // eslint-disable-next-line no-console
+  console.log('DEBUG: resolved LoginForm mock type =', typeof resolved?.default);
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.log('DEBUG: could not require LoginForm at test-resolve time', e?.message || e);
+}
+
 import Home from '../../pages/index';
 
 describe('Index page', () => {

@@ -4,14 +4,17 @@ import { useRouter } from 'next/router';
 import { CityProvider } from '../../components/organisms/CityContext';
 import Header from '../../components/molecules/Header';
 import GlobalNav from '../../components/molecules/GlobalNav';
-import UserGrid from '../../components/molecules/UserGrid';
-import DeleteConfirmationModal from '../../components/molecules/DeleteConfirmationModal';
-import HierarchyTreeView from '../../components/organisms/HierarchyTreeView';
-import axios from '../../lib/axios';
 import useAuthorized from '../../hooks/useAuthorized';
 import useUserList from '../../hooks/useUserList';
-import buildOrderedUsers from '../../utils/buildOrderedUsers';
-import { ColWrapper, ContentWrapper, LeftPanel, TabContainer, Tab } from '../../components/pages/user-list/styles';
+import { ColWrapper, ContentWrapper, LeftPanel } from '../../components/pages/user-list/styles';
+import Tabs from '../../components/atoms/Tabs';
+import UserTab from '../../components/molecules/UserTab';
+import HierarchyTab from '../../components/organisms/HierachyTab';
+import DeleteModal from '../../components/molecules/DeleteModal';
+import HeaderSection from '../../components/molecules/HeaderSection';
+import useUserOrdering from '../../hooks/useUserOrdering';
+import useDeleteUser from '../../hooks/useDeleteUser';
+import { computeVisibleUsers } from '../../utils/computeVisibleUsers';
 
 export default function UserListView() {
 	const router = useRouter();
@@ -34,103 +37,55 @@ export default function UserListView() {
 
 	const [activeTab, setActiveTab] = React.useState<'users' | 'hierarchy'>('users');
 
-	const showHierarchyTabs = user?.hierarchyId && canNavigateAdmin;
+	const showHierarchyTabs = !!(user?.hierarchyId && canNavigateAdmin);
 
-	React.useEffect(() => {
-		if (loading || hierarchyLoading) {
-			setOrderedUsers(null);
-			return;
-		}
+		useUserOrdering({ users, hierarchyTree, loading, hierarchyLoading, setOrderedUsers });
 
-		if (!users || users.length === 0) {
-			setOrderedUsers([]);
-			return;
-		}
+	const { displayUsers, mayors, isOrdering } = computeVisibleUsers(orderedUsers);
 
-		if (!hierarchyTree || hierarchyTree.length === 0) {
-			setOrderedUsers(users);
-			return;
-		}
+	// When logged in as a MAYOR viewing the user-list page, hide delete buttons
+	const showDeleteButtons = !(user?.role === 'MAYOR' && router.pathname === '/user-list');
 
-		setOrderedUsers(buildOrderedUsers(hierarchyTree, users));
-	}, [users, hierarchyTree, loading, hierarchyLoading, setOrderedUsers]);
+	const { handleDeleteUser, confirmDelete, cancelDelete } = useDeleteUser({
+		displayUsers,
+		setDeleteTarget,
+		setShowDeleteModal,
+		refetchUsers,
+		deleteTarget,
+	});
 
-	const displayUsers = orderedUsers !== null ? orderedUsers : [];
-	const mayors = displayUsers.filter((u) => u.role === 'MAYOR');
-	const isOrdering = orderedUsers === null;
-
-	const handleDeleteUser = (userId: number | string) => {
-		const target = displayUsers.find((u) => u.id === Number(userId));
-		if (!target) return;
-		setDeleteTarget({ id: Number(userId), name: `${target.firstName} ${target.lastName}`, role: target.role });
-		setShowDeleteModal(true);
-	};
-
-	const confirmDelete = async () => {
-		if (!deleteTarget) return;
-		try {
-			await axios.instance.delete(`/users/${deleteTarget.id}`);
-			await refetchUsers();
-			setShowDeleteModal(false);
-			setDeleteTarget(null);
-		} catch (e) {
-			console.error('Failed to delete user', e);
-			alert('Failed to delete user');
-		}
-	};
-
-	const cancelDelete = () => {
-		setShowDeleteModal(false);
-		setDeleteTarget(null);
-	};
-
-	const renderActiveTab = () => {
-		// When logged in as a MAYOR viewing the user-list page, hide delete buttons
-		const showDeleteButtons = !(user?.role === 'MAYOR' && router.pathname === '/user-list');
-		switch (activeTab) {
-			case 'users':
-				return (
-					<UserGrid
-						loading={loading || isOrdering}
-						mayors={mayors}
-						users={displayUsers}
-						canNavigateAdmin={canNavigateAdmin}
-						onMayorClick={(id: number | string) => router.push(`/mayor-view/${id}`)}
-						onDeleteUser={showDeleteButtons ? handleDeleteUser : undefined}
-					/>
-				);
-			case 'hierarchy':
-				return <HierarchyTreeView tree={hierarchyTree} />;
-			default:
-				return null;
-		}
-	};
+	// renderActiveTab handled by composed components below
 
 	return (
 		<MainTemplate>
 			<GlobalNav />
 
 			<ColWrapper>
-				<Header />
+				<HeaderSection />
 				<ContentWrapper>
 					<LeftPanel>
-						{showHierarchyTabs && (
-							<TabContainer>
-								<Tab active={activeTab === 'users'} onClick={() => setActiveTab('users')}>
-									All Users
-								</Tab>
-								<Tab active={activeTab === 'hierarchy'} onClick={() => setActiveTab('hierarchy')}>
-									Hierarchy Tree
-								</Tab>
-							</TabContainer>
-						)}
+						<Tabs activeTab={activeTab} setActiveTab={setActiveTab} showHierarchyTabs={showHierarchyTabs} />
 
-						<CityProvider>{renderActiveTab()}</CityProvider>
+						<CityProvider>
+							{activeTab === 'users' ? (
+								<UserTab
+									loading={loading}
+									isOrdering={isOrdering}
+									mayors={mayors}
+									users={displayUsers}
+									canNavigateAdmin={canNavigateAdmin}
+									onMayorClick={(id) => router.push(`/mayor-view/${id}`)}
+									  onDeleteUser={showDeleteButtons ? handleDeleteUser : undefined}
+								/>
+							) : (
+								<HierarchyTab tree={hierarchyTree} />
+							)}
+						</CityProvider>
 					</LeftPanel>
 				</ContentWrapper>
 			</ColWrapper>
 
-			<DeleteConfirmationModal isOpen={showDeleteModal} deleteTarget={deleteTarget} onConfirm={confirmDelete} onCancel={cancelDelete} />
+			<DeleteModal isOpen={showDeleteModal} deleteTarget={deleteTarget} onConfirm={confirmDelete} onCancel={cancelDelete} />
 		</MainTemplate>
 	);
 }

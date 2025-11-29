@@ -1,25 +1,59 @@
-import React, { Suspense, useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import PermissionsModal from '../components/molecules/PermissionsModal';
 
 export default function usePermissionsModal(initialUserId?: number | null) {
-  const [showPermissions, setShowPermissions] = useState(false);
-  const [userId, setUserId] = useState<number | null | undefined>(initialUserId ?? null);
+  // Normalize to null
+  const [userId, setUserId] = useState<number | null>(initialUserId ?? null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const open = useCallback((id?: number | string, e?: React.MouseEvent) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    if (id !== undefined) setUserId(Number(id));
-    setShowPermissions(true);
-  }, []);
+  /**
+   * Opens the modal for a given user ID
+   */
+  const open = useCallback(
+    (id?: number | string, e?: React.MouseEvent) => {
+      e?.stopPropagation?.();
 
+      if (id !== undefined && id !== null) {
+        const numericId = Number(id);
+        if (!Number.isNaN(numericId)) {
+          setUserId(numericId);
+        }
+      }
+
+      setIsOpen(true);
+    },
+    []
+  );
+
+  /**
+   * Close modal
+   */
   const close = useCallback(() => {
-    setShowPermissions(false);
+    setIsOpen(false);
   }, []);
 
-  const renderModal = showPermissions && userId ? (
-    <Suspense fallback={<div />}>
-      <PermissionsModal isOpen={true} userId={Number(userId)} onClose={close} />
-    </Suspense>
-  ) : null;
+  /**
+   * Render memoized modal component
+   */
+  const renderModal = useMemo(() => {
+    if (!isOpen || userId == null) return null;
 
-  return { showPermissions, userId, open, close, renderModal };
+    return (
+      <Suspense fallback={<div />}>
+        <PermissionsModal
+          isOpen={true}
+          userId={userId}
+          onClose={close}
+        />
+      </Suspense>
+    );
+  }, [isOpen, userId, close]);
+
+  return {
+    isOpen,
+    userId,
+    open,
+    close,
+    renderModal,
+  };
 }
