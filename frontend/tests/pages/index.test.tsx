@@ -20,7 +20,7 @@ try {
   console.log('DEBUG: resolved LoginForm mock type =', typeof resolved?.default);
 } catch (e) {
   // eslint-disable-next-line no-console
-  console.log('DEBUG: could not require LoginForm at test-resolve time', e?.message || e);
+  console.log('DEBUG: could not require LoginForm at test-resolve time', (e as any)?.message || e);
 }
 
 import Home from '../../pages/index';
