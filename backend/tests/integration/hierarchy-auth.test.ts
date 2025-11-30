@@ -7,11 +7,16 @@ import jwt from 'jsonwebtoken';
 const SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 describe('Hierarchy authorization', () => {
+  // Helper to create an isolated 3-level hierarchy for tests (national -> city -> suburb)
+  async function createTestHierarchy() {
+    const root = await prisma.hierarchyLevel.create({ data: { name: `Test National ${Date.now()}`, level: 1 } });
+    const city = await prisma.hierarchyLevel.create({ data: { name: `Test City ${Date.now()}`, level: 2, parentId: root.id } });
+    const suburb = await prisma.hierarchyLevel.create({ data: { name: `Test Suburb ${Date.now()}`, level: 3, parentId: city.id } });
+    return { root, city, suburb };
+  }
   it('allows ADMIN to fetch any user subordinates', async () => {
     // Prefer existing seeded hierarchy entries (tests may run against a seeded DB)
-    const nat = (await prisma.hierarchyLevel.findFirst({ where: { name: 'National' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 1 } }));
-    const city = (await prisma.hierarchyLevel.findFirst({ where: { name: 'City A' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 2 } }));
-    const suburb = (await prisma.hierarchyLevel.findFirst({ where: { name: 'Suburb A1' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 3 } }));
+    const { root: nat, city, suburb } = await createTestHierarchy();
 
     // Create users
     const admin = await prisma.user.create({ data: { firstName: 'A', lastName: 'Admin', username: `adm-${Date.now()}`, email: `adm-${Date.now()}@t`, password: 'x', role: 'ADMIN' } });
@@ -28,9 +33,7 @@ describe('Hierarchy authorization', () => {
 
   it('allows ancestor to fetch descendant subordinates but denies unrelated', async () => {
     // Prefer existing seed hierarchy nodes where available
-    const root = (await prisma.hierarchyLevel.findFirst({ where: { name: 'National' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 1 } }));
-    const aCity = (await prisma.hierarchyLevel.findFirst({ where: { name: 'City A' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 2 } }));
-    const aSub = (await prisma.hierarchyLevel.findFirst({ where: { name: 'Suburb A1' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 3 } }));
+    const { root, city: aCity, suburb: aSub } = await createTestHierarchy();
 
     const natUser = await prisma.user.create({ data: { firstName: 'N', lastName: 'Nat', username: `nat-${Date.now()}`, email: `n@${Date.now()}`, password: 'x', role: 'MAYOR', hierarchyId: root?.id } });
     const cityUser = await prisma.user.create({ data: { firstName: 'C', lastName: 'City', username: `city2-${Date.now()}`, email: `c@${Date.now()}`, password: 'x', role: 'MAYOR', hierarchyId: aCity?.id } });
@@ -49,8 +52,7 @@ describe('Hierarchy authorization', () => {
   });
 
   it('allows owner to fetch their own subordinate list', async () => {
-    const r = (await prisma.hierarchyLevel.findFirst({ where: { name: 'National' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 1 } }));
-    const c = (await prisma.hierarchyLevel.findFirst({ where: { name: 'City A' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 2 } }));
+    const { root: r, city: c } = await createTestHierarchy();
     const user = await prisma.user.create({ data: { firstName: 'U', lastName: 'Own', username: `own-${Date.now()}`, email: `o2@${Date.now()}`, password: 'x', role: 'MAYOR', hierarchyId: c?.id } });
     const t = jwt.sign({ id: user.id, role: user.role }, SECRET);
     const res = await request(app).get(`/api/hierarchy/users/subordinates/${user.id}`).set('Authorization', `Bearer ${t}`);
@@ -58,9 +60,7 @@ describe('Hierarchy authorization', () => {
   });
 
   it('national mayor sees only lower-level mayors and viewers assigned to them (not peers)', async () => {
-    const root = (await prisma.hierarchyLevel.findFirst({ where: { name: 'National' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 1 } }));
-    const city = (await prisma.hierarchyLevel.findFirst({ where: { name: 'City A' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 2 } }));
-    const suburb = (await prisma.hierarchyLevel.findFirst({ where: { name: 'Suburb A1' } })) || (await prisma.hierarchyLevel.findFirst({ where: { level: 3 } }));
+    const { root, city, suburb } = await createTestHierarchy();
 
     // Create a national mayor (the owner), subordinates at city & suburb levels,
     // another national peer, and viewers tied to different mayors.

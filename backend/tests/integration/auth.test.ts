@@ -22,6 +22,7 @@ describe('Auth integration', () => {
       email: 'mayor1@test.local',
       password: 'password123',
       role: 'MAYOR',
+      mayorType: 'CITY',
       cityName: 'Townsville',
       country: 'Testland',
     };

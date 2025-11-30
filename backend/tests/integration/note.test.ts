@@ -27,6 +27,7 @@ describe('Note endpoints', () => {
       email: `test-${timestamp}@example.com`,
       password: 'password123',
       role: 'MAYOR',
+      mayorType: 'CITY',
       cityName: 'Test City',
       country: 'Testland'
     });

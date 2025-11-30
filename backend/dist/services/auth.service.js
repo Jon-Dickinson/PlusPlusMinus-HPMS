@@ -36,7 +36,7 @@ export async function register(data) {
     if (data.role === 'VIEWER' && data.mayorId) {
         const mayor = await prisma.user.findUnique({
             where: { id: data.mayorId },
-            select: { id: true, role: true },
+            select: { id: true, role: true, hierarchyId: true },
         });
         if (!mayor)
             throw new HttpError(400, 'Selected mayor does not exist');
@@ -44,13 +44,52 @@ export async function register(data) {
             throw new HttpError(400, 'Selected user is not a MAYOR');
         await prisma.user.update({
             where: { id: user.id },
-            data: { mayorId: mayor.id },
+            data: {
+                mayorId: mayor.id,
+                // viewers should inherit their mayor's hierarchy assignment
+                hierarchyId: mayor.hierarchyId ?? undefined,
+            },
         });
     }
     /** -------------------------
      *  MAYOR REGISTRATION FLOW
      * -------------------------*/
     if (data.role === 'MAYOR') {
+        // Ensure the payload includes which hierarchy level this mayor should be
+        // assigned to (NATIONAL | CITY | SUBURB). The frontend provides mayorType.
+        // We'll either find or create an appropriate HierarchyLevel node and
+        // attach the new user to it so hierarchical queries work immediately.
+        const levelMap = {
+            NATIONAL: 1,
+            CITY: 2,
+            SUBURB: 3,
+        };
+        const mayorType = data.mayorType ?? 'CITY';
+        const level = levelMap[mayorType];
+        // Locate an appropriate parent for the new node (if needed) and create
+        // a HierarchyLevel for this mayor so downstream services (cities, subordinates)
+        // can rely on the hierarchy assignment.
+        let parentId = null;
+        if (level === 1) {
+            // national -> parent should be admin/root (level 0) if exists
+            const root = await prisma.hierarchyLevel.findFirst({ where: { level: 0 } });
+            parentId = root?.id ?? null;
+        }
+        else if (level === 2) {
+            // find any national node to attach this city under
+            const national = await prisma.hierarchyLevel.findFirst({ where: { level: 1 } });
+            parentId = national?.id ?? null;
+        }
+        else if (level === 3) {
+            // find any city node to attach this suburb under
+            const cityLevel = await prisma.hierarchyLevel.findFirst({ where: { level: 2 } });
+            parentId = cityLevel?.id ?? null;
+        }
+        // Create a new hierarchy level record for this mayor's area
+        const levelName = (data.cityName && data.cityName.trim()) || `${mayorType} ${user.username}`;
+        const createdHL = await prisma.hierarchyLevel.create({ data: { name: levelName, level, parentId } });
+        // Attach hierarchyId to the user so other routes can operate correctly
+        await prisma.user.update({ where: { id: user.id }, data: { hierarchyId: createdHL.id } });
         if (!data.cityName || !data.country) {
             throw new HttpError(400, 'cityName and country are required for MAYOR registration');
         }

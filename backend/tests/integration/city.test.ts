@@ -19,7 +19,7 @@ describe('City endpoints', () => {
     // create a mayor (city created automatically)
     const timestamp = Date.now();
     const m = await request(app).post('/api/auth/register').send({
-      firstName: 'Mayor', lastName: 'One', username: `mayor-city-${timestamp}`, email: `mayor-city-${timestamp}@test.local`, password: 'mayorpass1', role: 'MAYOR', cityName: 'Cty', country: 'T'
+      firstName: 'Mayor', lastName: 'One', username: `mayor-city-${timestamp}`, email: `mayor-city-${timestamp}@test.local`, password: 'mayorpass1', role: 'MAYOR', cityName: 'Cty', country: 'T', mayorType: 'CITY'
     });
     expect(m.status).toBe(201);
 
@@ -40,7 +40,7 @@ describe('City endpoints', () => {
     // create mayor
     const timestamp = Date.now();
     await request(app).post('/api/auth/register').send({
-      firstName: 'Mayor', lastName: 'Two', username: `mayor2-${timestamp}`, email: `mayor2-${timestamp}@test.local`, password: 'mayorpass2', role: 'MAYOR', cityName: 'C2', country: 'T'
+      firstName: 'Mayor', lastName: 'Two', username: `mayor2-${timestamp}`, email: `mayor2-${timestamp}@test.local`, password: 'mayorpass2', role: 'MAYOR', cityName: 'C2', country: 'T', mayorType: 'CITY'
     });
     const mayor = await prisma.user.findUnique({ where: { username: `mayor2-${timestamp}` } });
     const city = await prisma.city.findUnique({ where: { mayorId: mayor?.id } as any });

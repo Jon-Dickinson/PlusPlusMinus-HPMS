@@ -22,6 +22,8 @@ export const registerSchema = z.object({
   cityName: z.string().optional(),
   country: z.string().optional(),
 
+  mayorType: z.enum(['NATIONAL', 'CITY', 'SUBURB']).optional(),
+
   mayorId: z.number().int().positive().optional(),
 });
 
@@ -54,6 +56,13 @@ export const registerRefined = registerSchema.superRefine((data, ctx) => {
         code: z.ZodIssueCode.custom,
         message: 'cityName and country are required for MAYOR',
         path: ['cityName'], // highlight one; frontend can adjust
+      });
+    }
+    if (!data.mayorType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'mayorType is required for MAYOR registration',
+        path: ['mayorType'],
       });
     }
   }

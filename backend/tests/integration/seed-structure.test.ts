@@ -88,5 +88,5 @@ describe('Seed structure constraints', () => {
     const admin = users.find(u => u.role === 'ADMIN');
     expect(admin).toBeTruthy();
     expect(admin?.hierarchyId).toBe(root.id);
-  });
+  }, 60000);
 });

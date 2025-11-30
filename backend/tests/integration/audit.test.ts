@@ -15,7 +15,7 @@ describe('Audit endpoints', () => {
   it('GET /api/users/:id/audits requires ADMIN and returns paginated results', async () => {
     // create target mayor user
     const mRes = await request(app).post('/api/auth/register').send({
-      firstName: 'Target', lastName: 'Mayor', username: 'tmay', email: 'tmay@test.local', password: 'maypass1', role: 'MAYOR', cityName: 'C1', country: 'T'
+      firstName: 'Target', lastName: 'Mayor', username: 'tmay', email: 'tmay@test.local', password: 'maypass1', role: 'MAYOR', cityName: 'C1', country: 'T', mayorType: 'CITY'
     });
     expect(mRes.status).toBe(201);
     const targetFromDb = await prisma.user.findUnique({ where: { username: 'tmay' } });
@@ -51,7 +51,7 @@ describe('Audit endpoints', () => {
   it('creates audit entries when a user saves their city (visible to ADMIN)', async () => {
     // create target mayor user
     const mRes = await request(app).post('/api/auth/register').send({
-      firstName: 'Save', lastName: 'Mayor', username: 'nsave', email: 'national1@example.com', password: 'mayorpass1', role: 'MAYOR', cityName: 'C2', country: 'T'
+      firstName: 'Save', lastName: 'Mayor', username: 'nsave', email: 'national1@example.com', password: 'mayorpass1', role: 'MAYOR', cityName: 'C2', country: 'T', mayorType: 'CITY'
     });
     expect(mRes.status).toBe(201);
 

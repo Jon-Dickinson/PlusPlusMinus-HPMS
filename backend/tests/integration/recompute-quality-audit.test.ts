@@ -11,7 +11,7 @@ describe('recomputeQualityIndexes migration', () => {
     const username = `recompute-audit-${t}`;
 
     const res = await request(app).post('/api/auth/register').send({
-      firstName: 'RQ', lastName: 'Tester', username, email: `${username}@test.local`, password: 'Password123!', role: 'MAYOR', cityName: 'RQCity', country: 'T'
+      firstName: 'RQ', lastName: 'Tester', username, email: `${username}@test.local`, password: 'Password123!', role: 'MAYOR', cityName: 'RQCity', country: 'T', mayorType: 'CITY'
     });
     expect(res.status).toBe(201);
 

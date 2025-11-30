@@ -23,7 +23,7 @@ describe('User endpoints', () => {
 
     // create a mayor and a viewer
     const mayorRes = await request(app).post('/api/auth/register').send({
-      firstName: 'Mayor', lastName: 'M', username: 'mayx', email: 'mayx@test.local', password: 'mayorpass1', role: 'MAYOR', cityName: 'C1', country: 'T'
+      firstName: 'Mayor', lastName: 'M', username: 'mayx', email: 'mayx@test.local', password: 'mayorpass1', role: 'MAYOR', cityName: 'C1', country: 'T', mayorType: 'CITY'
     });
     expect(mayorRes.status).toBe(201);
 
