@@ -42,7 +42,9 @@ export default function SystemStatus({
         : 'http://localhost:3000';
 
     const apiBase = (process.env.NEXT_PUBLIC_API_URL || fallback).replace(/\/$/, '');
-    const wsUrl = apiBase.replace(/^http/, 'ws') + '/system-status';
+    // the API base points at the host root; API endpoints are mounted under /api
+    // so make the socket path match: /api/system-status
+    const wsUrl = apiBase.replace(/^http/, 'ws') + '/api/system-status';
 
     const clearReconnectTimer = () => {
       if (reconnectTimerRef.current) {

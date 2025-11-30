@@ -13,18 +13,28 @@ import buildingRoutes from './routes/building.route.js';
 import docsRoutes from './routes/docs.route.js';
 import hierarchyRoutes from './routes/hierarchy.routes.js';
 const app = express();
+// Lightweight health endpoint used by status checks / uptime probes
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 /* ======================================================================
  * GLOBAL MIDDLEWARE
  * ====================================================================== */
 // JSON body parsing (safe limit)
 app.use(express.json({ limit: '2mb' }));
 // CORS whitelist
+const defaultOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://plus-plus-minus-hpms.vercel.app',
+];
+// Allow additional origins via comma-separated env var FRONTEND_ORIGINS
+const extra = process.env.FRONTEND_ORIGINS
+    ? process.env.FRONTEND_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...extra]));
+// log allowed origins for debugging
+console.log('CORS allowed origins:', allowedOrigins);
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'https://plus-plus-minus-hpms.vercel.app',
-    ],
+    origin: allowedOrigins,
     credentials: true,
     optionsSuccessStatus: 200,
 }));

@@ -2,7 +2,9 @@ import { WebSocketServer } from 'ws';
 import { checkApi, checkDb } from './statusChecks.js';
 
 export function attachSystemStatusSocket(server: any) {
-  const wss = new WebSocketServer({ server, path: '/system-status' });
+  // Mount WebSocket under /api so it matches the rest of the API surface
+  // and works correctly behind proxies that route the app at /api.
+  const wss = new WebSocketServer({ server, path: '/api/system-status' });
 
   // Debug: log incoming HTTP upgrade requests so we can diagnose handshake failures
   try {
