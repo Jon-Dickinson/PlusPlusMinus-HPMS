@@ -106,6 +106,36 @@ export async function register(data) {
                 buildingLog: JSON.stringify(cityGrid.buildingLog),
             },
         });
+        // Assign default building permissions to newly-created mayor users so
+        // the UI and endpoints like GET /api/hierarchy/buildings/allowed/:userId
+        // immediately return allowed categories for their level. This mirrors
+        // the seeding logic used in PermissionSeeder.
+        try {
+            const allCategories = await prisma.buildingCategory.findMany();
+            // Determine allowed categories by level using the in-src mapping which is
+            // intentionally kept as a mirror of the seeder configuration so runtime
+            // code doesn't import files outside of `src` (avoids tsc rootDir errors)
+            let allowedCategoryNames = 'all';
+            if (level === 2)
+                allowedCategoryNames = [...(await import('../config/seed-config.js')).BUILDING_PERMISSIONS.CITY_LEVEL];
+            if (level === 3)
+                allowedCategoryNames = [...(await import('../config/seed-config.js')).BUILDING_PERMISSIONS.SUBURB_LEVEL];
+            const allowedCategoryIds = allowedCategoryNames === 'all'
+                ? allCategories.map(c => c.id)
+                : allCategories.filter(c => allowedCategoryNames.includes(c.name)).map(c => c.id);
+            for (const categoryId of allowedCategoryIds) {
+                await prisma.userPermission.upsert({
+                    where: { userId_categoryId: { userId: user.id, categoryId } },
+                    update: { canBuild: true },
+                    create: { userId: user.id, categoryId, canBuild: true }
+                });
+            }
+        }
+        catch (err) {
+            // non-fatal — permissions will be available after seeding if categories
+            // don't exist yet. Log and continue.
+            console.warn('Failed to assign default building permissions to new mayor:', err?.message ?? String(err));
+        }
     }
     /** -------------------------
      *  TOKEN GENERATION

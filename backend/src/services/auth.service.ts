@@ -3,7 +3,6 @@ import { CityGridGenerator } from './city-grid-generator.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { HttpError } from '../utils/http-error.js';
-import { SEED_CONFIG } from '../../prisma/seeders/config.js';
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret';
 
@@ -150,10 +149,12 @@ export async function register(data: RegisterPayload) {
     try {
       const allCategories = await prisma.buildingCategory.findMany();
 
-      // Determine allowed categories by level
+      // Determine allowed categories by level using the in-src mapping which is
+      // intentionally kept as a mirror of the seeder configuration so runtime
+      // code doesn't import files outside of `src` (avoids tsc rootDir errors)
       let allowedCategoryNames: string[] | 'all' = 'all';
-      if (level === 2) allowedCategoryNames = SEED_CONFIG.BUILDING_PERMISSIONS.CITY_LEVEL as string[];
-      if (level === 3) allowedCategoryNames = SEED_CONFIG.BUILDING_PERMISSIONS.SUBURB_LEVEL as string[];
+      if (level === 2) allowedCategoryNames = [...(await import('../config/seed-config.js')).BUILDING_PERMISSIONS.CITY_LEVEL];
+      if (level === 3) allowedCategoryNames = [...(await import('../config/seed-config.js')).BUILDING_PERMISSIONS.SUBURB_LEVEL];
 
       const allowedCategoryIds = allowedCategoryNames === 'all'
         ? allCategories.map(c => c.id)
@@ -169,7 +170,7 @@ export async function register(data: RegisterPayload) {
     } catch (err) {
       // non-fatal — permissions will be available after seeding if categories
       // don't exist yet. Log and continue.
-      console.warn('Failed to assign default building permissions to new mayor:', err?.message ?? err);
+      console.warn('Failed to assign default building permissions to new mayor:', (err as any)?.message ?? String(err));
     }
   }
 
