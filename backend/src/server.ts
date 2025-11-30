@@ -18,6 +18,9 @@ import hierarchyRoutes from './routes/hierarchy.routes.js';
 
 const app = express();
 
+// Lightweight health endpoint used by status checks / uptime probes
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
 /* ======================================================================
  * GLOBAL MIDDLEWARE
  * ====================================================================== */

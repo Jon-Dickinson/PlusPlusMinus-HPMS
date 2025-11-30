@@ -33,6 +33,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "swagger-ui-express": "^4.6.3",
+    "ws": "^8.18.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -44,6 +45,7 @@
     "@types/node": "^24.9.2",
     "@types/supertest": "^6.0.2",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^1.0.0",
     "cross-env": "^10.1.0",
     "dotenv-cli": "^10.0.0",

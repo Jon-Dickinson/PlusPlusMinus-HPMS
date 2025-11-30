@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import Spinner from '../../atoms/Spinner';
 import Link from 'next/link';
 import Brand from '../../atoms/Brand';
+import SystemStatus from '../../molecules/SystemStatus';
 import {
   Root,
   Form,
@@ -33,13 +34,11 @@ export default function LoginForm() {
     setLoading(true);
     setError(null);
     try {
-      // Trim the email to avoid accidental leading/trailing whitespace from user input
       const user = await login(email.trim(), password);
       if (user) {
         if (isAdmin(user.role)) {
           router.push('/user-list');
         } else if (user.role === 'VIEWER' && (user as any).mayorId) {
-          // If a viewer is linked to a mayor, send them straight to the mayor view
           const mid = (user as any).mayorId;
           router.push(`/mayor-view/${mid}`);
         } else {
@@ -47,7 +46,6 @@ export default function LoginForm() {
         }
       }
     } catch (err) {
-      // Try to extract a helpful message
       const msg =
         (err &&
           (err as any).response &&
@@ -105,6 +103,7 @@ export default function LoginForm() {
                     'Sign in'
                   )}
                 </Button>
+                <SystemStatus />
               </Row>
             </form>
 

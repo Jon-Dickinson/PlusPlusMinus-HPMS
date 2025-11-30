@@ -1,6 +1,8 @@
 import axiosLib from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+// Default to the backend dev port (3000) — frontend dev server runs on 3001.
+// Consumers should set NEXT_PUBLIC_API_URL in .env.local for other environments.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 const instance = axiosLib.create({ baseURL: `${API_BASE}/api` });
 
 function setAuthToken(token: string | null) {
