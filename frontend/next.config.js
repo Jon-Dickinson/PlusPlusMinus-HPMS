@@ -5,46 +5,65 @@ const nextConfig = {
     styledComponents: true,
   },
   output: 'standalone',
+
   async headers() {
     return [
+      // ---------------------------------------------------
+      // 1. Apply security header globally (nosniff)
+      // ---------------------------------------------------
       {
-        source: '/_next/static/chunks/:path*.js',
+        source: "/:path*",
         headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
-        ],
-      },
-      {
-        source: '/_next/static/:path*.js',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
-        ],
-      },
-      {
-        source: '/_next/static/:path*.css',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Content-Type', value: 'text/css; charset=utf-8' },
-        ],
-      },
-      {
-        // Apply HTML-specific headers only for requests that accept HTML
-        // This avoids overriding correct content-types for static assets (eg .svg)
-        source: '/:path*',
-        has: [
           {
-            type: 'header',
-            key: 'accept',
-            value: 'text/html',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
         ],
+      },
+
+      // ---------------------------------------------------
+      // 2. Apply Cache-Control to all static assets
+      // These are safe to cache aggressively.
+      // ---------------------------------------------------
+      {
+        source: "/_next/static/:path*",
         headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          // Ensure HTML responses include utf-8 charset, but only for HTML requests
-          { key: 'Content-Type', value: 'text/html; charset=utf-8' },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
         ],
       },
+
+      {
+        source: "/logo.svg",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+        ],
+      },
+
+      // include all files in /public
+      {
+        source: "/:file((?:.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)))",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+        ],
+      },
+
     ];
   },
 };
