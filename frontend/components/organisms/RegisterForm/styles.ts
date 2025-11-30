@@ -43,13 +43,54 @@ export const RadioLabel = styled.label`
   gap: 8px;
   cursor: pointer;
   height: 38px;
-  padding-left: 25px;
+  padding-left: 28px;
 
   input {
     position: absolute;
-    top: 40%;
     left: 0;
+    top: 50%;
     transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    opacity: 0;
+    margin: 0;
+  }
+
+  span {
+    position: relative;
+    padding-left: 8px;
+  }
+
+  span::before {
+    content: '';
+    position: absolute;
+    left: -28px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #9ca3af;
+    background: #fff;
+    box-sizing: border-box;
+  }
+
+  input:checked + span::after {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3b82f6;
+  }
+
+  input:focus + span::before {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    border-color: #3b82f6;
   }
 `;
 
@@ -97,6 +138,13 @@ export const MayorSelect = styled.select`
   }
 `;
 
+export const MayorOption = styled.option``;
+
+export const LoadingText = styled.div`
+  color: #6b7280;
+`;
+
+
 export const MayorSelectContainer = styled.div`
   position: relative;
   display: flex;
@@ -109,4 +157,40 @@ export const MayorSelectContainer = styled.div`
 export const SubmitButton = styled(Button)`
   width: 100%;
   margin-top: 16px;
+`;
+
+export const RadioInput = styled.input`
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  margin: 0;
+`;
+
+export const RadioText = styled.span`
+  position: relative;
+  padding-left: 8px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -28px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #9ca3af;
+    background: #fff;
+    box-sizing: border-box;
+  }
+`;
+
+export const FormLabel = styled.label`
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
 `;

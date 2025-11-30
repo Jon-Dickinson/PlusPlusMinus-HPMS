@@ -16,6 +16,7 @@ export interface RegisterPayload {
   role: 'VIEWER' | 'MAYOR';
   cityName?: string;
   country?: string;
+  mayorType?: 'NATIONAL' | 'CITY' | 'SUBURB';
   mayorId?: number;
 }
 

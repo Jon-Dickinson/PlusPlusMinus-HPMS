@@ -1,24 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import Input from '../../atoms/Input';
 import { Row } from '../../atoms/Blocks';
 import Spinner from '../../atoms/Spinner';
 import Brand from '../../atoms/Brand';
 import { useRouter } from 'next/router';
 import { fetchMayors, registerUser, Mayor, RegisterPayload } from './api';
-import { Root, FormContainer, Title, ErrorMsg, RadioGroup, RadioLabel, InnerContainer, MayorSelect, MayorSelectContainer, SubmitButton } from './styles';
+import { Root, FormContainer, Title, ErrorMsg, RadioGroup, RadioLabel, InnerContainer, MayorSelect, RadioInput, RadioText, FormLabel, MayorOption, LoadingText } from './styles';
+
+type Role = 'VIEWER' | 'MAYOR';
+type MayorType = 'NATIONAL' | 'CITY' | 'SUBURB';
+
+interface RegisterFormState {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  password: string;
+  role: Role;
+  cityName: string;
+  country: string;
+  mayorId: string;
+  mayorType: MayorType;
+}
 
 export default function RegisterForm() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegisterFormState>({
     firstName: '',
     lastName: '',
     username: '',
     email: '',
     password: '',
-    role: 'VIEWER' as 'VIEWER' | 'MAYOR',
+    role: 'VIEWER',
     cityName: '',
     country: '',
     mayorId: '',
+    mayorType: 'CITY',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,8 +49,14 @@ export default function RegisterForm() {
   };
 
   const handleRoleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const role = event.target.value as 'VIEWER' | 'MAYOR';
-    setFormData((prev) => ({ ...prev, role, mayorId: role === 'VIEWER' ? prev.mayorId : '' }));
+    const role = event.target.value as Role;
+    setFormData((prev) => ({
+      ...prev,
+      role,
+      // clear mayorId for MAYOR role and ensure mayorType is set when registering a mayor
+      mayorId: role === 'VIEWER' ? prev.mayorId : '',
+      mayorType: role === 'MAYOR' ? prev.mayorType || 'CITY' : prev.mayorType,
+    }));
   };
 
   // Fetch mayors when the role is VIEWER so the user can pick one
@@ -67,7 +89,13 @@ export default function RegisterForm() {
 
     try {
       // Ensure mayorId is sent as number when provided
-      const payload: RegisterPayload = { ...formData, mayorId: formData.mayorId ? Number(formData.mayorId) : undefined };
+      // Only include mayorType when registering as a mayor so viewer payloads don't contain it
+      const { mayorType, ...rest } = formData as any;
+      const payload: RegisterPayload = {
+        ...rest,
+        ...(formData.role === 'MAYOR' ? { mayorType } : {}),
+        mayorId: formData.mayorId ? Number(formData.mayorId) : undefined,
+      };
       await registerUser(payload);
       router.push('/');
     } catch (err) {
@@ -83,6 +111,64 @@ export default function RegisterForm() {
     }
   };
 
+  /* --- small, focused subcomponents for clarity --- */
+  function RoleSelector() {
+    return (
+      <RadioGroup role="radiogroup" aria-label="Register role">
+        <RadioLabel>
+          <RadioInput type="radio" name="role" value="VIEWER" checked={formData.role === 'VIEWER'} onChange={handleRoleChange} />
+          <RadioText>Viewer</RadioText>
+        </RadioLabel>
+        <RadioLabel>
+          <RadioInput type="radio" name="role" value="MAYOR" checked={formData.role === 'MAYOR'} onChange={handleRoleChange} />
+          <RadioText>Mayor</RadioText>
+        </RadioLabel>
+      </RadioGroup>
+    );
+  }
+
+  function MayorTypeSelector() {
+    return (
+      <RadioGroup aria-label="Mayor Type" role="radiogroup">
+        <RadioLabel>
+          <RadioInput type="radio" name="mayorType" value="NATIONAL" checked={formData.mayorType === 'NATIONAL'} onChange={handleChange} />
+          <RadioText>National</RadioText>
+        </RadioLabel>
+        <RadioLabel>
+          <RadioInput type="radio" name="mayorType" value="CITY" checked={formData.mayorType === 'CITY'} onChange={handleChange} />
+          <RadioText>City</RadioText>
+        </RadioLabel>
+        <RadioLabel>
+          <RadioInput type="radio" name="mayorType" value="SUBURB" checked={formData.mayorType === 'SUBURB'} onChange={handleChange} />
+          <RadioText>Suburb</RadioText>
+        </RadioLabel>
+      </RadioGroup>
+    );
+  }
+
+  function MayorSelectBlock() {
+    function formatMayorName(mayor: Mayor) {
+      return `${mayor.firstName} ${mayor.lastName}${mayor.username ? ` (${mayor.username})` : ''}`;
+    }
+    return (
+      <InnerContainer>
+        <FormLabel htmlFor="mayor-select">Select your Mayor</FormLabel>
+        <InnerContainer>
+            {mayorsLoading ? (
+              <LoadingText>Loading mayors...</LoadingText>
+            ) : (
+              <MayorSelect id="mayor-select" name="mayorId" value={formData.mayorId} onChange={handleChange} required>
+                <MayorOption value="">— Select a Mayor —</MayorOption>
+                {mayors.map((mayor) => (
+                  <MayorOption key={mayor.id} value={String(mayor.id)}>{formatMayorName(mayor)}</MayorOption>
+                ))}
+                </MayorSelect>
+            )}
+        </InnerContainer>
+      </InnerContainer>
+    );
+  }
+
   return (
     <Root>
       <Brand />
@@ -92,47 +178,20 @@ export default function RegisterForm() {
           {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
           <p> Register as:</p>
 
-          <RadioGroup>
-            <RadioLabel>
-              <input type="radio" name="role" value="VIEWER" checked={formData.role === 'VIEWER'} onChange={handleRoleChange} />
-              <span>Viewer</span>
-            </RadioLabel>
-            <RadioLabel>
-              <input type="radio" name="role" value="MAYOR" checked={formData.role === 'MAYOR'} onChange={handleRoleChange} />
-              <span>Mayor</span>
-            </RadioLabel>
-          </RadioGroup>
+          <RoleSelector />
 
           {formData.role === 'MAYOR' && (
-            <Row>
-              <Input name="cityName" placeholder="City Name" value={formData.cityName} onChange={handleChange} required />
-              <Input name="country" placeholder="Country" value={formData.country} onChange={handleChange} required />
-            </Row>
+            <>
+              <MayorTypeSelector />
+
+              <Row>
+                <Input name="cityName" placeholder="City Name" value={formData.cityName} onChange={handleChange} required />
+                <Input name="country" placeholder="Country" value={formData.country} onChange={handleChange} required />
+              </Row>
+            </>
           )}
 
-          {formData.role === 'VIEWER' && (
-            <MayorSelectContainer>
-              <label htmlFor="mayor-select">Select your Mayor</label>
-              <InnerContainer>
-                {mayorsLoading ? (
-                  <div>Loading mayors...</div>
-                ) : (
-                  <MayorSelect
-                    id="mayor-select"
-                    name="mayorId"
-                    value={formData.mayorId}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">-- Select Mayor --</option>
-                    {mayors.map((m) => (
-                      <option key={m.id} value={String(m.id)}>{`${m.firstName} ${m.lastName}${m.username ? ` (${m.username})` : ''}`}</option>
-                    ))}
-                  </MayorSelect>
-                )}
-              </InnerContainer>
-            </MayorSelectContainer>
-          )}
+          {formData.role === 'VIEWER' && <MayorSelectBlock />}
 
           <Row>
             <Input name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required autoComplete="new-password" />
@@ -142,9 +201,9 @@ export default function RegisterForm() {
           <Input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required autoComplete="new-password" />
           <Input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} required autoComplete="new-password" />
 
-          <SubmitButton type="submit" disabled={loading || (formData.role === 'VIEWER' && !formData.mayorId)} aria-busy={loading}>
+          <button type="submit" disabled={loading || (formData.role === 'VIEWER' && !formData.mayorId)} aria-busy={loading} style={{ width: '100%', padding: '12px', fontSize: '1rem', borderRadius: '4px', background: '#0070f3', color: '#fff', border: 'none', cursor: 'pointer' }}>
             {loading ? <Spinner size={16} /> : 'Register'}
-          </SubmitButton>
+          </button>
         </form>
       </FormContainer>
     </Root>

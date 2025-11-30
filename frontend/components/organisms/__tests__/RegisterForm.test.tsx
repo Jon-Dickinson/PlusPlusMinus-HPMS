@@ -67,8 +67,8 @@ describe('RegisterForm', () => {
 
     renderWithProviders(<RegisterForm />);
 
-    expect(await screen.findByText('Select your Mayor')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('-- Select Mayor --')).toBeInTheDocument();
+    // ensure select plus options render
+    expect(await screen.findByDisplayValue('— Select a Mayor —')).toBeInTheDocument();
     expect(screen.getByText('John Doe (johndoe)')).toBeInTheDocument();
     expect(screen.getByText('Jane Smith (janesmith)')).toBeInTheDocument();
   });
@@ -81,6 +81,10 @@ describe('RegisterForm', () => {
 
     expect(screen.getByPlaceholderText('City Name')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Country')).toBeInTheDocument();
+    // mayor type radios should be visible for Mayor role
+    expect(screen.getByText('National')).toBeInTheDocument();
+    expect(screen.getByText('City')).toBeInTheDocument();
+    expect(screen.getByText('Suburb')).toBeInTheDocument();
     expect(screen.queryByText('Select your Mayor')).not.toBeInTheDocument();
   });
 
@@ -91,7 +95,7 @@ describe('RegisterForm', () => {
     renderWithProviders(<RegisterForm />);
 
     // Select a mayor
-    const mayorSelect = await screen.findByDisplayValue('-- Select Mayor --');
+    const mayorSelect = await screen.findByDisplayValue('— Select a Mayor —');
     fireEvent.change(mayorSelect, { target: { value: '1' } });
     expect(mayorSelect).toHaveValue('1');
 
@@ -100,7 +104,7 @@ describe('RegisterForm', () => {
     fireEvent.click(mayorRadio);
 
     // Mayor selection should be hidden
-    expect(screen.queryByDisplayValue('-- Select Mayor --')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('— Select a Mayor —')).not.toBeInTheDocument();
   });
 
   it('updates form data on input changes', () => {
@@ -140,7 +144,7 @@ describe('RegisterForm', () => {
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
 
     // Select mayor for VIEWER role
-    const mayorSelect = await screen.findByDisplayValue('-- Select Mayor --');
+    const mayorSelect = await screen.findByDisplayValue('— Select a Mayor —');
     fireEvent.change(mayorSelect, { target: { value: '1' } });
 
     const submitButton = screen.getByRole('button', { name: 'Register' });
@@ -167,7 +171,7 @@ describe('RegisterForm', () => {
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
 
     // Select mayor
-    const mayorSelect = await screen.findByDisplayValue('-- Select Mayor --');
+    const mayorSelect = await screen.findByDisplayValue('— Select a Mayor —');
     fireEvent.change(mayorSelect, { target: { value: '1' } });
 
     const submitButton = screen.getByRole('button', { name: 'Register' });
@@ -220,6 +224,7 @@ describe('RegisterForm', () => {
         role: 'MAYOR',
         cityName: 'Springfield',
         country: 'USA',
+        mayorType: 'CITY',
         mayorId: undefined,
       });
       expect(mockPush).toHaveBeenCalledWith('/');
@@ -292,7 +297,7 @@ describe('RegisterForm', () => {
     // Should still show the mayor selection area with the select element
     expect(screen.getByText('Select your Mayor')).toBeInTheDocument();
     // The select element should still be rendered even when mayors loading failed
-    const mayorSelect = screen.getByDisplayValue('-- Select Mayor --');
+    const mayorSelect = screen.getByDisplayValue('— Select a Mayor —');
     expect(mayorSelect).toBeInTheDocument();
     // Should have no mayor options (only the default option)
     expect(mayorSelect).toHaveLength(1);
