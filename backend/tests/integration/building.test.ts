@@ -138,6 +138,61 @@ describe('Building endpoints', () => {
     expect(created?.name).toBe('Power Plant');
   });
 
+  it('creating a building (and category) after a mayor exists should assign permissions to that mayor', async () => {
+    // Ensure a clean user / hierarchy / permission state for this test
+    await prisma.userPermission.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.city.deleteMany();
+    await prisma.hierarchyLevel.deleteMany();
+
+    // Register a mayor (no categories exist at this point)
+    const mayorPayload = {
+      firstName: 'Later',
+      lastName: 'Mayor',
+      username: 'later-mayor',
+      email: 'later-mayor@test.local',
+      password: 'password123',
+      role: 'MAYOR',
+      mayorType: 'CITY',
+      cityName: 'LaterTown',
+      country: 'Testland',
+    };
+
+    const mayorRes = await request(app).post('/api/auth/register').send(mayorPayload);
+    expect(mayorRes.status).toBe(201);
+
+    const mayorFromDb = await prisma.user.findUnique({ where: { username: 'later-mayor' }, include: { city: true } });
+    expect(mayorFromDb).toBeTruthy();
+
+    // Initially there should be no permissions because no categories exist
+    const initialPerms = await prisma.userPermission.findMany({ where: { userId: mayorFromDb!.id } });
+    expect(initialPerms.length).toBe(0);
+
+    // Create a building which will upsert its category and then should
+    // propagate permissions to existing mayor users.
+    const createResponse = await request(app)
+      .post('/api/buildings')
+      .send({
+        name: 'New Commercial Shop',
+        categoryName: 'commercial',
+        categoryDescription: 'A commercial shop category',
+        level: 2,
+        blocks: 4,
+        sizeX: 2,
+        sizeY: 2,
+        cityId: mayorFromDb!.city!.id,
+      });
+
+    expect(createResponse.status).toBe(201);
+
+    const cat = await prisma.buildingCategory.findUnique({ where: { name: 'commercial' } });
+    expect(cat).toBeTruthy();
+
+    const perms = await prisma.userPermission.findMany({ where: { userId: mayorFromDb!.id, categoryId: cat!.id } });
+    expect(perms.length).toBeGreaterThan(0);
+    expect(perms.some((p: any) => p.canBuild)).toBe(true);
+  });
+
   it('PUT /api/buildings/:id updates building', async () => {
     const category = await prisma.buildingCategory.create({
       data: { name: 'Residential', description: 'Homes' }
