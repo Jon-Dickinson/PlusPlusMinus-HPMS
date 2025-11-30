@@ -14,6 +14,14 @@ describe('Auth integration', () => {
   });
 
   it('registers mayor, admin and viewer and links viewer to mayor', async () => {
+    // Create building categories and buildings so the registration flow can
+    // assign default building permissions at creation time for the mayor.
+    await prisma.buildingCategory.create({ data: {
+      name: 'commercial',
+      description: 'Commercial buildings',
+      buildings: { create: [{ name: 'Shop', level: 2, sizeX: 2, sizeY: 2, powerUsage: 0, powerOutput: 0, waterUsage: 0, waterOutput: 0 }] }
+    } });
+
     // Register a mayor
     const mayorPayload = {
       firstName: 'Mayor',
@@ -44,6 +52,17 @@ describe('Auth integration', () => {
     if (typeof raw === 'string') parsed = JSON.parse(raw);
     const expected = g.calculateQualityIndexFromGrid(parsed as number[][]);
     expect(Number(mayorFromDb!.city!.qualityIndex)).toBe(Number(expected));
+
+    // (categories already created before registration) fetch to assert later
+    const cat = await prisma.buildingCategory.findFirst({ where: { name: 'commercial' }, include: { buildings: true } });
+
+    // Fetch allowed buildings for the mayor — should include our category
+    // The endpoint requires an authenticated caller - use the mayor's token
+    const token = mayorRes.body?.token;
+    const allowedRes = await request(app).get(`/api/hierarchy/buildings/allowed/${mayorFromDb!.id}`).set('Authorization', `Bearer ${token}`);
+    expect(allowedRes.status).toBe(200);
+    expect(Array.isArray(allowedRes.body)).toBe(true);
+    expect(allowedRes.body.some((c: any) => c.categoryName === 'commercial')).toBe(true);
 
     // Register a viewer linked to this mayor
     const viewerPayload = {

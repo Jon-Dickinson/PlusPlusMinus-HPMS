@@ -3,6 +3,7 @@ import { CityGridGenerator } from './city-grid-generator.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { HttpError } from '../utils/http-error.js';
+import { SEED_CONFIG } from '../../prisma/seeders/config.js';
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret';
 
@@ -141,6 +142,35 @@ export async function register(data: RegisterPayload) {
         buildingLog: JSON.stringify(cityGrid.buildingLog),
       },
     });
+
+    // Assign default building permissions to newly-created mayor users so
+    // the UI and endpoints like GET /api/hierarchy/buildings/allowed/:userId
+    // immediately return allowed categories for their level. This mirrors
+    // the seeding logic used in PermissionSeeder.
+    try {
+      const allCategories = await prisma.buildingCategory.findMany();
+
+      // Determine allowed categories by level
+      let allowedCategoryNames: string[] | 'all' = 'all';
+      if (level === 2) allowedCategoryNames = SEED_CONFIG.BUILDING_PERMISSIONS.CITY_LEVEL as string[];
+      if (level === 3) allowedCategoryNames = SEED_CONFIG.BUILDING_PERMISSIONS.SUBURB_LEVEL as string[];
+
+      const allowedCategoryIds = allowedCategoryNames === 'all'
+        ? allCategories.map(c => c.id)
+        : allCategories.filter(c => allowedCategoryNames.includes(c.name as any)).map(c => c.id);
+
+      for (const categoryId of allowedCategoryIds) {
+        await prisma.userPermission.upsert({
+          where: { userId_categoryId: { userId: user.id, categoryId } },
+          update: { canBuild: true },
+          create: { userId: user.id, categoryId, canBuild: true }
+        });
+      }
+    } catch (err) {
+      // non-fatal — permissions will be available after seeding if categories
+      // don't exist yet. Log and continue.
+      console.warn('Failed to assign default building permissions to new mayor:', err?.message ?? err);
+    }
   }
 
   /** -------------------------
