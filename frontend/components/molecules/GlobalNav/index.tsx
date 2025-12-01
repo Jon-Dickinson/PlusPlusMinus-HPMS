@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -10,16 +10,21 @@ import NotesModal from '../NotesModal';
 
 const GlobalNav = React.memo(function GlobalNav() {
   const router = useRouter();
-  const isActive = (path: string) => router.pathname === path;
+  const [mounted, setMounted] = useState(false);
+  const isActive = (path: string) => mounted ? router.pathname === path : false;
   const { user, logout } = useAuth();
   const role = user?.role;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
-  const [showNotesModal, setShowNotesModal] = React.useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
 
   const handleShowNotesModal = useCallback(() => {
     setShowNotesModal(true);
@@ -48,10 +53,10 @@ const GlobalNav = React.memo(function GlobalNav() {
             (() => {
               const mayorHref = user?.mayorId
                 ? `/mayor-view/${user.mayorId}`
-                : (router.asPath && router.asPath.startsWith('/mayor-view') ? router.asPath : '/user-list');
+                : (mounted && router.asPath && router.asPath.startsWith('/mayor-view') ? router.asPath : '/user-list');
               return (
                 <Link href={mayorHref} aria-label="Mayor View">
-                  <Icon src="/city.svg" alt="Mayor View" active={router.asPath.startsWith('/mayor-view')} />
+                  <Icon src="/city.svg" alt="Mayor View" active={mounted && router.asPath.startsWith('/mayor-view')} />
                 </Link>
               );
             })()

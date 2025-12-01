@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useRouter } from 'next/router';
 import { Root, Info, Heading, Icon, Left } from './styles';
@@ -7,84 +7,122 @@ import { SaveButton } from '../../atoms/--shared-styles';
 import { useCity } from '../../organisms/CityContext';
 import axios from '../../../lib/axios';
 import Toast from '../../atoms/Toast';
-import { 
-  RoleBadgeContainer, 
-  RoleBadge, 
-  StatusIndicator, 
-  StatusDot, 
-  getStatusDotCount 
+import {
+  RoleBadgeContainer,
+  RoleBadge,
+  StatusIndicator,
+  StatusDot,
+  getStatusDotCount,
 } from '../--shared-styles';
 import { Row, Column } from '../../atoms/Blocks';
+
+
+// ------------------------------
+// Helpers
+// ------------------------------
+
+function getHeadingTitle(path: string): string {
+  if (path.startsWith('/user-list')) return 'User List';
+  if (path.startsWith('/building-analysis')) return 'Building Analysis';
+  return 'City Builder';
+}
+
+// Header may render without CityProvider → return null safely
+function getSafeCityContext() {
+  try {
+    return useCity();
+  } catch {
+    return null;
+  }
+}
+
+// Build payload depending on whether CityContext exists
+function buildSavePayload(user: any, cityContext: any) {
+  if (!user?.city) return null;
+
+  const note = user?.notes?.[0]?.content || '';
+
+  if (cityContext) {
+    const { grid, buildingLog, getTotals } = cityContext;
+    const totals = getTotals ? getTotals() : { qualityIndex: 0 };
+
+    return {
+      gridState: grid,
+      buildingLog,
+      note,
+      qualityIndex: totals.qualityIndex,
+    };
+  }
+
+  // fallback (context missing)
+  return {
+    gridState: user.city.gridState || [],
+    buildingLog: user.city.buildingLog || [],
+    note,
+    qualityIndex: 0,
+  };
+}
+
+// Initialize grid with returned data from the server
+function applyReturnedCityState(updatedCity: any, cityContext: any, setUser: any, user: any) {
+  if (!updatedCity || !setUser) return;
+
+  // Update user
+  const newUser = { ...user, city: updatedCity };
+  setUser(newUser);
+
+  // Re-init grid if context available
+  if (!cityContext?.initializeGrid) return;
+
+  let gridArray: any[] = [];
+
+  if (typeof updatedCity.gridState === 'string') {
+    try {
+      gridArray = JSON.parse(updatedCity.gridState);
+    } catch {
+      gridArray = [];
+    }
+  } else if (Array.isArray(updatedCity.gridState)) {
+    gridArray = updatedCity.gridState;
+  }
+
+  const buildingLog = Array.isArray(updatedCity.buildingLog) ? updatedCity.buildingLog : [];
+
+  if (gridArray.length > 0) {
+    cityContext.initializeGrid(gridArray, buildingLog);
+  }
+}
+
+
+// ------------------------------
+// Component
+// ------------------------------
 
 const Header = React.memo(function Header() {
   const { user, setUser } = useAuth();
   const router = useRouter();
-  
-  // Prevent rendering during router transitions
-  if (!router.isReady) {
-    return null;
-  }
-  
-  // Header may be used on pages that don't include a CityProvider (e.g., user-list),
-  // so call useCity safely and treat absence of provider as null.
-  let cityContext: any = null;
-  try {
-    cityContext = useCity();
-  } catch (err) {
-    cityContext = null;
-  }
+  const cityContext = getSafeCityContext();
+
+  const [mounted, setMounted] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showToast, setShowToast] = useState(false);
 
-  const titleForPath = useCallback((path: string) => {
-    if (path.startsWith('/user-list')) return 'User List';
-    if (path.startsWith('/building-analysis')) return 'Building Analysis';
-    // default to dashboard
-    return 'City Builder';
-  }, []);
+  useEffect(() => setMounted(true), []);
 
   const handleSave = useCallback(async () => {
-    if (!user || !user.city) return;
-    try {
-      // gather state
-      const { grid, buildingLog, getTotals } = cityContext as any;
-      const totals = getTotals ? getTotals() : { qualityIndex: 0 };
-      const payload = {
-        gridState: grid,
-        buildingLog: buildingLog,
-        note: (user.notes && user.notes[0] && user.notes[0].content) || '',
-        qualityIndex: totals.qualityIndex,
-      };
+    if (!user?.city) return;
 
+    const payload = buildSavePayload(user, cityContext);
+    if (!payload) return;
+
+    try {
       const response = await axios.instance.put(`/cities/${user.city.id}/data`, payload);
+
       setMessage({ type: 'success', text: 'City data saved successfully!' });
       setShowToast(true);
 
-      // update stored user and initialize grid in-place if the server returned the saved city
-      try {
-        const updatedCity = response.data;
-        if (updatedCity && setUser) {
-          const newUser = { ...user, city: updatedCity } as any;
-          setUser(newUser);
+      applyReturnedCityState(response.data, cityContext, setUser, user);
 
-          // attempt to re-init grid
-          try {
-            const gridStateRaw = updatedCity.gridState;
-            let gridArray: any[] = [];
-            if (gridStateRaw) {
-              if (typeof gridStateRaw === 'string') {
-                try { gridArray = JSON.parse(gridStateRaw); } catch (e) { gridArray = []; }
-              } else if (Array.isArray(gridStateRaw)) {
-                gridArray = gridStateRaw;
-              }
-            }
-            const buildingLog = updatedCity.buildingLog && Array.isArray(updatedCity.buildingLog) ? updatedCity.buildingLog : [];
-            if (gridArray && gridArray.length && cityContext && cityContext.initializeGrid) {
-              cityContext.initializeGrid(gridArray, buildingLog);
-            }
-          } catch (e) { /* ignore */ }
-        }
-      } catch (e) { /* ignore */ }
     } catch (err) {
       setMessage({ type: 'error', text: 'Failed to save city data.' });
       setShowToast(true);
@@ -96,51 +134,67 @@ const Header = React.memo(function Header() {
     setMessage(null);
   }, []);
 
-  const heading = titleForPath(router.pathname || '');
+  const heading = mounted ? getHeadingTitle(router.pathname || '') : '';
+
+  const displayName =
+    (user?.firstName || user?.lastName)
+      ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+      : user?.username || user?.email || 'User';
+
+
+  // ------------------------------
+  // Render
+  // ------------------------------
+
   return (
     <Root>
       <Left>
         <Heading>{heading}</Heading>
       </Left>
-        <Authorized allowed={['ADMIN', 'MAYOR']}>
-          {user?.city && cityContext && (
-            <SaveButton onClick={handleSave}>Save</SaveButton>
-          )}
-        </Authorized>
-      <Info>
-      <Column>
-        {user ? (
-          <Row justify="end" align="center">
-            <Heading>
-              {user.firstName || user.lastName
-                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                : user.username || user.email || 'User'}
-            </Heading>
-            <RoleBadgeContainer>
-              <RoleBadge role={user.role || 'USER'}>
-                {(user.role || 'USER').toString().toUpperCase()}
-              </RoleBadge>
-              {user.role === 'MAYOR' && user.hierarchy?.level && (
-                <StatusIndicator>
-                  {Array.from({ length: getStatusDotCount(user.hierarchy.level) }, (_, index) => (
-                    <StatusDot key={index} />
-                  ))}
-                </StatusIndicator>
-              )}
-            </RoleBadgeContainer>
-            <Icon src="/user.svg" alt="User" />
-          </Row>
-        ) : (
-          <div> </div>
-        )}
-      </Column>
-       <Column>
-      
-       </Column>
-       {showToast && message && (
-         <Toast message={message.text} type={message.type} onClose={handleToastClose} />
-       )}
 
+      <Authorized allowed={['MAYOR']}>
+        {mounted && user?.city && (
+          <SaveButton onClick={handleSave}>Save</SaveButton>
+        )}
+      </Authorized>
+
+      <Info>
+        <Column>
+          {user ? (
+            <Row justify="end" align="center">
+              <Heading>{displayName}</Heading>
+
+              <RoleBadgeContainer>
+                <RoleBadge role={user.role || 'USER'}>
+                  {(user.role || 'USER').toString().toUpperCase()}
+                </RoleBadge>
+
+                {user.role === 'MAYOR' && user.hierarchy?.level && (
+                  <StatusIndicator>
+                    {Array.from(
+                      { length: getStatusDotCount(user.hierarchy.level) },
+                      (_, idx) => <StatusDot key={idx} />
+                    )}
+                  </StatusIndicator>
+                )}
+              </RoleBadgeContainer>
+
+              <Icon src="/user.svg" alt="User" />
+            </Row>
+          ) : (
+            <div />
+          )}
+        </Column>
+
+        <Column />
+
+        {showToast && message && (
+          <Toast
+            message={message.text}
+            type={message.type}
+            onClose={handleToastClose}
+          />
+        )}
       </Info>
     </Root>
   );

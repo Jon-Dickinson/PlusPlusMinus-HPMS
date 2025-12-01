@@ -9,7 +9,7 @@ const Brand = () => {
   return (
     <BrandContainer onClick={handleClick}>
       <img src="/logo.svg" alt="City Builder Logo" />
-      <span>ity Builder</span>
+      <span>City Builder</span>
     </BrandContainer>
   );
 };
