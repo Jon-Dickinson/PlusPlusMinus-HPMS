@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
+    "dev:stable": "next build && next start -p 3001",
     "test": "vitest --coverage",
     "test:watch": "vitest",
     "build": "next build",
@@ -32,6 +33,7 @@
     "@types/styled-components": "5.1.26",
     "@vitejs/plugin-react": "^5.1.0",
     "@vitest/coverage-v8": "^4.0.7",
+    "babel-plugin-styled-components": "^2.1.4",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.1",
     "happy-dom": "^20.0.10",

@@ -11,6 +11,7 @@ export const ColWrapper = styled.div`
 export const ContentWrapper = styled.div`
   padding: 1rem;
   height: calc(100vh - 120px);
+  width: 100%;
   overflow: hidden;
 `;
 
@@ -21,8 +22,6 @@ export const LeftPanel = styled.div`
   gap: 1rem;
   width: 100%;
   height: 100%;
-    /* Do not allow the entire left panel to scroll — the UserGrid itself will
-      provide a scrollable area for rows while headers remain visible. */
     overflow: hidden;
 `;
 

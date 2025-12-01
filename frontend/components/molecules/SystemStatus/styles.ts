@@ -7,7 +7,6 @@ export type SystemStatusState = {
 };
 
 export type Props = {
-  pollIntervalMs?: number;
   maxReconnectAttempts?: number;
   className?: string;
 };

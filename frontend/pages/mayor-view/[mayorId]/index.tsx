@@ -6,7 +6,6 @@ import Spinner from '../../../components/atoms/Spinner';
 import { City } from '../../../types/city';
 import CityPageLayout from '../../../components/organisms/CityPageLayout';
 import MayorViewContent from '../../../components/organisms/MayorViewContent';
-import LoadingOrError from '../../../components/molecules/LoadingOrError';
 import { Message } from '../../../components/pages/mayor-view/styles';
 
 
@@ -34,9 +33,7 @@ export default function MayorViewPage() {
   if (loading) {
     return (
       <CityPageLayout>
-        <LoadingOrError>
           <Spinner size={40} />
-        </LoadingOrError>
       </CityPageLayout>
     );
   }
@@ -44,9 +41,9 @@ export default function MayorViewPage() {
   if (!city) {
     return (
       <CityPageLayout>
-        <LoadingOrError>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
           <Message>City not found</Message>
-        </LoadingOrError>
+        </div>
       </CityPageLayout>
     );
   }

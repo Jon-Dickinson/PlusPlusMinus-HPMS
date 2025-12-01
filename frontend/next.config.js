@@ -2,7 +2,11 @@
 const nextConfig = {
   reactStrictMode: false,
   compiler: {
-    styledComponents: true,
+    styledComponents: {
+      displayName: false,
+      ssr: true,
+      minify: false,
+    },
   },
   output: 'standalone',
 

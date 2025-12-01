@@ -1,9 +1,6 @@
 import React from 'react';
-import MainTemplate from '../../templates/MainTemplate';
+import LoggedInLayout from '../../templates/LoggedInLayout';
 import { CityProvider } from '../CityContext';
-import Header from '../../molecules/Header';
-import GlobalNav from '../../molecules/GlobalNav';
-import { RowWrapper, ColWrapper } from './styles';
 
 interface CityPageLayoutProps {
   children: React.ReactNode;
@@ -17,16 +14,10 @@ export default function CityPageLayout({
   canEdit = false,
 }: CityPageLayoutProps) {
   return (
-    <MainTemplate>
-      <GlobalNav />
+    <LoggedInLayout>
       <CityProvider initialCityData={initialCityData} canEdit={canEdit}>
-        <ColWrapper>
-          <Header />
-          <RowWrapper>
-            {children}
-          </RowWrapper>
-        </ColWrapper>
+        {children}
       </CityProvider>
-    </MainTemplate>
+    </LoggedInLayout>
   );
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -8,7 +8,7 @@ import Authorized from '../../atoms/Authorized';
 import { Sidebar, NavIcons, Logo, Icon, ExitButton } from './styles';
 import NotesModal from '../NotesModal';
 
-export default function GlobalNav() {
+const GlobalNav = React.memo(function GlobalNav() {
   const router = useRouter();
   const isActive = (path: string) => router.pathname === path;
   const { user, logout } = useAuth();
@@ -20,6 +20,14 @@ export default function GlobalNav() {
   };
 
   const [showNotesModal, setShowNotesModal] = React.useState(false);
+
+  const handleShowNotesModal = useCallback(() => {
+    setShowNotesModal(true);
+  }, []);
+
+  const handleCloseNotesModal = useCallback(() => {
+    setShowNotesModal(false);
+  }, []);
 
   return (
     <Sidebar>
@@ -64,7 +72,7 @@ export default function GlobalNav() {
         <Authorized predicate={(user) => isMayor(user.role)}>
           <button
             aria-label="Notes"
-            onClick={() => setShowNotesModal(true)}
+            onClick={handleShowNotesModal}
             style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
             title="Notes"
           >
@@ -73,7 +81,7 @@ export default function GlobalNav() {
         </Authorized>
         
         {showNotesModal && (
-          <NotesModal isOpen={showNotesModal} onClose={() => setShowNotesModal(false)} />
+          <NotesModal isOpen={showNotesModal} onClose={handleCloseNotesModal} />
         )}
       
       </NavIcons>
@@ -82,4 +90,6 @@ export default function GlobalNav() {
       </ExitButton>
     </Sidebar>
   );
-}
+});
+
+export default GlobalNav;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import buildings from '../../data/buildings.json';
 import api from '../../lib/axios';
@@ -58,9 +58,9 @@ export default function BuildingAnalysis() {
   }, [router.query]);
 
   // Function to handle building selection from the list
-  const handleSelectBuilding = (buildingId: number) => {
+  const handleSelectBuilding = useCallback((buildingId: number) => {
     router.push(`/building-analysis?buildingId=${buildingId}`, undefined, { shallow: true });
-  };
+  }, [router]);
 
   return (
     <CityPageLayout>

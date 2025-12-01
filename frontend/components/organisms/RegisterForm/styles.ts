@@ -100,6 +100,7 @@ export const InnerContainer = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   width: 100%;
+  margin-bottom: 5px;
 `;
 
 export const MayorSelect = styled.select`

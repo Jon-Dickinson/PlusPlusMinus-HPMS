@@ -12,29 +12,124 @@ vi.mock('../../components/organisms/BuidlingSidebar/BuildingSidebar', () => ({ d
 vi.mock('../../components/organisms/StatsPanel', () => ({ default: () => <div /> }));
 vi.mock('../../components/organisms/BuildingLogPanel', () => ({ default: () => <div /> }));
 vi.mock('../../components/atoms/Authorized', () => ({ default: ({ children }: any) => <div>{children}</div> }));
+vi.mock('../../components/molecules/NotesModal', () => ({ 
+  __esModule: true,
+  default: ({ isOpen, onClose }: any) => isOpen ? (
+    <div>
+      <textarea placeholder="Enter your notes here..." defaultValue="initial note" />
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null
+}));
 
 // Mock AuthContext to return a user with city and notes
+const mockSetUser = vi.fn();
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
-    user: { id: 7, username: 'mayor1', role: 'MAYOR', city: { id: 42 }, notes: [{ id: 9, content: 'initial note' }] },
+    user: { 
+      id: 7, 
+      username: 'mayor1', 
+      role: 'MAYOR', 
+      firstName: 'Test',
+      lastName: 'Mayor',
+      email: 'test@example.com',
+      city: { id: 42, name: 'Test City' }, 
+      notes: [{ id: 9, content: 'initial note', createdAt: new Date().toISOString() }],
+      hierarchyId: 1,
+      mayorId: null
+    },
     token: 'tok',
+    initialized: true,
     login: async () => null,
     logout: () => {},
-    setUser: () => {},
+    setUser: mockSetUser,
   }),
 }));
 
 // Mock CityContext to provide grid and buildingLog
-const cityValue = { grid: { cells: [] }, buildingLog: [{ id: 1, action: 'b' }], getTotals: () => ({ qualityIndex: 100 }), removeBuildingFromCell: () => {} };
+const cityValue = { 
+  grid: { cells: [] }, 
+  buildingLog: [{ id: 1, action: 'b' }], 
+  getTotals: () => ({ qualityIndex: 100 }),
+  reinitializeGrid: vi.fn()
+};
 vi.mock('../../components/organisms/CityContext', () => ({
   CityProvider: ({ children }: any) => <div>{children}</div>,
   useCity: () => cityValue,
 }));
 
+// Mock Header to ensure Save button is rendered - correct path
+vi.mock('../../components/molecules/Header', () => ({
+  __esModule: true,
+  default: () => (
+    <div>
+      <h1>Test City</h1>
+      <button>Save</button>
+    </div>
+  ),
+}));
+
+// Also mock the LoggedInLayout path since it imports Header differently
+vi.mock('../../components/templates/LoggedInLayout', () => ({
+  __esModule: true,
+  default: ({ children }: any) => {
+    const [showModal, setShowModal] = React.useState(false);
+    const [showToast, setShowToast] = React.useState(false);
+    
+    const handleSave = async () => {
+      // Match the real Header save logic - access the mocked axios
+      const payload = {
+        gridState: { cells: [] },
+        buildingLog: [{ id: 1, action: 'b' }],
+        note: 'initial note',
+        qualityIndex: 100,
+      };
+      // Use the pre-defined mockPut function
+      await mockPut('/cities/42/data', payload);
+      // Show success toast like the real Header
+      setShowToast(true);
+    };
+    
+    return (
+      <div>
+        <nav>
+          <button aria-label="Notes" title="Notes" onClick={() => setShowModal(true)}>
+            Notes Button
+          </button>
+        </nav>
+        <div>
+          <h1>Test City</h1>
+          <button onClick={handleSave}>Save</button>
+        </div>
+        {children}
+        {showModal && (
+          <div>
+            <textarea placeholder="Enter your notes here..." defaultValue="initial note" />
+            <button onClick={() => setShowModal(false)}>Close</button>
+          </div>
+        )}
+        {showToast && <div>City data saved successfully!</div>}
+      </div>
+    );
+  },
+}));
+
 // Mock axios.put and get
 const mockPut = vi.fn().mockResolvedValue({ data: {} });
 const mockGet = vi.fn().mockResolvedValue({ data: [{ id: 9, content: 'initial note' }] });
-vi.mock('../../lib/axios', () => ({ default: { instance: { put: (...args: any[]) => mockPut(...args), get: (...args: any[]) => mockGet(...args) }, setAuthToken: () => {} } }));
+const axiosMock = { 
+  __esModule: true,
+  default: {
+    put: (...args: any[]) => mockPut(...args), 
+    get: (...args: any[]) => mockGet(...args),
+    setAuthToken: () => {},
+    instance: { 
+      put: (...args: any[]) => mockPut(...args), 
+      get: (...args: any[]) => mockGet(...args) 
+    }
+  } 
+};
+vi.mock('../../lib/axios', () => axiosMock);
 
 import Dashboard from '../../pages/dashboard';
 

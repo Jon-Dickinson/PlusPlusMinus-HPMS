@@ -41,6 +41,10 @@ export default function ViewerCard({ viewer, onDeleteUser }: ViewerCardProps) {
     onDeleteUser && onDeleteUser(viewer.id);
   };
 
+  const handleAuditClick = (e: React.MouseEvent) => {
+    openAudit(viewer.id, e);
+  };
+
   return (
     <ViewerCardStyled>
       <ViewerLocation>
@@ -57,7 +61,7 @@ export default function ViewerCard({ viewer, onDeleteUser }: ViewerCardProps) {
 
       <ViewerActions>
         {viewerIsAdmin && (
-          <AuditButton onClick={(e) => openAudit(viewer.id, e)} title="Audit logs">
+          <AuditButton onClick={handleAuditClick} title="Audit logs">
             <FileText size={16} />
           </AuditButton>
         )}

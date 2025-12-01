@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useDrop } from 'react-dnd';
 import { useCity } from '../CityContext';
 import { CellContainer, CountIndicator } from './styles';
@@ -25,7 +25,7 @@ export default function GridCell({
   const { canEdit } = useCity();
   const [isBouncing, setIsBouncing] = useState(false);
 
-  const [{ isOver }, drop] = useDrop(() => ({
+  const dropConfig = useMemo(() => ({
     accept: ['BUILDING', 'MOVE_BUILDING'],
     canDrop: () => canEdit,
     drop: (item: any) => {
@@ -49,7 +49,9 @@ export default function GridCell({
       }
     },
     collect: (monitor: any) => ({ isOver: !!monitor.isOver() }),
-  }));
+  }), [canEdit, index, addBuilding, moveBuilding]);
+
+  const [{ isOver }, drop] = useDrop(dropConfig);
 
   const topId = cellBuildings && cellBuildings.length > 0 ? cellBuildings[cellBuildings.length - 1] : null;
   const topBuilding = topId ? buildingsLookup(topId) : null;

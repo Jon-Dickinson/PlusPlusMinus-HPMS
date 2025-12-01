@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import axios from '../../../lib/axios';
 import { useAuth } from '../../../context/AuthContext';
@@ -50,6 +50,15 @@ export default function NotesModal({ isOpen, onClose }: NotesModalProps) {
     };
   }, [isOpen, user?.id]);
 
+  const handleStopPropagation = useCallback((event: React.MouseEvent) => {
+    event.stopPropagation();
+  }, []);
+
+  const handleContentChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    event.stopPropagation();
+    setContent(event.target.value);
+  }, []);
+
   const handleSave = async () => {
     if (!user?.id) return;
     setLoading(true);
@@ -75,8 +84,8 @@ export default function NotesModal({ isOpen, onClose }: NotesModalProps) {
   if (!isOpen) return null;
 
   const modal = (
-    <ModalOverlay onClick={(event) => event.stopPropagation()}>
-      <ModalContent onClick={(event) => event.stopPropagation()}>
+    <ModalOverlay onClick={handleStopPropagation}>
+      <ModalContent onClick={handleStopPropagation}>
         <ModalTitle>Notes</ModalTitle>
         {loading ? (
           <div>Loading...</div>
@@ -85,7 +94,7 @@ export default function NotesModal({ isOpen, onClose }: NotesModalProps) {
             <NotesInput
               placeholder="Enter your notes here..."
               value={content}
-              onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => { event.stopPropagation(); setContent(event.target.value); }}
+              onChange={handleContentChange}
             />
             {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
           </div>

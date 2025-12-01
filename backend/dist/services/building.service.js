@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+import { BUILDING_PERMISSIONS } from '../config/seed-config.js';
 /* ---------------------------------------------------------
  *  GET ALL BUILDINGS
  * --------------------------------------------------------- */
@@ -46,17 +47,19 @@ export async function getById(id) {
  * --------------------------------------------------------- */
 export async function create(input) {
     let categoryId = input.categoryId;
-    // Create or upsert category if category.name is provided
-    if (input.category?.name) {
+    // Create or upsert category if category.name or categoryName is provided
+    const requestedCategoryName = input.category?.name ?? input.categoryName;
+    const requestedCategoryDescription = input.category?.description ?? input.categoryDescription;
+    if (requestedCategoryName) {
         const category = await prisma.buildingCategory.upsert({
-            where: { name: input.category.name },
-            update: {},
-            create: { name: input.category.name },
+            where: { name: requestedCategoryName },
+            update: { description: requestedCategoryDescription ?? undefined },
+            create: { name: requestedCategoryName, description: requestedCategoryDescription ?? undefined },
         });
         categoryId = category.id;
     }
     // Create building using only valid fields
-    return prisma.building.create({
+    const created = await prisma.building.create({
         data: {
             name: input.name,
             categoryId,
@@ -70,6 +73,50 @@ export async function create(input) {
             cityId: input.cityId,
         },
     });
+    // After creating a building (and potentially creating a category), ensure
+    // existing users are granted appropriate permissions for this category
+    // according to our BUILDING_PERMISSIONS mapping. This mirrors the seeder
+    // behavior and guarantees that if categories are created after mayors are
+    // registered they still receive permission rows.
+    try {
+        if (categoryId) {
+            const category = await prisma.buildingCategory.findUnique({ where: { id: categoryId } });
+            if (category) {
+                const catName = category.name;
+                // Determine which hierarchy levels should be granted this category
+                const levelsToGrant = new Set();
+                if (BUILDING_PERMISSIONS.NATIONAL_LEVEL === 'all')
+                    levelsToGrant.add(1);
+                if (BUILDING_PERMISSIONS.CITY_LEVEL.includes(catName))
+                    levelsToGrant.add(2);
+                if (BUILDING_PERMISSIONS.SUBURB_LEVEL.includes(catName))
+                    levelsToGrant.add(3);
+                if (levelsToGrant.size > 0) {
+                    // Find hierarchy nodes for each level and all users attached to them
+                    for (const level of levelsToGrant) {
+                        const nodes = await prisma.hierarchyLevel.findMany({ where: { level } });
+                        const nodeIds = nodes.map(n => n.id);
+                        if (nodeIds.length === 0)
+                            continue;
+                        const users = await prisma.user.findMany({ where: { hierarchyId: { in: nodeIds }, role: { not: 'VIEWER' } } });
+                        for (const u of users) {
+                            await prisma.userPermission.upsert({
+                                where: { userId_categoryId: { userId: u.id, categoryId: category.id } },
+                                update: { canBuild: true },
+                                create: { userId: u.id, categoryId: category.id, canBuild: true },
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (err) {
+        // Non-fatal — we don't want building creation to fail if permission
+        // propagation has problems. Log and move on.
+        console.warn('Failed to assign permissions when creating building:', err?.message ?? String(err));
+    }
+    return created;
 }
 /* ---------------------------------------------------------
  *  UPDATE BUILDING

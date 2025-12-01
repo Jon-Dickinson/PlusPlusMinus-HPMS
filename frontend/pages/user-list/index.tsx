@@ -1,17 +1,14 @@
-import React from 'react';
-import MainTemplate from '../../components/templates/MainTemplate';
+import React, { useCallback } from 'react';
+import LoggedInLayout from '../../components/templates/LoggedInLayout';
 import { useRouter } from 'next/router';
 import { CityProvider } from '../../components/organisms/CityContext';
-import Header from '../../components/molecules/Header';
-import GlobalNav from '../../components/molecules/GlobalNav';
 import useAuthorized from '../../hooks/useAuthorized';
 import useUserList from '../../hooks/useUserList';
-import { ColWrapper, ContentWrapper, LeftPanel } from '../../components/pages/user-list/styles';
+import { ContentWrapper, LeftPanel } from '../../components/pages/user-list/styles';
 import Tabs from '../../components/atoms/Tabs';
 import UserTab from '../../components/molecules/UserTab';
 import HierarchyTab from '../../components/organisms/HierachyTab';
 import DeleteModal from '../../components/molecules/DeleteModal';
-import HeaderSection from '../../components/molecules/HeaderSection';
 import useUserOrdering from '../../hooks/useUserOrdering';
 import useDeleteUser from '../../hooks/useDeleteUser';
 import { computeVisibleUsers } from '../../utils/computeVisibleUsers';
@@ -54,15 +51,17 @@ export default function UserListView() {
 		deleteTarget,
 	});
 
+	const handleMayorClick = useCallback((id: string | number) => {
+		router.push(`/mayor-view/${id}`);
+	}, [router]);
+
+
+
 	// renderActiveTab handled by composed components below
 
 	return (
-		<MainTemplate>
-			<GlobalNav />
-
-			<ColWrapper>
-				<HeaderSection />
-				<ContentWrapper>
+		<LoggedInLayout>
+			<ContentWrapper>
 					<LeftPanel>
 						<Tabs activeTab={activeTab} setActiveTab={setActiveTab} showHierarchyTabs={showHierarchyTabs} />
 
@@ -74,18 +73,17 @@ export default function UserListView() {
 									mayors={mayors}
 									users={displayUsers}
 									canNavigateAdmin={canNavigateAdmin}
-									onMayorClick={(id) => router.push(`/mayor-view/${id}`)}
-									  onDeleteUser={showDeleteButtons ? handleDeleteUser : undefined}
+									onMayorClick={handleMayorClick}
+									onDeleteUser={showDeleteButtons ? handleDeleteUser : undefined}
 								/>
 							) : (
 								<HierarchyTab tree={hierarchyTree} />
 							)}
 						</CityProvider>
 					</LeftPanel>
-				</ContentWrapper>
-			</ColWrapper>
+			</ContentWrapper>
 
 			<DeleteModal isOpen={showDeleteModal} deleteTarget={deleteTarget} onConfirm={confirmDelete} onCancel={cancelDelete} />
-		</MainTemplate>
+		</LoggedInLayout>
 	);
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import MayorCard from '../MayorCard';
 import ViewerList from '../ViewerList';
 import { MayorSection } from './styles';
@@ -27,15 +27,17 @@ export default function MayorSectionComponent({
   onMayorClick,
   onDeleteUser,
 }: MayorSectionProps) {
+  const handleMayorClick = useCallback((id: number | string) => {
+    if (canNavigateAdmin) {
+      onMayorClick(id);
+    }
+  }, [canNavigateAdmin, onMayorClick]);
+
   return (
     <MayorSection>
       <MayorCard
         id={mayor.id}
-        onClick={(id: number | string) => {
-          if (canNavigateAdmin) {
-            onMayorClick(id);
-          }
-        }}
+        onClick={handleMayorClick}
         onDelete={onDeleteUser}
       />
       <ViewerList viewers={viewers} onDeleteUser={onDeleteUser} />

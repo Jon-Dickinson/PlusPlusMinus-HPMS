@@ -10,116 +10,190 @@ import {
   SystemStatusState,
 } from './styles';
 
-
-// -------------------------------------------------------
-// Component
-// -------------------------------------------------------
-
-export default function SystemStatus({
-  pollIntervalMs = 5000,
-  maxReconnectAttempts = 6,
+function SystemStatusClient({
+  maxReconnectAttempts = 5,
   className,
 }: Props) {
+
+
   const [status, setStatus] = useState<SystemStatusState>({
     api: 'unknown',
     db: 'unknown',
   });
 
-  const [connectingAttempts, setConnectingAttempts] = useState(0);
+  const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'failed' | 'disconnected'>('disconnected');
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const destroyedRef = useRef(false);
-  const reconnectTimerRef = useRef<number | null>(null);
-  const attemptsRef = useRef(0);
+  const mountedRef = useRef(true);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const connectingRef = useRef(false);
 
-  // -------------------------------------------------------
-  // WebSocket logic
-  // -------------------------------------------------------
   useEffect(() => {
-    const fallback =
-      typeof window !== 'undefined'
-        ? window.location.origin
-        : 'http://localhost:3000';
+    mountedRef.current = true;
 
-    const apiBase = (process.env.NEXT_PUBLIC_API_URL || fallback).replace(/\/$/, '');
-    // the API base points at the host root; API endpoints are mounted under /api
-    // so make the socket path match: /api/system-status
-    const wsUrl = apiBase.replace(/^http/, 'ws') + '/api/system-status';
-
-    const clearReconnectTimer = () => {
-      if (reconnectTimerRef.current) {
-        window.clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
+    const getWebSocketUrl = () => {
+      const fallback = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || fallback).replace(/\/$/, '');
+      return apiBase.replace(/^http/, 'ws') + '/api/system-status';
     };
 
-    const scheduleReconnect = () => {
-      if (destroyedRef.current) return;
-      attemptsRef.current += 1;
-      setConnectingAttempts(attemptsRef.current);
+    const cleanup = () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      
+      if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+        wsRef.current.close(1000, 'Component cleanup');
+      }
+      wsRef.current = null;
+    };
 
-      const base = Math.min(30000, 1000 * 2 ** (attemptsRef.current - 1));
-      const jitter = Math.floor(Math.random() * 300);
-      const delay = base + jitter;
-      reconnectTimerRef.current = window.setTimeout(connect, delay);
+    const attemptReconnect = () => {
+      if (!mountedRef.current) return;
+      
+      reconnectAttemptsRef.current += 1;
+      const newAttempts = reconnectAttemptsRef.current;
+      setReconnectAttempts(newAttempts);
 
-      console.warn(`SystemStatus reconnect attempt ${attemptsRef.current} in ${delay}ms`);
+      if (newAttempts >= maxReconnectAttempts) {
+        setConnectionState('failed');
+        return;
+      }
+
+      // Exponential backoff: 1s, 2s, 4s, 8s, 16s max
+      const delay = Math.min(16000, 1000 * Math.pow(2, newAttempts - 1));
+      
+      reconnectTimeoutRef.current = setTimeout(() => {
+        if (mountedRef.current) {
+          connect();
+        }
+      }, delay);
     };
 
     const connect = () => {
-      const WSConstructor =
-        (globalThis as any).WebSocket ??
-        (typeof WebSocket !== 'undefined' ? WebSocket : undefined);
+      if (!mountedRef.current) return;
 
-      if (!WSConstructor) return;
-      if (destroyedRef.current) return;
+      // Prevent multiple simultaneous connection attempts
+      if (connectingRef.current) {
+        console.log('SystemStatus: Already connecting, skipping');
+        return;
+      }
+
+      // Check if WebSocket is available
+      if (typeof WebSocket === 'undefined') {
+        console.warn('SystemStatus: WebSocket not available');
+        return;
+      }
+
+      // Close existing connection if any
+      if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+        wsRef.current.close();
+      }
+
+      connectingRef.current = true;
+      setConnectionState('connecting');
 
       try {
-        const ws = new WSConstructor(wsUrl) as WebSocket;
+        const ws = new WebSocket(getWebSocketUrl());
         wsRef.current = ws;
 
+        const connectionTimeout = setTimeout(() => {
+          if (ws.readyState === WebSocket.CONNECTING) {
+            ws.close();
+          }
+        }, 10000); // 10 second connection timeout
+
         ws.onopen = () => {
-          attemptsRef.current = 0;
-          setConnectingAttempts(0);
+          clearTimeout(connectionTimeout);
+          connectingRef.current = false;
+          if (!mountedRef.current) {
+            ws.close();
+            return;
+          }
+          
+          console.log('SystemStatus: WebSocket connected');
+          setConnectionState('connected');
+          reconnectAttemptsRef.current = 0;
+          setReconnectAttempts(0);
         };
 
         ws.onmessage = (event) => {
+          if (!mountedRef.current) return;
+          
           try {
-            const update = JSON.parse(event.data) as SystemStatusState;
-            setStatus(update);
-          } catch {}
+            const data = JSON.parse(event.data);
+            if (data && typeof data === 'object' && ('api' in data || 'db' in data)) {
+              setStatus(data as SystemStatusState);
+            }
+          } catch (error) {
+            console.warn('SystemStatus: Failed to parse message:', error);
+          }
         };
 
-        ws.onclose = () => {
-          clearReconnectTimer();
-          if (!destroyedRef.current) scheduleReconnect();
+        ws.onclose = (event) => {
+          clearTimeout(connectionTimeout);
+          connectingRef.current = false;
+          if (!mountedRef.current) return;
+
+          console.log('SystemStatus: WebSocket closed', event.code, event.reason);
+          
+          // Only attempt reconnect for unexpected closures
+          if (event.code !== 1000 && event.code !== 1001) {
+            setConnectionState('disconnected');
+            attemptReconnect();
+          } else {
+            setConnectionState('disconnected');
+          }
         };
 
-        ws.onerror = () => {
-          if (!reconnectTimerRef.current) scheduleReconnect();
+        ws.onerror = (error) => {
+          clearTimeout(connectionTimeout);
+          connectingRef.current = false;
+          if (!mountedRef.current) return;
+          
+          console.error('SystemStatus: WebSocket error:', error);
+          setConnectionState('disconnected');
         };
-      } catch {
-        scheduleReconnect();
+
+      } catch (error) {
+        connectingRef.current = false;
+        console.error('SystemStatus: Failed to create WebSocket:', error);
+        if (mountedRef.current) {
+          attemptReconnect();
+        }
       }
     };
 
+    // Initial connection
     connect();
 
+    // Cleanup on unmount
     return () => {
-      destroyedRef.current = true;
-      clearReconnectTimer();
-      wsRef.current?.close();
-      wsRef.current = null;
+      mountedRef.current = false;
+      cleanup();
     };
-  }, [pollIntervalMs]);
+  }, []); // Empty dependency array - only run once
 
-  const connectionFailed =
-    connectingAttempts >= maxReconnectAttempts &&
-    connectingAttempts > 0;
+  const getStatusDisplay = () => {
+    if (connectionState === 'failed') {
+      return 'Connection Failed';
+    }
+    if (connectionState === 'connecting') {
+      return reconnectAttempts > 0 ? `Reconnecting... (${reconnectAttempts})` : 'Connecting...';
+    }
+    if (connectionState === 'disconnected') {
+      return 'Disconnected';
+    }
+    return null;
+  };
+
+  const statusDisplay = getStatusDisplay();
 
   return (
     <Wrapper className={className} aria-live="polite">
-      
       <Row>
         <Label>API</Label>
         <SingleLight status={status.api} />
@@ -132,7 +206,36 @@ export default function SystemStatus({
         <StatusText>{status.db}</StatusText>
       </Row>
 
-      {connectionFailed && <ErrorText>connection failed</ErrorText>}
+      {statusDisplay && <ErrorText>{statusDisplay}</ErrorText>}
     </Wrapper>
   );
 }
+
+const SystemStatus = React.memo(function SystemStatus(props: Props) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Wrapper className={props.className} aria-live="polite">
+        <Row>
+          <Label>API</Label>
+          <SingleLight status="unknown" />
+          <StatusText>unknown</StatusText>
+        </Row>
+        <Row>
+          <Label>DB</Label>
+          <SingleLight status="unknown" />
+          <StatusText>unknown</StatusText>
+        </Row>
+      </Wrapper>
+    );
+  }
+
+  return <SystemStatusClient {...props} />;
+});
+
+export default SystemStatus;

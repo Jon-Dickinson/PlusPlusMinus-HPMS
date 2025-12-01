@@ -1,7 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ModalOverlay, ModalContent, ModalTitle, ModalMessage, ModalButtons, CancelButton } from '../DeleteConfirmationModal/styles';
 import UserAPI from '../../../lib/userAPI';
+
+const formatDateSafe = (dateString: string | null | undefined): string => {
+  if (!dateString) return '—';
+  try {
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '—';
+  }
+};
 
 interface AuditItem {
   id: number;
@@ -28,6 +43,15 @@ export default function AuditLogModal({ isOpen, userId, onClose }: AuditLogModal
   const [total, setTotal] = useState<number>(0);
   const [limit, setLimit] = useState<number>(10);
   const [offset, setOffset] = useState<number>(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleStopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !userId) return;
@@ -48,8 +72,8 @@ export default function AuditLogModal({ isOpen, userId, onClose }: AuditLogModal
   const prev = () => setOffset((o) => Math.max(0, o - limit));
 
   const modal = (
-    <ModalOverlay onClick={(e) => e.stopPropagation()}>
-      <ModalContent style={{ maxWidth: 920, width: '90%' }} onClick={(e) => e.stopPropagation()}>
+    <ModalOverlay onClick={handleStopPropagation}>
+      <ModalContent style={{ maxWidth: 920, width: '90%' }} onClick={handleStopPropagation}>
         <ModalTitle>Audit Logs</ModalTitle>
         <ModalMessage>{loading ? 'Loading...' : `Showing ${items.length} of ${total} entries`}</ModalMessage>
 
@@ -70,7 +94,7 @@ export default function AuditLogModal({ isOpen, userId, onClose }: AuditLogModal
               <tbody>
                 {items.map((it) => (
                   <tr key={it.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td style={{ padding: '6px 4px', fontSize: 12 }}>{it.createdAt ? new Date(it.createdAt).toLocaleString() : '—'}</td>
+                    <td style={{ padding: '6px 4px', fontSize: 12 }}>{mounted ? formatDateSafe(it.createdAt) : '—'}</td>
                     <td style={{ padding: '6px 4px', fontSize: 12 }}>{it.action || '—'}</td>
                     <td style={{ padding: '6px 4px', fontSize: 12 }}>{it.decision || '—'}</td>
                     <td style={{ padding: '6px 4px', fontSize: 12 }}>{it.endpoint || '—'}</td>

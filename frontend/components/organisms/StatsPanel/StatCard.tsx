@@ -1,6 +1,6 @@
 // components/StatCard/StatCard.tsx
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Header, IconWrapper, StatsRow, Stat } from './styles';
 import { StatCardProps } from './StatCard.types';
 
@@ -11,6 +11,11 @@ export default function StatCard({
   stats,
   warn,
 }: StatCardProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <Card warn={warn}>
       <Header>
@@ -19,7 +24,7 @@ export default function StatCard({
         <StatsRow>
           {stats.map((stat, i) => {
             const value =
-              typeof stat.value === 'number'
+              typeof stat.value === 'number' && mounted
                 ? stat.value.toLocaleString()
                 : stat.value;
 

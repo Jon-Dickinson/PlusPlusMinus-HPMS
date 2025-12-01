@@ -93,6 +93,14 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
   const { open: openPermissions, renderModal } = usePermissionsModal(Number(id));
   const { open: openAudit, renderModal: renderAuditModal } = useAuditModal(Number(id));
 
+  const handlePermissionsClick = (e: React.MouseEvent) => {
+    openPermissions(undefined, e);
+  };
+
+  const handleAuditClick = (e: React.MouseEvent) => {
+    openAudit(undefined, e);
+  };
+
   const { user: currentUser } = useAuth();
   const viewerIsAdmin = isAdmin(currentUser?.role);
 
@@ -117,11 +125,11 @@ export default function MayorCard({ id, mayorData, onClick, onDelete }: MayorCar
       </QualityIndex>
 
       <Properties>
-        <PermissionButton onClick={(e) => openPermissions(undefined, e)} title="Permissions">
+        <PermissionButton onClick={handlePermissionsClick} title="Permissions">
           <Shield size={16} color="#2FBF4A" />
         </PermissionButton>
         {viewerIsAdmin && (
-          <AuditButton onClick={(e) => openAudit(undefined, e)} title="Audit logs">
+          <AuditButton onClick={handleAuditClick} title="Audit logs">
             <FileText size={16} />
           </AuditButton>
         )}

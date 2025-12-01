@@ -63,8 +63,9 @@ export interface AuthContextValue {
  * -----------------------------------------------------*/
 
 const LS = {
-  getToken: () => localStorage.getItem('token'),
+  getToken: () => typeof window !== 'undefined' ? localStorage.getItem('token') : null,
   getUser: (): User | null => {
+    if (typeof window === 'undefined') return null;
     const raw = localStorage.getItem('user');
     try {
       return raw ? JSON.parse(raw) : null;
@@ -72,12 +73,21 @@ const LS = {
       return null;
     }
   },
-  setToken: (token: string) => localStorage.setItem('token', token),
-  setUser: (user: User) =>
-    localStorage.setItem('user', JSON.stringify(user)),
+  setToken: (token: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', token);
+    }
+  },
+  setUser: (user: User) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  },
   clear: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
   },
 };
 
@@ -167,6 +177,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    * (Prevents unnecessary rerenders)
    * -------------------------------------------------*/
   const setUser = useCallback((newUser: User | null) => {
+    if (typeof window === 'undefined') {
+      setUserState(newUser);
+      return;
+    }
+
     const existing = LS.getUser();
 
     // Shallow compare essential fields to avoid re-renders
@@ -179,8 +194,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
-    if (newUser) LS.setUser(newUser);
-    else localStorage.removeItem('user');
+    if (newUser) {
+      LS.setUser(newUser);
+    } else {
+      localStorage.removeItem('user');
+    }
 
     setUserState(newUser);
   }, []);

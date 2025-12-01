@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ModalOverlay, ModalContent, ModalTitle, ModalMessage, ModalButtons, CancelButton, SaveButton } from '../DeleteConfirmationModal/styles';
 import { PermissionsList, PermissionRow, PermissionInfo, CategoryName, CheckboxLabel } from './styles';
@@ -73,9 +73,13 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
     }
   };
 
+  const handleStopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
   const modal = (
-    <ModalOverlay onClick={(event) => event.stopPropagation()}>
-      <ModalContent style={{ maxWidth: 720 }} onClick={(event) => event.stopPropagation()}>
+    <ModalOverlay onClick={handleStopPropagation}>
+      <ModalContent style={{ maxWidth: 720 }} onClick={handleStopPropagation}>
         <ModalTitle>Permissions</ModalTitle>
         <ModalMessage>
           {loading ? 'Loading...' : 'Adjust direct permissions for this user. Inherited permissions (if any) are shown as effective but cannot be edited here.'}
@@ -100,7 +104,7 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
               // always set it to false so tests assert fixed opacity.
               <PermissionRow key={permission.categoryId} dimmed={false} data-dimmed={false}>
               <PermissionInfo>
-                <CheckboxLabel onClick={(e) => e.stopPropagation()}>
+                <CheckboxLabel onClick={handleStopPropagation}>
                   <input
                     type="checkbox"
                     checked={permission.directCanBuild}
@@ -115,7 +119,7 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
         </PermissionsList>
 
         <ModalButtons>
-          <CancelButton onClick={() => onClose()}>Cancel</CancelButton>
+          <CancelButton onClick={onClose}>Cancel</CancelButton>
           <SaveButton disabled={!dirty || loading} onClick={save}>Save</SaveButton>
         </ModalButtons>
         </ModalContent>

@@ -24,6 +24,18 @@ vi.mock('next/router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+// Mock Brand component that's causing test failures
+vi.mock('../../atoms/Brand', () => ({
+  __esModule: true,
+  default: () => <div data-testid="brand">City Builder</div>,
+}));
+
+// Mock SystemStatus to avoid WebSocket issues
+vi.mock('../../molecules/SystemStatus', () => ({
+  __esModule: true,
+  default: () => <div data-testid="system-status">System Status</div>,
+}));
+
 describe('RegisterForm', () => {
   beforeEach(() => {
     mockPost.mockReset();

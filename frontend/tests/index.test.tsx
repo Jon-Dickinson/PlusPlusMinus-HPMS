@@ -4,12 +4,25 @@ import { screen } from '@testing-library/react';
 import { describe, it, vi, expect } from 'vitest';
 import { renderWithProviders } from '../test-utils/renderWithProviders';
 
-// Mock MainTemplate and LoginForm so the page is lightweight
+// Mock all complex components to avoid dependency issues
 vi.mock('../components/templates/MainTemplate', () => ({
+  __esModule: true,
   default: ({ children }: any) => <div data-testid="main">{children}</div>,
 }));
+
 vi.mock('../components/organisms/LoginForm', () => ({
+  __esModule: true,
   default: () => <div data-testid="login-form">LoginForm</div>,
+}));
+
+// Mock next router for the page
+vi.mock('next/router', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    pathname: '/',
+    query: {},
+    asPath: '/',
+  }),
 }));
 
 import Home from '../pages/index';

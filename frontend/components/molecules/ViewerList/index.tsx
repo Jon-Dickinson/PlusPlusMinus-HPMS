@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Trash2 } from 'lucide-react';
 import {
   ViewersList,
@@ -22,6 +22,10 @@ interface ViewerListProps {
 }
 
 export default function ViewerList({ viewers, onDeleteUser }: ViewerListProps) {
+  const createDeleteHandler = useCallback((viewerId: number | string) => {
+    return () => onDeleteUser?.(viewerId);
+  }, [onDeleteUser]);
+
   if (viewers.length === 0) return null;
 
   return (
@@ -33,7 +37,7 @@ export default function ViewerList({ viewers, onDeleteUser }: ViewerListProps) {
             {viewer.firstName} {viewer.lastName} ({viewer.username})
           </span>
           {onDeleteUser && (
-            <ViewerDeleteButton title="Delete" onClick={() => onDeleteUser(viewer.id)}>
+            <ViewerDeleteButton title="Delete" onClick={createDeleteHandler(viewer.id)}>
               <Trash2 size={14} />
             </ViewerDeleteButton>
           )}

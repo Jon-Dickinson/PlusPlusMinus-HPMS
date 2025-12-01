@@ -1,11 +1,13 @@
 import React from 'react';
 import { useDragLayer } from 'react-dnd';
 
+const dragLayerCollector = (m: any) => ({
+  isDragging: m.isDragging(),
+  clientOffset: m.getClientOffset(),
+});
+
 export default function DragDropCursorController() {
-  const { isDragging, clientOffset } = useDragLayer((m: any) => ({
-    isDragging: m.isDragging(),
-    clientOffset: m.getClientOffset(),
-  }));
+  const { isDragging, clientOffset } = useDragLayer(dragLayerCollector);
 
   React.useEffect(() => {
     if (!isDragging || !clientOffset) return;

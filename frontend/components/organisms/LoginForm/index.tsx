@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Row } from '../../atoms/Blocks';
 import Input from '../../atoms/Input';
 import Button from '../../atoms/Button';
@@ -28,6 +28,14 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
   const router = useRouter();
+
+  const handleEmailChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
+  }, []);
+
+  const handlePasswordChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  }, []);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -73,7 +81,7 @@ export default function LoginForm() {
               <Input
                 disabled={loading}
                 value={email}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
+                onChange={handleEmailChange}
                 placeholder="Email"
               />
 
@@ -81,7 +89,7 @@ export default function LoginForm() {
                 disabled={loading}
                 type="password"
                 value={password}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
+                onChange={handlePasswordChange}
                 placeholder="Password"
               />
 

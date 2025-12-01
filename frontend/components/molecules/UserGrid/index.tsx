@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import MayorCard from '../MayorCard';
 import ViewerCard from '../ViewerCard';
 import {
@@ -42,7 +42,7 @@ interface UserGridProps {
   onDeleteUser?: (userId: number | string) => void;
 }
 
-export default function UserGrid({
+const UserGrid = React.memo(function UserGrid({
   loading,
   mayors,
   users,
@@ -50,6 +50,12 @@ export default function UserGrid({
   onMayorClick,
   onDeleteUser,
 }: UserGridProps) {
+  const handleMayorClick = useCallback((id: number | string) => {
+    if (canNavigateAdmin) {
+      onMayorClick(id);
+    }
+  }, [canNavigateAdmin, onMayorClick]);
+
   return (
     <DataGrid>
       <GridHeader>
@@ -83,11 +89,7 @@ export default function UserGrid({
                 <MayorCard
                   id={mayor.id}
                   mayorData={mayor}
-                  onClick={(id: number | string) => {
-                    if (canNavigateAdmin) {
-                      onMayorClick(id);
-                    }
-                  }}
+                  onClick={handleMayorClick}
                   onDelete={onDeleteUser}
                 />
                 {viewers.map((viewer, viewerIndex) => (
@@ -104,4 +106,6 @@ export default function UserGrid({
       </MayorGrid>
     </DataGrid>
   );
-}
+});
+
+export default UserGrid;

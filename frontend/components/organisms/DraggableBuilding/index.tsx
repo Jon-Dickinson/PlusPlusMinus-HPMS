@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { useEffect, useState } from 'react';
@@ -28,11 +26,13 @@ function DraggableBuilding({ building }: { building: any }) {
   return <DraggableBuildingClient building={building} />;
 }
 
+const dragCollector = (monitor: any) => ({ isDragging: !!monitor.isDragging() });
+
 function DraggableBuildingClient({ building }: { building: any }) {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: 'BUILDING',
     item: { id: building.id },
-    collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
+    collect: dragCollector,
   }));
 
   useCity();
