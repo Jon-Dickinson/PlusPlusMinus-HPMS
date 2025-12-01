@@ -75,7 +75,9 @@ export default function LoginForm() {
               <Input
                 disabled={loading}
                 value={email}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(event.target.value)
+                }
                 placeholder="Email"
               />
 
@@ -83,7 +85,9 @@ export default function LoginForm() {
                 disabled={loading}
                 type="password"
                 value={password}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  setPassword(event.target.value)
+                }
                 placeholder="Password"
               />
 
@@ -107,15 +111,12 @@ export default function LoginForm() {
                 </Button>
               </Row>
             </form>
-
           </InnerPanel>
           <Jonathan>
             <p>Developed by Jonathan Dickinson</p>
           </Jonathan>
         </Form>
-
       </Row>
-
     </Root>
   );
 }
