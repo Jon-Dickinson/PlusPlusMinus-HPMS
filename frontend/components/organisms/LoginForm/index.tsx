@@ -92,11 +92,11 @@ export default function LoginForm() {
               />
 
               <Row justify="between">
-                <Register>
+                {/* <Register>
                   <Link href="/register" legacyBehavior>
                     <a>Register</a>
                   </Link>
-                </Register>
+                </Register> */}
 
                 {error && <ErrorMsg role="alert">{error}</ErrorMsg>}
                 <Button type="submit" disabled={loading} aria-busy={loading}>

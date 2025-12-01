@@ -35,7 +35,7 @@ describe('LoginForm', () => {
     expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
-    expect(screen.getByText('Register')).toBeInTheDocument();
+    // expect(screen.getByText('Register')).toBeInTheDocument();
     expect(screen.getByAltText('Building Blocks')).toBeInTheDocument();
     expect(screen.getByText('Developed by Jonathan Dickinson')).toBeInTheDocument();
   });
