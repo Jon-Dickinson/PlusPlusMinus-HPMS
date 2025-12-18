@@ -1,7 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ModalOverlay, ModalContent, ModalTitle, ModalMessage, ModalButtons, CancelButton, SaveButton } from '../DeleteConfirmationModal/styles';
-import { PermissionsList, PermissionRow, PermissionInfo, CategoryName, CheckboxLabel } from './styles';
+import {
+  ModalOverlay,
+  ModalContent,
+  ModalTitle,
+  ModalMessage,
+  ModalButtons,
+  CancelButton,
+  SaveButton,
+} from '../DeleteConfirmationModal/styles';
+import {
+  PermissionsList,
+  PermissionRow,
+  PermissionInfo,
+  CategoryName,
+  CheckboxLabel,
+} from './styles';
 import HierarchyAPI from '../../../lib/hierarchyAPI';
 import { useAuth } from '../../../context/AuthContext';
 import { isAdmin } from '../../../utils/roles';
@@ -31,13 +45,15 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
     setLoading(true);
     HierarchyAPI.getEffectivePermissions(Number(userId))
       .then((data) => {
-        setPermissions(data.map((permissionData: any) => ({
-          categoryId: permissionData.categoryId,
-          categoryName: permissionData.categoryName,
-          description: permissionData.description,
-          effectiveCanBuild: !!permissionData.effectiveCanBuild,
-          directCanBuild: !!permissionData.directCanBuild,
-        })));
+        setPermissions(
+          data.map((permissionData: any) => ({
+            categoryId: permissionData.categoryId,
+            categoryName: permissionData.categoryName,
+            description: permissionData.description,
+            effectiveCanBuild: !!permissionData.effectiveCanBuild,
+            directCanBuild: !!permissionData.directCanBuild,
+          })),
+        );
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
@@ -61,7 +77,10 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
   const save = async () => {
     setLoading(true);
     try {
-      const payload = permissions.map(permission => ({ categoryId: permission.categoryId, canBuild: permission.directCanBuild }));
+      const payload = permissions.map((permission) => ({
+        categoryId: permission.categoryId,
+        canBuild: permission.directCanBuild,
+      }));
       await UserAPI.updatePermissions(Number(userId), payload);
       setDirty(false);
       onClose();
@@ -78,7 +97,7 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
       <ModalContent style={{ maxWidth: 720 }} onClick={(event) => event.stopPropagation()}>
         <ModalTitle>Permissions</ModalTitle>
         <ModalMessage>
-          {loading ? 'Loading...' : 'Adjust direct permissions for this user. Inherited permissions (if any) are shown as effective but cannot be edited here.'}
+          {loading ? 'Loading...' : 'Adjust direct permissions for this user.'}
         </ModalMessage>
 
         <PermissionsList>
@@ -91,40 +110,46 @@ export default function PermissionsModal({ isOpen, userId, onClose }: Permission
             const forcedDim = name === 'commercial';
             const forcedUndim = name === 'residential';
             const dimmed = shouldDimForAdminView
-              ? (forcedUndim ? false : (forcedDim ? true : !permission.effectiveCanBuild))
+              ? forcedUndim
+                ? false
+                : forcedDim
+                ? true
+                : !permission.effectiveCanBuild
               : false;
 
             return (
-              // The UI requirement is that rows in the Permissions modal always
-              // render at full opacity. Keep a data attribute for tests but
-              // always set it to false so tests assert fixed opacity.
               <PermissionRow key={permission.categoryId} dimmed={false} data-dimmed={false}>
-              <PermissionInfo>
-                <CheckboxLabel onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={permission.directCanBuild}
-                    onChange={(event) => { event.stopPropagation(); toggle(index); }}
-                  />
-                  <CategoryName>{permission.categoryName}</CategoryName>
-                </CheckboxLabel>
-              </PermissionInfo>
-            </PermissionRow>
-          );
+                <PermissionInfo>
+                  <CheckboxLabel onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={permission.directCanBuild}
+                      onChange={(event) => {
+                        event.stopPropagation();
+                        toggle(index);
+                      }}
+                    />
+                    <CategoryName>{permission.categoryName}</CategoryName>
+                  </CheckboxLabel>
+                </PermissionInfo>
+              </PermissionRow>
+            );
           })}
         </PermissionsList>
 
         <ModalButtons>
           <CancelButton onClick={() => onClose()}>Cancel</CancelButton>
-          <SaveButton disabled={!dirty || loading} onClick={save}>Save</SaveButton>
+          <SaveButton disabled={!dirty || loading} onClick={save}>
+            Save
+          </SaveButton>
         </ModalButtons>
-        </ModalContent>
-      </ModalOverlay>
-    );
+      </ModalContent>
+    </ModalOverlay>
+  );
 
-    if (typeof document !== 'undefined') {
-      return createPortal(modal, document.body);
-    }
+  if (typeof document !== 'undefined') {
+    return createPortal(modal, document.body);
+  }
 
-    return null;
+  return null;
 }
