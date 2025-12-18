@@ -92,6 +92,9 @@ export default function LoginForm() {
               />
 
               <Row justify="between">
+
+                <p>Testing</p>
+
                 {/* <Register>
                   <Link href="/register" legacyBehavior>
                     <a>Register</a>
